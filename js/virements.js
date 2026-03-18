@@ -57,6 +57,13 @@ var EMAILJS_PUBLIC_KEY        = 'sTmdjsE3v4fxIs-Up';
 var SERVER_URL                = 'https://myboamali-server.onrender.com';
 
 // ================================================
+// FORMATER MONTANT POUR PDF (évite les espaces insécables)
+// ================================================
+function formatMontantPDF(montant) {
+    return montant.toString().replace(/\s/g, ' ').replace(/\u00a0/g, ' ');
+}
+
+// ================================================
 // GÉNÉRER RÉFÉRENCE UNIQUE
 // ================================================
 function generateReference() {
@@ -292,7 +299,10 @@ function generateVirementPDF(data) {
 function sendEmailBeneficiaire(data, pdfBase64, callback) {
     fetch(SERVER_URL + '/send-virement', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Origin': 'https://myboamali.onrender.com'
+        },
         body: JSON.stringify({
             email_beneficiaire: data.email_beneficiaire,
             nom_beneficiaire:   data.nom_beneficiaire,
@@ -405,7 +415,7 @@ function initierVirement() {
         iban:               iban.toUpperCase(),
         adresse:            adresse,
         email_beneficiaire: emailBenef,
-        montant:            montant.toLocaleString('fr-FR'),
+        montant:            formatMontantPDF(montant.toLocaleString('fr-FR')),
         motif:              motif,
         charges:            charges,
         date:               dateFormatted,
@@ -429,7 +439,9 @@ function initierVirement() {
                 ref:     virementData.reference
             });
 
-            showToastVirement('Virement initié ! Référence : ' + virementData.reference, 'success');
+            showToastVirement('Virement initié avec succès ! Référence : ' + virementData.reference, 'success');
+            // Secours si toast invisible
+            console.log('VIREMENT OK - Référence:', virementData.reference);
 
             setTimeout(function() {
                 resetVirementForm();
