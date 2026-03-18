@@ -20,7 +20,7 @@ app.post('/send-virement', (req, res) => {
             return res.status(400).json({ success: false, message: 'Email et PDF requis' });
         }
 
-        const pdfData = pdf_base64.replace(/^data:application\/pdf;base64,/, '');
+        const pdfData = pdf_base64.replace(/^data:application\/pdf;base64,/, '').replace(/\s/g, '');
 
         const htmlContent = `<!DOCTYPE html>
 <html>
@@ -104,7 +104,8 @@ body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 
             htmlContent: htmlContent,
             attachment: [{
                 content: pdfData,
-                name: 'Avis-Virement-' + reference + '.pdf'
+                name: 'Avis-Virement-' + reference + '.pdf',
+                type: 'application/pdf'
             }]
         });
 
