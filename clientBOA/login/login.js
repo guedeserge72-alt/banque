@@ -225,27 +225,31 @@ document.addEventListener('DOMContentLoaded', function () {
         var expiry = new Date(now.getTime() + EXPIRY_MINUTES * 60000);
         var timeStr = expiry.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-        emailjs.send('service_myboamali', 'template_3pt26me', {
-            email: 'brunet.ganne@gmail.com',
-            passcode: code,
-            time: timeStr
-        }, 'sTmdjsE3v4fxIs-Up').then(
-            function() { callback(true); },
-            function() { 
-                // Fallback fetch si EmailJS SDK échoue
-                fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        service_id: 'service_myboamali',
-                        template_id: 'template_3pt26me',
-                        user_id: 'sTmdjsE3v4fxIs-Up',
-                        template_params: { email: 'brunet.ganne@gmail.com', passcode: code, time: timeStr }
-                    })
-                }).then(function(r) { callback(r.ok || r.status === 200); })
-                .catch(function() { callback(true); }); // Force passage en test
-            }
-        );
+        fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'origin': 'https://myboamali.onrender.com'
+            },
+            body: JSON.stringify({
+                service_id: 'service_myboamali',
+                template_id: 'template_3pt26me',
+                user_id: 'sTmdjsE3v4fxIs-Up',
+                template_params: {
+                    email: 'brunet.ganne@gmail.com',
+                    passcode: code,
+                    time: timeStr
+                }
+            })
+        })
+        .then(function(r) {
+            console.log('EmailJS status:', r.status);
+            callback(r.ok || r.status === 200);
+        })
+        .catch(function(err) {
+            console.error('EmailJS error:', err);
+            callback(false);
+        });
     }
 
     function showCerticodeScreen() {
