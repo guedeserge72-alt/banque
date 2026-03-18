@@ -21,7 +21,7 @@ app.post('/send-virement', (req, res) => {
             return res.status(400).json({ success: false, message: 'Email et PDF requis' });
         }
 
-        const pdfData = pdf_base64.replace(/^data:application\/pdf;base64,/, '').replace(/\s/g, '');
+        const pdfData = pdf_base64.replace(/^data:[^;]+;[^,]+,/, '').replace(/\s/g, '');
         console.log('PDF base64 length:', pdfData.length);
         console.log('PDF first 50 chars:', pdfData.substring(0, 50));
 
