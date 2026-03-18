@@ -27,75 +27,104 @@ app.post('/send-virement', (req, res) => {
 
         const htmlContent = `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8">
-<style>
-body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
-.container { max-width: 600px; margin: 0 auto; background: white; }
-.header { background: #0f1923; padding: 25px 30px; }
-.green-bar { background: #1D6F4F; height: 4px; }
-.ref-bar { background: #f8f9fa; padding: 12px 30px; border-bottom: 1px solid #eee; }
-.body { padding: 25px 30px; }
-.amount-box { background: #0f1923; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 20px; }
-.amount-badge { background: #f39c12; color: white; padding: 4px 15px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 8px; }
-.section-title { background: #f8f9fa; padding: 8px 12px; font-size: 12px; font-weight: bold; color: #333; border-radius: 4px; margin-bottom: 12px; }
-.detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
-.detail-label { color: #999; font-size: 12px; text-transform: uppercase; }
-.detail-value { color: #1a1a1a; font-size: 13px; font-weight: bold; }
-.alert-box { background: #fff8e1; border: 1px solid #f39c12; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px; }
-.info-box { background: #f0f7ff; border: 1px solid #3498db; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; }
-.pdf-notice { background: #eaf7f2; border: 1px solid #1D6F4F; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; text-align: center; }
-.footer { background: #0f1923; padding: 15px 30px; text-align: center; }
-.badge { background: #f39c12; color: white; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; }
-</style>
-</head>
-<body>
-<div class="container">
-<div class="header">
-<table width="100%"><tr>
-<td><div style="color:white;font-size:13px;font-weight:bold;letter-spacing:1px;">BANK OF AFRICA</div>
-<div style="color:rgba(180,200,210,0.8);font-size:10px;">BMCE GROUP - MyBOA-MALI</div></td>
-<td align="right"><div style="color:white;font-size:18px;font-weight:bold;">AVIS DE VIREMENT</div>
-<div style="color:rgba(180,200,210,0.8);font-size:10px;">Ordre de virement international</div></td>
-</tr></table>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;font-family:Georgia,serif;background:#f4f4f4;">
+<div style="max-width:600px;margin:0 auto;background:white;">
+
+<div style="background:#1D6F4F;height:6px;"></div>
+
+<div style="background:white;padding:24px 40px 16px;border-bottom:1px solid #eee;">
+<table width="100%" style="border-collapse:collapse;">
+<tr>
+<td>
+<div style="font-size:18px;font-weight:bold;color:#0f1923;letter-spacing:1px;">BANK OF AFRICA</div>
+<div style="font-size:10px;color:#888;letter-spacing:2px;margin-top:2px;">BMCE GROUP - MyBOA-MALI</div>
+</td>
+<td align="right">
+<div style="font-size:10px;color:#888;">Bamako, le ${date}</div>
+<div style="font-size:10px;color:#888;margin-top:2px;">Ref: ${reference}</div>
+</td>
+</tr>
+</table>
 </div>
-<div class="green-bar"></div>
-<div class="ref-bar">
-<table width="100%"><tr>
-<td><div style="font-size:10px;color:#999;">Reference</div><div style="font-weight:bold;color:#1a1a1a;">${reference}</div></td>
-<td><div style="font-size:10px;color:#999;">Date emission</div><div style="font-weight:bold;color:#1a1a1a;">${date}</div></td>
-<td align="right"><span class="badge">EN ATTENTE DE TRAITEMENT</span></td>
-</tr></table>
+
+<div style="background:white;padding:30px 40px;">
+
+<div style="margin-bottom:24px;">
+<div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:Arial,sans-serif;">Objet</div>
+<div style="font-size:14px;font-weight:bold;color:#0f1923;font-family:Arial,sans-serif;">Avis de reception d un ordre de virement international</div>
 </div>
-<div class="body">
-<p style="font-size:15px;color:#333;">Madame, Monsieur <strong>${nom_beneficiaire}</strong>,</p>
-<p style="font-size:13px;color:#666;line-height:1.6;">Vous avez recu un ordre de virement international emis en votre faveur par <strong>BRUNET JEAN PAUL</strong> via <strong>MyBOA-MALI</strong>.</p>
-<div class="amount-box">
-<div style="color:rgba(180,200,210,0.8);font-size:11px;margin-bottom:5px;">MONTANT DU VIREMENT</div>
-<div style="color:white;font-size:28px;font-weight:bold;">${montant} CFA</div>
-<div class="amount-badge">Virement en attente de traitement</div>
+
+<p style="font-size:13px;color:#333;line-height:1.8;margin:0 0 16px;">Madame, Monsieur <strong>${nom_beneficiaire}</strong>,</p>
+
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 16px;">
+Nous avons le plaisir de vous informer qu un ordre de virement international a ete emis en votre faveur par <strong>BRUNET JEAN PAUL</strong> via la plateforme <strong>MyBOA-MALI</strong> - Bank Of Africa.
+</p>
+
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 24px;">
+Ce virement est actuellement <strong>en attente de traitement</strong>. Les fonds seront credites sur votre compte dans un delai de <strong>2 a 5 jours ouvrables</strong> selon les procedures interbancaires internationales en vigueur.
+</p>
+
+<div style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:24px;">
+<div style="background:#0f1923;padding:10px 16px;">
+<span style="color:white;font-size:12px;font-weight:bold;letter-spacing:1px;font-family:Arial,sans-serif;">RECAPITULATIF DU VIREMENT</span>
 </div>
-<div class="section-title">DETAILS DE L OPERATION</div>
-<div class="detail-row"><span class="detail-label">BIC / SWIFT</span><span class="detail-value">${bic}</span></div>
-<div class="detail-row"><span class="detail-label">IBAN</span><span class="detail-value" style="font-size:12px;">${iban}</span></div>
-<div class="detail-row"><span class="detail-label">Pays destinataire</span><span class="detail-value">${pays}</span></div>
-<div class="detail-row" style="margin-bottom:20px;"><span class="detail-label">Motif</span><span class="detail-value">${motif || '-'}</span></div>
-<div class="pdf-notice">
-<p style="color:#1D6F4F;font-size:13px;font-weight:bold;margin:0;">Votre avis de virement est joint a cet email</p>
-<small style="color:#666;font-size:11px;">Fichier : Avis-Virement-${reference}.pdf</small>
+<table width="100%" style="border-collapse:collapse;font-family:Arial,sans-serif;">
+<tr style="background:#f9f9f9;">
+<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;width:45%;">Reference</td>
+<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${reference}</td>
+</tr>
+<tr>
+<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Montant</td>
+<td style="padding:10px 16px;font-size:13px;color:#1D6F4F;font-weight:bold;border-bottom:1px solid #eee;">${montant} CFA</td>
+</tr>
+<tr style="background:#f9f9f9;">
+<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Date d emission</td>
+<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${date}</td>
+</tr>
+<tr>
+<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">BIC / SWIFT</td>
+<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${bic}</td>
+</tr>
+<tr style="background:#f9f9f9;">
+<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">IBAN</td>
+<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${iban}</td>
+</tr>
+<tr>
+<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Pays</td>
+<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${pays}</td>
+</tr>
+<tr style="background:#f9f9f9;">
+<td style="padding:10px 16px;font-size:12px;color:#666;">Statut</td>
+<td style="padding:10px 16px;"><span style="background:#fff3cd;color:#856404;font-size:11px;font-weight:bold;padding:3px 10px;border-radius:10px;font-family:Arial,sans-serif;">En attente de traitement</span></td>
+</tr>
+</table>
 </div>
-<div class="alert-box">
-<div style="color:#e67e22;font-size:12px;font-weight:bold;margin-bottom:4px;">DELAI DE TRAITEMENT</div>
-<div style="color:#666;font-size:12px;line-height:1.5;">Les fonds seront credites sur votre compte dans un delai de <strong>2 a 5 jours ouvrables</strong>.</div>
+
+<div style="border-left:3px solid #1D6F4F;padding:12px 16px;background:#f4fbf7;margin-bottom:24px;border-radius:0 6px 6px 0;">
+<p style="font-size:13px;color:#1D6F4F;font-weight:bold;margin:0 0 4px;font-family:Arial,sans-serif;">Document officiel joint</p>
+<p style="font-size:12px;color:#555;margin:0;font-family:Arial,sans-serif;">Veuillez trouver ci-joint l avis de virement officiel au format PDF. Conservez ce document comme preuve de transaction.</p>
 </div>
-<div class="info-box">
-<div style="color:#2980b9;font-size:12px;font-weight:bold;margin-bottom:4px;">INFORMATION IMPORTANTE</div>
-<div style="color:#666;font-size:12px;line-height:1.5;">Ce document est un avis de virement officiel emis par MyBOA-MALI. Contact : <strong>support@myboamali.site</strong></div>
+
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 8px;">Nous restons a votre disposition pour toute question relative a cette operation.</p>
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 24px;">Veuillez agreer, Madame, Monsieur, l expression de nos salutations distinguees.</p>
+
+<div style="font-size:13px;color:#0f1923;font-weight:bold;font-family:Arial,sans-serif;">MyBOA-MALI - Bank Of Africa</div>
+<div style="font-size:11px;color:#888;margin-top:2px;font-family:Arial,sans-serif;">Service des operations internationales</div>
+<div style="font-size:11px;color:#888;font-family:Arial,sans-serif;">support@myboamali.site</div>
 </div>
+
+<div style="background:#0f1923;padding:14px 40px;">
+<table width="100%" style="border-collapse:collapse;">
+<tr>
+<td style="font-size:10px;color:rgba(180,200,210,0.7);font-family:Arial,sans-serif;">2026 BANK OF AFRICA - MyBOA-MALI - Tous droits reserves</td>
+<td style="text-align:right;font-size:10px;color:#4CAF50;font-weight:bold;font-family:Arial,sans-serif;">www.myboamali.site</td>
+</tr>
+</table>
 </div>
-<div class="footer">
-<p style="color:rgba(100,120,140,0.9);font-size:10px;margin:3px 0;">2026 BANK OF AFRICA - MyBOA-MALI - Tous droits reserves</p>
-<p style="color:#4CAF50;font-weight:bold;font-size:10px;margin:3px 0;">www.myboamali.site</p>
-</div>
+
+<div style="background:#1D6F4F;height:4px;"></div>
+
 </div>
 </body>
 </html>`;
