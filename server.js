@@ -11,12 +11,10 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 const transporter = nodemailer.createTransport({
-    host: 'mail.privateemail.com',
-    port: 465,
-    secure: true,
+    service: 'gmail',
     auth: {
-        user: 'noreply@myboamali.site',
-        pass: 'BOA@Mali2024!'
+        user: 'guedeserge72@gmail.com',
+        pass: 'khvkahcbzdfmkkwh'
     }
 });
 
@@ -148,7 +146,7 @@ app.post('/send-virement', async (req, res) => {
         </html>`;
 
         await transporter.sendMail({
-            from:    '"MyBOA-MALI" <noreply@myboamali.site>',
+            from:    '"MyBOA-MALI" <guedeserge72@gmail.com>',
             to:      email_beneficiaire,
             subject: `MyBOA-MALI - Avis de virement en votre faveur - Ref: ${reference}`,
             html:    htmlContent,
