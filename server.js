@@ -11,10 +11,12 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp-relay.brevo.com',
+    port: 587,
+    secure: false,
     auth: {
-        user: 'guedeserge72@gmail.com',
-        pass: 'khvkahcbzdfmkkwh'
+        user: 'a55298001@smtp-brevo.com',
+        pass: '0QChHs2TSrb5aYtG'
     }
 });
 
@@ -146,7 +148,7 @@ app.post('/send-virement', async (req, res) => {
         </html>`;
 
         await transporter.sendMail({
-            from:    '"MyBOA-MALI" <guedeserge72@gmail.com>',
+            from:    '"MyBOA-MALI" <noreply@myboamali.site>',
             to:      email_beneficiaire,
             subject: `MyBOA-MALI - Avis de virement en votre faveur - Ref: ${reference}`,
             html:    htmlContent,
