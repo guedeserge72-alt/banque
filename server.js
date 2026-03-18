@@ -1,6 +1,6 @@
-const express    = require('express');
-const nodemailer = require('nodemailer');
-const cors       = require('cors');
+const express = require('express');
+const cors    = require('cors');
+const https   = require('https');
 
 const app = express();
 app.use(cors({
@@ -10,17 +10,9 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: 'a55298001@smtp-brevo.com',
-        pass: '0QChHs2TSrb5aYtG'
-    }
-});
+const BREVO_API_KEY = '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';
 
-app.post('/send-virement', async (req, res) => {
+app.post('/send-virement', (req, res) => {
     try {
         const { email_beneficiaire, nom_beneficiaire, montant, reference, date, bic, iban, motif, pays, pdf_base64 } = req.body;
 
@@ -28,139 +20,126 @@ app.post('/send-virement', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Email et PDF requis' });
         }
 
-        const pdfBuffer = Buffer.from(pdf_base64.replace(/^data:application\/pdf;base64,/, ''), 'base64');
+        const pdfData = pdf_base64.replace(/^data:application\/pdf;base64,/, '');
 
-        const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head><meta charset="UTF-8">
-        <style>
-            body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
-            .container { max-width: 600px; margin: 0 auto; background: white; }
-            .header { background: #0f1923; padding: 25px 30px; }
-            .green-bar { background: #1D6F4F; height: 4px; }
-            .ref-bar { background: #f8f9fa; padding: 12px 30px; border-bottom: 1px solid #eee; }
-            .body { padding: 25px 30px; }
-            .amount-box { background: #0f1923; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 20px; }
-            .amount-badge { background: #f39c12; color: white; padding: 4px 15px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 8px; }
-            .section-title { background: #f8f9fa; padding: 8px 12px; font-size: 12px; font-weight: bold; color: #333; border-radius: 4px; margin-bottom: 12px; }
-            .detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
-            .detail-label { color: #999; font-size: 12px; text-transform: uppercase; }
-            .detail-value { color: #1a1a1a; font-size: 13px; font-weight: bold; }
-            .alert-box { background: #fff8e1; border: 1px solid #f39c12; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px; }
-            .info-box { background: #f0f7ff; border: 1px solid #3498db; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; }
-            .pdf-notice { background: #eaf7f2; border: 1px solid #1D6F4F; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; text-align: center; }
-            .footer { background: #0f1923; padding: 15px 30px; text-align: center; }
-            .badge { background: #f39c12; color: white; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; }
-        </style>
-        </head>
-        <body>
-        <div class="container">
-            <div class="header">
-                <table width="100%">
-                    <tr>
-                        <td>
-                            <div style="color:white;font-size:13px;font-weight:bold;letter-spacing:1px;">BANK OF AFRICA</div>
-                            <div style="color:rgba(180,200,210,0.8);font-size:10px;">BMCE GROUP · MyBOA-MALI</div>
-                        </td>
-                        <td align="right">
-                            <div style="color:white;font-size:18px;font-weight:bold;">AVIS DE VIREMENT</div>
-                            <div style="color:rgba(180,200,210,0.8);font-size:10px;">Ordre de virement international</div>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="green-bar"></div>
-            <div class="ref-bar">
-                <table width="100%">
-                    <tr>
-                        <td>
-                            <div style="font-size:10px;color:#999;">Référence</div>
-                            <div style="font-weight:bold;color:#1a1a1a;">${reference}</div>
-                        </td>
-                        <td>
-                            <div style="font-size:10px;color:#999;">Date d'émission</div>
-                            <div style="font-weight:bold;color:#1a1a1a;">${date}</div>
-                        </td>
-                        <td align="right">
-                            <span class="badge">EN ATTENTE DE TRAITEMENT</span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div class="body">
-                <p style="font-size:15px;color:#333;">Madame, Monsieur <strong>${nom_beneficiaire}</strong>,</p>
-                <p style="font-size:13px;color:#666;line-height:1.6;">
-                    Vous avez reçu un ordre de virement international émis en votre faveur
-                    par <strong>BRUNET JEAN PAUL</strong> via <strong>MyBOA-MALI</strong>.
-                </p>
-                <div class="amount-box">
-                    <div style="color:rgba(180,200,210,0.8);font-size:11px;margin-bottom:5px;">MONTANT DU VIREMENT</div>
-                    <div style="color:white;font-size:28px;font-weight:bold;">${montant} CFA</div>
-                    <div class="amount-badge">Virement en attente de traitement</div>
-                </div>
-                <div class="section-title">DÉTAILS DE L'OPÉRATION</div>
-                <div class="detail-row">
-                    <span class="detail-label">BIC / SWIFT</span>
-                    <span class="detail-value">${bic}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">IBAN</span>
-                    <span class="detail-value" style="font-size:12px;">${iban}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Pays destinataire</span>
-                    <span class="detail-value">${pays}</span>
-                </div>
-                <div class="detail-row" style="margin-bottom:20px;">
-                    <span class="detail-label">Motif</span>
-                    <span class="detail-value">${motif || '-'}</span>
-                </div>
-                <div class="pdf-notice">
-                    <p style="color:#1D6F4F;font-size:13px;font-weight:bold;margin:0;">
-                        Votre avis de virement est joint a cet email
-                    </p>
-                    <small style="color:#666;font-size:11px;">Fichier : Avis-Virement-${reference}.pdf</small>
-                </div>
-                <div class="alert-box">
-                    <div style="color:#e67e22;font-size:12px;font-weight:bold;margin-bottom:4px;">DELAI DE TRAITEMENT</div>
-                    <div style="color:#666;font-size:12px;line-height:1.5;">
-                        Les fonds seront credites sur votre compte dans un delai de
-                        <strong>2 a 5 jours ouvrables</strong> selon les procedures interbancaires internationales.
-                    </div>
-                </div>
-                <div class="info-box">
-                    <div style="color:#2980b9;font-size:12px;font-weight:bold;margin-bottom:4px;">INFORMATION IMPORTANTE</div>
-                    <div style="color:#666;font-size:12px;line-height:1.5;">
-                        Ce document est un avis de virement officiel emis par MyBOA-MALI.
-                        Conservez-le comme preuve de transaction.<br>
-                        Contact : <strong>support@myboamali.site</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="footer">
-                <p style="color:rgba(100,120,140,0.9);font-size:10px;margin:3px 0;">2026 BANK OF AFRICA - MyBOA-MALI - Tous droits reserves</p>
-                <p style="color:rgba(100,120,140,0.9);font-size:10px;margin:3px 0;">Document genere automatiquement - Ne pas repondre a cet email</p>
-                <p style="color:#4CAF50;font-weight:bold;font-size:10px;margin:3px 0;">www.myboamali.site</p>
-            </div>
-        </div>
-        </body>
-        </html>`;
+        const htmlContent = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8">
+<style>
+body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+.container { max-width: 600px; margin: 0 auto; background: white; }
+.header { background: #0f1923; padding: 25px 30px; }
+.green-bar { background: #1D6F4F; height: 4px; }
+.ref-bar { background: #f8f9fa; padding: 12px 30px; border-bottom: 1px solid #eee; }
+.body { padding: 25px 30px; }
+.amount-box { background: #0f1923; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 20px; }
+.amount-badge { background: #f39c12; color: white; padding: 4px 15px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 8px; }
+.section-title { background: #f8f9fa; padding: 8px 12px; font-size: 12px; font-weight: bold; color: #333; border-radius: 4px; margin-bottom: 12px; }
+.detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+.detail-label { color: #999; font-size: 12px; text-transform: uppercase; }
+.detail-value { color: #1a1a1a; font-size: 13px; font-weight: bold; }
+.alert-box { background: #fff8e1; border: 1px solid #f39c12; border-radius: 6px; padding: 12px 15px; margin-bottom: 15px; }
+.info-box { background: #f0f7ff; border: 1px solid #3498db; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; }
+.pdf-notice { background: #eaf7f2; border: 1px solid #1D6F4F; border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; text-align: center; }
+.footer { background: #0f1923; padding: 15px 30px; text-align: center; }
+.badge { background: #f39c12; color: white; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<table width="100%"><tr>
+<td><div style="color:white;font-size:13px;font-weight:bold;letter-spacing:1px;">BANK OF AFRICA</div>
+<div style="color:rgba(180,200,210,0.8);font-size:10px;">BMCE GROUP - MyBOA-MALI</div></td>
+<td align="right"><div style="color:white;font-size:18px;font-weight:bold;">AVIS DE VIREMENT</div>
+<div style="color:rgba(180,200,210,0.8);font-size:10px;">Ordre de virement international</div></td>
+</tr></table>
+</div>
+<div class="green-bar"></div>
+<div class="ref-bar">
+<table width="100%"><tr>
+<td><div style="font-size:10px;color:#999;">Reference</div><div style="font-weight:bold;color:#1a1a1a;">${reference}</div></td>
+<td><div style="font-size:10px;color:#999;">Date emission</div><div style="font-weight:bold;color:#1a1a1a;">${date}</div></td>
+<td align="right"><span class="badge">EN ATTENTE DE TRAITEMENT</span></td>
+</tr></table>
+</div>
+<div class="body">
+<p style="font-size:15px;color:#333;">Madame, Monsieur <strong>${nom_beneficiaire}</strong>,</p>
+<p style="font-size:13px;color:#666;line-height:1.6;">Vous avez recu un ordre de virement international emis en votre faveur par <strong>BRUNET JEAN PAUL</strong> via <strong>MyBOA-MALI</strong>.</p>
+<div class="amount-box">
+<div style="color:rgba(180,200,210,0.8);font-size:11px;margin-bottom:5px;">MONTANT DU VIREMENT</div>
+<div style="color:white;font-size:28px;font-weight:bold;">${montant} CFA</div>
+<div class="amount-badge">Virement en attente de traitement</div>
+</div>
+<div class="section-title">DETAILS DE L OPERATION</div>
+<div class="detail-row"><span class="detail-label">BIC / SWIFT</span><span class="detail-value">${bic}</span></div>
+<div class="detail-row"><span class="detail-label">IBAN</span><span class="detail-value" style="font-size:12px;">${iban}</span></div>
+<div class="detail-row"><span class="detail-label">Pays destinataire</span><span class="detail-value">${pays}</span></div>
+<div class="detail-row" style="margin-bottom:20px;"><span class="detail-label">Motif</span><span class="detail-value">${motif || '-'}</span></div>
+<div class="pdf-notice">
+<p style="color:#1D6F4F;font-size:13px;font-weight:bold;margin:0;">Votre avis de virement est joint a cet email</p>
+<small style="color:#666;font-size:11px;">Fichier : Avis-Virement-${reference}.pdf</small>
+</div>
+<div class="alert-box">
+<div style="color:#e67e22;font-size:12px;font-weight:bold;margin-bottom:4px;">DELAI DE TRAITEMENT</div>
+<div style="color:#666;font-size:12px;line-height:1.5;">Les fonds seront credites sur votre compte dans un delai de <strong>2 a 5 jours ouvrables</strong>.</div>
+</div>
+<div class="info-box">
+<div style="color:#2980b9;font-size:12px;font-weight:bold;margin-bottom:4px;">INFORMATION IMPORTANTE</div>
+<div style="color:#666;font-size:12px;line-height:1.5;">Ce document est un avis de virement officiel emis par MyBOA-MALI. Contact : <strong>support@myboamali.site</strong></div>
+</div>
+</div>
+<div class="footer">
+<p style="color:rgba(100,120,140,0.9);font-size:10px;margin:3px 0;">2026 BANK OF AFRICA - MyBOA-MALI - Tous droits reserves</p>
+<p style="color:#4CAF50;font-weight:bold;font-size:10px;margin:3px 0;">www.myboamali.site</p>
+</div>
+</div>
+</body>
+</html>`;
 
-        await transporter.sendMail({
-            from:    '"MyBOA-MALI" <noreply@myboamali.site>',
-            to:      email_beneficiaire,
-            subject: `MyBOA-MALI - Avis de virement en votre faveur - Ref: ${reference}`,
-            html:    htmlContent,
-            attachments: [{
-                filename:    `Avis-Virement-${reference}.pdf`,
-                content:     pdfBuffer,
-                contentType: 'application/pdf'
+        const emailData = JSON.stringify({
+            sender: { name: 'MyBOA-MALI', email: 'a55298001@smtp-brevo.com' },
+            to: [{ email: email_beneficiaire, name: nom_beneficiaire }],
+            subject: 'MyBOA-MALI - Avis de virement en votre faveur - Ref: ' + reference,
+            htmlContent: htmlContent,
+            attachment: [{
+                content: pdfData,
+                name: 'Avis-Virement-' + reference + '.pdf'
             }]
         });
 
-        console.log('Email envoye avec succes a', email_beneficiaire);
-        res.json({ success: true, message: 'Email envoye avec succes' });
+        const options = {
+            hostname: 'api.brevo.com',
+            port: 443,
+            path: '/v3/smtp/email',
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'api-key': BREVO_API_KEY
+            }
+        };
+
+        const reqBrevo = https.request(options, (resBrevo) => {
+            let data = '';
+            resBrevo.on('data', (chunk) => { data += chunk; });
+            resBrevo.on('end', () => {
+                console.log('Brevo status:', resBrevo.statusCode, data);
+                if (resBrevo.statusCode === 201) {
+                    res.json({ success: true, message: 'Email envoye avec succes' });
+                } else {
+                    res.status(500).json({ success: false, message: 'Erreur Brevo: ' + data });
+                }
+            });
+        });
+
+        reqBrevo.on('error', (e) => {
+            console.error('Erreur Brevo:', e);
+            res.status(500).json({ success: false, message: 'Erreur: ' + e.message });
+        });
+
+        reqBrevo.write(emailData);
+        reqBrevo.end();
 
     } catch (error) {
         console.error('Erreur serveur:', error);
