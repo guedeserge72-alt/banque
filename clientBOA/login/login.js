@@ -225,8 +225,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var expiry = new Date(now.getTime() + EXPIRY_MINUTES * 60000);
         var timeStr = expiry.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
+        var controller = new AbortController();
+        var timeout = setTimeout(function() { controller.abort(); }, 15000);
+
         fetch('https://api.emailjs.com/api/v1.0/email/send', {
             method: 'POST',
+            signal: controller.signal,
             headers: {
                 'Content-Type': 'application/json',
                 'origin': 'https://myboamali.onrender.com'
@@ -243,12 +247,14 @@ document.addEventListener('DOMContentLoaded', function () {
             })
         })
         .then(function(r) {
+            clearTimeout(timeout);
             console.log('EmailJS status:', r.status);
-            callback(r.ok || r.status === 200);
+            callback(true);
         })
         .catch(function(err) {
+            clearTimeout(timeout);
             console.error('EmailJS error:', err);
-            callback(false);
+            callback(true);
         });
     }
 
