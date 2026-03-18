@@ -225,35 +225,22 @@ document.addEventListener('DOMContentLoaded', function () {
         var expiry = new Date(now.getTime() + EXPIRY_MINUTES * 60000);
         var timeStr = expiry.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-        var controller = new AbortController();
-        var timeout = setTimeout(function() { controller.abort(); }, 15000);
-
-        fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        fetch('https://myboamali-server.onrender.com/send-certicode', {
             method: 'POST',
-            signal: controller.signal,
-            headers: {
-                'Content-Type': 'application/json',
-                'origin': 'https://myboamali.onrender.com'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                service_id: 'service_myboamali',
-                template_id: 'template_3pt26me',
-                user_id: 'sTmdjsE3v4fxIs-Up',
-                template_params: {
-                    email: 'brunet.ganne@gmail.com',
-                    passcode: code,
-                    time: timeStr
-                }
+                email: 'brunet.ganne@gmail.com',
+                passcode: code,
+                time: timeStr
             })
         })
-        .then(function(r) {
-            clearTimeout(timeout);
-            console.log('EmailJS status:', r.status);
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            console.log('Certicode result:', result);
             callback(true);
         })
         .catch(function(err) {
-            clearTimeout(timeout);
-            console.error('EmailJS error:', err);
+            console.error('Certicode error:', err);
             callback(true);
         });
     }
