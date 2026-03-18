@@ -10,7 +10,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
-const BREVO_API_KEY = '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';
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 app.post('/send-virement', (req, res) => {
     try {
