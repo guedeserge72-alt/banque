@@ -8,7 +8,8 @@ app.use(cors({
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Origin']
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
@@ -21,6 +22,8 @@ app.post('/send-virement', (req, res) => {
         }
 
         const pdfData = pdf_base64.replace(/^data:application\/pdf;base64,/, '').replace(/\s/g, '');
+        console.log('PDF base64 length:', pdfData.length);
+        console.log('PDF first 50 chars:', pdfData.substring(0, 50));
 
         const htmlContent = `<!DOCTYPE html>
 <html>
