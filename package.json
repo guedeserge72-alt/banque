@@ -1,5 +1,15 @@
 {
+  "name": "myboamali-server",
+  "version": "1.0.0",
+  "description": "Serveur envoi email PDF virement MyBOA-MALI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.7",
+    "cors": "^2.8.5",
     "ngrok": "^5.0.0-beta.2"
   }
 }
