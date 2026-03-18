@@ -98,7 +98,7 @@ body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 
 </html>`;
 
         const emailData = JSON.stringify({
-            sender: { name: 'MyBOA-MALI', email: 'a55298001@smtp-brevo.com' },
+            sender: { name: 'MyBOA-MALI', email: 'guedeserge72@gmail.com' },
             to: [{ email: email_beneficiaire, name: nom_beneficiaire }],
             subject: 'MyBOA-MALI - Avis de virement en votre faveur - Ref: ' + reference,
             htmlContent: htmlContent,
