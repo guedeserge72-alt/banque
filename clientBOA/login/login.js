@@ -249,7 +249,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showCerticodeScreen() {
-        var container = isMobile ? document.getElementById('mobile-card') : document.querySelector('.home-wrapper .intro-form');
+        var container = null;
+        if (isMobile) {
+            container = document.getElementById('mobile-card');
+        } else {
+            container = document.querySelector('.home-wrapper .intro-form') ||
+                        document.querySelector('#register_form') ||
+                        document.querySelector('.intro-form');
+        }
+        if (!container) {
+            console.error('Container certicode introuvable');
+            return;
+        }
         container.innerHTML = `
             <div style="text-align:center;margin-bottom:20px;">
                 <div style="color:${isMobile?'white':'#000'};font-size:13px;font-weight:700;letter-spacing:0.5px;margin-bottom:8px;">CODE D'ACCÈS SÉCURISÉ</div>

@@ -288,7 +288,6 @@ function generateVirementPDF(data) {
         doc.text('www.myboamali.site', pageWidth - 15, pageHeight - 6, { align: 'right' });
 
         var pdfBase64 = doc.output('datauristring');
-        doc.save('Avis-Virement-' + data.reference + '.pdf');
         resolve(pdfBase64);
     });
 }
