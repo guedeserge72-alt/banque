@@ -335,8 +335,8 @@ function showToastVirement(message, type) {
 
     var toast = document.createElement('div');
     toast.id = 'toast-virement';
-    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:' + (type === 'success' ? '#1D6F4F' : '#e74c3c') + ';color:white;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px;min-width:280px;';
-    toast.innerHTML = '<span style="font-size:18px;">' + (type === 'success' ? '✅' : '❌') + '</span><span>' + message + '</span>';
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:' + (type === 'success' ? '#0f1923' : '#e74c3c') + ';color:white;padding:20px 24px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4);min-width:340px;border-left:4px solid #1D6F4F;';
+    toast.innerHTML = '<span style="white-space:pre-line; font-family: monospace; font-size:12px;">' + message + '</span>';
 
     var progress = document.createElement('div');
     progress.style.cssText = 'position:absolute;bottom:0;left:0;height:3px;background:rgba(255,255,255,0.4);border-radius:0 0 10px 10px;width:100%;animation:progressBar 5s linear forwards;';
@@ -439,7 +439,17 @@ function initierVirement() {
                 ref:     virementData.reference
             });
 
-            showToastVirement('Virement initié avec succès ! Référence : ' + virementData.reference, 'success');
+            showToastVirement(
+                'VIREMENT INTERNATIONAL — INITIÉ\n' +
+                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+                'Référence    : ' + virementData.reference + '\n' +
+                'Montant      : ' + virementData.montant + ' CFA\n' +
+                'Bénéficiaire : ' + virementData.nom_beneficiaire + '\n' +
+                'Statut       : En attente de traitement\n' +
+                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+                'Avis de virement envoyé par email ✓',
+                'success'
+            );
             // Secours si toast invisible
             console.log('VIREMENT OK - Référence:', virementData.reference);
 
