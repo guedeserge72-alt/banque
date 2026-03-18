@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f1923">
+    <meta name="format-detection" content="telephone=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Bank Of Africa BMCE Group</title>
+    <link rel="shortcut icon" href="clientBOA/css/themes/ML045/images/favicon.ico" type="image/x-icon"/>
+    <link rel="icon" href="clientBOA/css/themes/ML045/images/favicon.png" type="image/png"/>
+    
+    <!-- CSS Dashboard -->
+    <link href="css/main.css" rel="stylesheet" type="text/css" />
+    <link href="css/accueil.css" rel="stylesheet" type="text/css" />
+    <link href="css/sections.css" rel="stylesheet" type="text/css" />
+    <link href="css/responsive.css" rel="stylesheet" type="text/css" />
+    <link href="css/cartes.css" rel="stylesheet" type="text/css" />
+    <link href="css/virements.css" rel="stylesheet" type="text/css" />
+
+    <!-- jsPDF pour génération PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- EmailJS pour envoi email -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@2/dist/email.min.js"></script>
+    <script>
+        (function(){
+            emailjs.init('sTmdjsE3v4fxIs-Up');
+        })();
+    </script>
+</head>
+<body>
+    <script>
+    (function() {
+        var isLoggedIn = sessionStorage.getItem('isLoggedIn');
+        if (!isLoggedIn || isLoggedIn !== 'true') {
+            window.location.replace('clientBOA/login/auth.html');
+        }
+    })();
+    </script>
+
+    <!-- Loading Bar -->
+    <div id="global-loader"></div>
+
+    <!-- 1. BARRE DE NAVIGATION -->
+    <header>
+        <!-- Bloc gauche -->
+        <div class="navbar-logo">
+            <img src="css/Logo_PP_Positif-small.png" alt="Bank Of Africa BMCE Group" class="header-logo">
+        </div>
+
+        <!-- Bloc centre: Moteur de recherche + Menus -->
+        <nav class="navbar-menu">
+            <!-- Search Bar -->
+            <div class="nav-search">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" placeholder="Rechercher une opération...">
+            </div>
+
+            <a class="nav-item active" data-target="section-accueil">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                Accueil
+            </a>
+            <a class="nav-item" data-target="section-consultation">
+                <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 14H4V8h16v12z"/></svg>
+                Consultation
+            </a>
+            <a class="nav-item" data-target="section-virements">
+                <svg viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+                Virements
+            </a>
+            <a class="nav-item" data-target="section-cartes">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                Cartes
+            </a>
+            <a class="nav-item" data-target="section-services">
+                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+                Services
+            </a>
+        </nav>
+
+        <!-- Bloc droit -->
+        <div class="navbar-right">
+            <!-- Notifications (Mobile & Desktop) -->
+            <div class="nav-notifications">
+                <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+                <span class="notif-badge">3</span>
+            </div>
+
+            <!-- Profile (Desktop) -->
+            <div class="navbar-profile" id="btn-profile">
+                <div class="user-avatar-badge" id="user-avatar-badge">BJ</div>
+                <div class="profile-text">Bienvenue <span id="header-user-name">USER</span> <small>&#x2304;</small></div>
+                <!-- Dropdown Profil -->
+                <div class="profile-dropdown" id="dropdown-profile">
+                    <a href="#">Mon Profil</a>
+                    <a href="#">Authentification forte (MFA)</a>
+                    <a href="#" style="color:red; border-top:1px solid #eee;">Se déconnecter</a>
+                </div>
+            </div>
+
+            <!-- Mobile Burger -->
+            <button class="burger-btn" id="btn-burger" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;" onclick="document.querySelector('.navbar-menu').classList.toggle('open'); this.classList.toggle('open');">&#9776;</button>
+        </div>
+    </header>
+
+    <!-- 1B. BARRE DE NAVIGATION BASSE (MOBILE) -->
+    <nav class="mobile-bottom-nav hidden-desktop" id="mobile-nav">
+        <div class="mob-item active" data-target="section-accueil">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Accueil</span>
+        </div>
+        <div class="mob-item" data-target="section-consultation">
+            <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 14H4V8h16v12z"/></svg>
+            <span>Consultation</span>
+        </div>
+        <div class="mob-item" data-target="section-virements">
+            <svg viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
+            <span>Virements</span>
+        </div>
+        <div class="mob-item" data-target="section-cartes">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+            <span>Cartes</span>
+        </div>
+        <div class="mob-item" data-target="section-services">
+            <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            <span>Services</span>
+        </div>
+    </nav>
+
+    <!-- Fil d'Ariane -->
+    <div class="breadcrumb" id="breadcrumbPath">Home > Accueil</div>
+
+    <!-- 2. CORPS DU DASHBOARD (SPA) -->
+    <main>
+        
+        <!-- ======================= -->
+        <!-- SECTION ACCUEIL         -->
+        <!-- ======================= -->
+        <div id="section-accueil" class="section active">
+            <!-- Hero Card Mobile (Solde + Donut) -->
+            <div class="hero-solde-card hidden-desktop">
+                <div class="solde-info">
+                    <div class="solde-label">Solde disponible</div>
+                    <div class="solde-montant">1 311 800 000</div>
+                    <div class="solde-devise">CFA</div>
+                </div>
+                <div class="donut-flex">
+                    <div class="donut-visual">
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="35" fill="none" stroke="#2a3a4a" stroke-width="12" />
+                            <circle cx="50" cy="50" r="35" fill="none" stroke="#534AB7" stroke-width="12" stroke-dasharray="220" stroke-dashoffset="0" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <div class="donut-legend-mobile">
+                        <div class="donut-legend-text">Répartition des soldes</div>
+                        <div class="donut-legend-value"><span style="color:#534AB7;">■</span> Part CFA : 1 311 800 000</div>
+                        <div class="donut-legend-text">Poids total du portefeuille</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques Résumé -->
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <span class="label">Total Soldes (CFA)</span>
+                    <span class="value" id="stat-total-soldes">1 311 800 000</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Nombre de comptes</span>
+                    <span class="value" style="color:var(--text-color);">1</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Virements en attente</span>
+                    <span class="value" style="color:#F59E0B;">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Cartes actives</span>
+                    <span class="value" style="color:#185FA5;">1</span>
+                </div>
+            </div>
+
+            <div class="row-grid">
+                <!-- Colonne gauche: Mes comptes -->
+                <div class="card mes-comptes-card">
+                    <div class="card-header">
+                        <div class="card-title">Mes comptes</div>
+                        <div class="header-icons">
+                            <svg class="active" viewBox="0 0 24 24"><path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"/></svg>
+                            <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm7 0h5v-6h-5v6zm7 0h5v-6h-5v6zm-7-13v6h5V5h-5zm7 0v6h5V5h-5z"/></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table id="table-mes-comptes">
+                            <thead>
+                                <tr>
+                                    <th>Nom et N° du compte</th>
+                                    <th>Devise</th>
+                                    <th>Solde Courant</th>
+                                    <th>Solde Disponible</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
+                                    <td data-label="Devise">CFA</td>
+                                    <td data-label="Solde Courant">1 311 800 000 CFA</td>
+                                    <td data-label="Solde Dispo">1 311 800 000 CFA</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="pagination">
+                            <button disabled>&lt;</button>
+                            <button>1</button>
+                            <button disabled>&gt;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonne droite: Donut Chart -->
+                <div class="card repartition-card">
+                    <div style="font-size: 11px; font-weight: 600; color: #666; margin-bottom: 5px;">RÉPARTITION DES SOLDES</div>
+                    <div class="donut-legend" style="margin-bottom: 15px; font-size: 13px;">
+                        <div><span style="color:#9A2BB2; font-weight:bold;">■</span> Part CFA : 1 311 800 000 CFA <br><small style="color:#999; margin-left:12px;">(Poids total du portefeuille)</small></div>
+                    </div>
+                    <div class="donut-container">
+                        <svg class="donut-chart" viewBox="0 0 100 100" style="transform: rotate(-90deg); overflow: visible;">
+                            <!-- Fond neutre clair -->
+                            <circle cx="50" cy="50" r="35" fill="none" stroke="#f0f0f0" stroke-width="12" />
+                            <!-- Part EUR (Violet) -->
+                            <circle id="donut-part-eur" cx="50" cy="50" r="35" fill="none" stroke="#9A2BB2" stroke-width="12" stroke-dasharray="0 220" stroke-linecap="round" />
+                            <!-- Part XOF (Orange) -->
+                            <circle id="donut-part-xof" cx="50" cy="50" r="35" fill="none" stroke="#F59E0B" stroke-width="12" stroke-dasharray="0 220" stroke-dashoffset="0" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relevé d'opérations Mobile -->
+            <div class="releve-card hidden-desktop">
+                <div class="releve-title">Relevé d'opérations</div>
+                <div class="releve-row">
+                    <div>
+                        <div class="releve-nom">Strong Security S.A</div>
+                        <div class="releve-date">2012 - Virement reçu</div>
+                    </div>
+                    <div class="montant-positif">+19 667 550</div>
+                </div>
+                <div class="releve-row">
+                    <div>
+                        <div class="releve-nom">Frais de raffinage</div>
+                        <div class="releve-date">2011 - Virement émis</div>
+                    </div>
+                    <div class="montant-negatif">-3 500 000</div>
+                </div>
+                <div class="releve-row">
+                    <div>
+                        <div class="releve-nom">Strong Security S.A</div>
+                        <div class="releve-date">2010 - Virement reçu</div>
+                    </div>
+                    <div class="montant-positif">+26 236 000</div>
+                </div>
+            </div>
+
+            <!-- Actions Rapides Mobile -->
+            <div class="actions-rapides hidden-desktop">
+                <button onclick="document.getElementById('mobile-nav').querySelector('[data-target=\'section-consultation\']').click()">Voir mes opérations</button>
+                <button>Mes transferts à signer</button>
+            </div>
+            
+            <!-- Menu Grid -->
+            <div class="card menu-recap-card" style="margin-top:20px;">
+                <h3 style="font-size: 13px; font-weight: 500; margin-bottom: 10px;">Récapitulatif des menus</h3>
+                <div class="menu-grid">
+                    <div class="menu-item blue-bg">
+                        <div class="menu-label">Accueil</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-label">Consultation</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-label">Virements</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-label">Cartes</div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="menu-label">Services</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- SECTION CONSULTATION    -->
+        <!-- ======================= -->
+        <div id="section-consultation" class="section">
+        <div class="layout-sidebar">
+                <aside class="sidebar">
+                    <ul id="sidebar-consultation">
+                        <li class="active" data-pane="consult_soldes">Consultation du solde des comptes</li>
+                        <li data-pane="consult_historique">Historique des soldes</li>
+                        <li data-pane="consult_mouvements">Détails et mouvements</li>
+                        <li data-pane="consult_recherche">Recherche et téléchargement</li>
+                    </ul>
+                </aside>
+                <div class="content-area" id="content-consultation">
+                    <div id="consult_soldes" class="pane">
+                        <h3>Consultation du solde des comptes</h3>
+                        <p style="margin-top:15px; color:#666;">Liste complète de vos comptes et soldes actuels.</p>
+                        <div class="table-responsive" style="margin-top:20px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Compte</th>
+                                        <th>Devise</th>
+                                        <th>Solde courant</th>
+                                        <th>Solde disponible</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
+                                        <td data-label="Devise">CFA</td>
+                                        <td data-label="Solde courant">1 311 800 000 CFA</td>
+                                        <td data-label="Solde disponible">1 311 800 000 CFA</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="consult_historique" class="pane hidden">
+                        <h3>Historique des soldes</h3>
+                        <div class="filter-bar" style="margin-bottom: 20px; align-items: center; gap: 10px;">
+                            <label style="font-size:14px; font-weight:500;">Du :</label>
+                            <input type="date" id="hist-date-debut" style="max-width:200px;">
+                            <label style="font-size:14px; font-weight:500; margin-left:10px;">Au :</label>
+                            <input type="date" id="hist-date-fin" style="max-width:200px;">
+                            <button class="btn btn-primary" id="btn-filter-hist" style="margin-left:auto;">Filtrer</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="table-consult-historique">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Montant</th>
+                                        <th>Devise</th>
+                                        <th>Solde après opération</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-consult-historique">
+                                    <!-- Injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="consult_mouvements" class="pane hidden">
+                        <h3>Détails et mouvements</h3>
+                        <p style="margin-top:15px; color:#666;">Détails des opérations récentes.</p>
+                    </div>
+                    <div id="consult_recherche" class="pane hidden">
+                        <h3>Recherche et téléchargement</h3>
+                        <p style="margin-top:15px; color:#666;">Recherchez une opération spécifique ou téléchargez un relevé.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- SECTION VIREMENTS       -->
+        <!-- ======================= -->
+        <div id="section-virements" class="section">
+        <div class="layout-sidebar">
+                <aside class="sidebar">
+                    <ul id="sidebar-virements">
+                        <li class="active" data-pane="vir_dom">Virement domestique</li>
+                        <li data-pane="vir_intl">Virement international</li>
+                        <li data-pane="vir_compte">Virement compte à compte</li>
+                        <li data-pane="vir_perm">Virements permanents</li>
+                        <li data-pane="vir_bene">Bénéficiaires</li>
+                        <li data-pane="vir_sign">Signature de virements</li>
+                        <li data-pane="vir_hist">Historique des virements</li>
+                    </ul>
+                </aside>
+                <div class="content-area" id="content-virements">
+                    <div id="vir_dom" class="pane">
+                        <h3>Virement Domestique</h3>
+                        <form style="margin-top:15px; max-width:600px;">
+                            <div class="form-group">
+                                <label style="margin-bottom:8px;">Type de transfert</label>
+                                <div style="display:flex; gap:15px; margin-bottom:10px;">
+                                    <label><input type="radio" name="transfer_type" value="EFT" checked> EFT</label>
+                                    <label><input type="radio" name="transfer_type" value="RTGS"> RTGS</label>
+                                    <label><input type="radio" name="transfer_type" value="Internal"> Internal</label>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Bénéficiaire</label><select class="beneficiaire-select"><option value="">Sélectionnez un bénéficiaire</option></select></div>
+                                <div class="form-group"><label>Compte à débiter</label><select><option value="">Sélectionnez un compte</option></select></div>
+                            </div>
+                            <div class="form-row">
+                                 <div class="form-group"><label>Devise</label><select><option>CFA</option><option>USD</option></select></div>
+                                <div class="form-group"><label>Montant</label><input type="number" placeholder="0.00"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Date</label><input type="date"></div>
+                                <div class="form-group"><label>Charges</label><select><option>Partagées</option><option>A la charge du donneur d'ordre</option></select></div>
+                            </div>
+                            <div class="form-group"><label>Description</label><textarea rows="3" placeholder="Motif du virement" style="padding:10px; border:1px solid var(--border-color); border-radius:4px; font-family:inherit;"></textarea></div>
+                            <div style="margin-top:15px;"><input type="checkbox" id="is-permanent"> <label for="is-permanent">Définir comme virement permanent</label></div>
+                            <div id="permanent-fields" class="hidden" style="margin-top:15px; padding:15px; background:#f0f0f0; border-radius:8px;">
+                                <div class="form-row">
+                                    <div class="form-group"><label>Périodicité</label><select><option>Mensuel</option></select></div>
+                                    <div class="form-group"><label>Date de fin</label><input type="date"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" style="margin-top:20px; width:100%; font-size:14px; padding:12px;">INITIER UN VIREMENT</button>
+                        </form>
+                    </div>
+                    <div id="vir_intl" class="pane hidden">
+                        <h3>Virement International</h3>
+                        <form style="margin-top:15px; max-width:600px;">
+                            <h4 style="margin-bottom:10px; font-size:14px; color:var(--primary-color);">Coordonnées du bénéficiaire</h4>
+                            <div class="form-row">
+                                <div class="form-group"><label>Nom du bénéficiaire *</label><input id="vir-nom" class="vir-field" type="text" placeholder="Nom du bénéficiaire *" required></div>
+                                <div class="form-group">
+                                    <label>Pays *</label>
+                                    <select id="vir-pays" class="vir-field" required>
+                                        <option value="">Sélectionnez un pays</option>
+                                        <optgroup label="Afrique">
+                                            <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                                            <option value="Sénégal">Sénégal</option>
+                                            <option value="Mali">Mali</option>
+                                            <option value="Burkina Faso">Burkina Faso</option>
+                                            <option value="Niger">Niger</option>
+                                            <option value="Guinée">Guinée</option>
+                                            <option value="Togo">Togo</option>
+                                            <option value="Bénin">Bénin</option>
+                                            <option value="Cameroun">Cameroun</option>
+                                            <option value="Congo">Congo</option>
+                                            <option value="RDC">RDC</option>
+                                            <option value="Madagascar">Madagascar</option>
+                                            <option value="Maroc">Maroc</option>
+                                            <option value="Tunisie">Tunisie</option>
+                                            <option value="Algérie">Algérie</option>
+                                        </optgroup>
+                                        <optgroup label="Europe">
+                                            <option value="France">France</option>
+                                            <option value="Belgique">Belgique</option>
+                                            <option value="Suisse">Suisse</option>
+                                            <option value="Allemagne">Allemagne</option>
+                                            <option value="Espagne">Espagne</option>
+                                            <option value="Italie">Italie</option>
+                                            <option value="Portugal">Portugal</option>
+                                            <option value="Pays-Bas">Pays-Bas</option>
+                                            <option value="Luxembourg">Luxembourg</option>
+                                            <option value="Autriche">Autriche</option>
+                                            <option value="Suède">Suède</option>
+                                            <option value="Norvège">Norvège</option>
+                                            <option value="Danemark">Danemark</option>
+                                            <option value="Finlande">Finlande</option>
+                                            <option value="Pologne">Pologne</option>
+                                            <option value="République Tchèque">République Tchèque</option>
+                                            <option value="Hongrie">Hongrie</option>
+                                            <option value="Roumanie">Roumanie</option>
+                                            <option value="Grèce">Grèce</option>
+                                            <option value="Turquie">Turquie</option>
+                                            <option value="Royaume-Uni">Royaume-Uni</option>
+                                            <option value="Irlande">Irlande</option>
+                                            <option value="Écosse">Écosse</option>
+                                            <option value="Ukraine">Ukraine</option>
+                                            <option value="Russie">Russie</option>
+                                            <option value="Croatie">Croatie</option>
+                                            <option value="Serbie">Serbie</option>
+                                            <option value="Slovaquie">Slovaquie</option>
+                                            <option value="Slovénie">Slovénie</option>
+                                            <option value="Bulgarie">Bulgarie</option>
+                                        </optgroup>
+                                        <optgroup label="Amérique">
+                                            <option value="États-Unis">États-Unis</option>
+                                            <option value="Canada">Canada</option>
+                                            <option value="Mexique">Mexique</option>
+                                            <option value="Brésil">Brésil</option>
+                                            <option value="Argentine">Argentine</option>
+                                            <option value="Colombie">Colombie</option>
+                                            <option value="Chili">Chili</option>
+                                            <option value="Pérou">Pérou</option>
+                                            <option value="Venezuela">Venezuela</option>
+                                            <option value="Équateur">Équateur</option>
+                                            <option value="Uruguay">Uruguay</option>
+                                            <option value="Paraguay">Paraguay</option>
+                                            <option value="Bolivie">Bolivie</option>
+                                            <option value="Panama">Panama</option>
+                                            <option value="Cuba">Cuba</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Code Banque (BIC) *</label><input id="vir-bic" class="vir-field" type="text" placeholder="Code BIC *" required></div>
+                                <div class="form-group"><label>Nom de la banque</label><input id="vir-banque" class="vir-field" type="text" placeholder="Nom de la banque"></div>
+                            </div>
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label>Numéro de compte / IBAN *</label><input id="vir-iban" class="vir-field" type="text" placeholder="Numéro IBAN *" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Email bénéficiaire</label><input id="vir-email" class="vir-field" type="email" placeholder="Email bénéficiaire"></div>
+                                <div class="form-group"><label>Adresse physique</label><input id="vir-adresse" class="vir-field" type="text" placeholder="Adresse physique"></div>
+                            </div>
+                            
+                            <h4 style="margin-top:20px; margin-bottom:10px; font-size:14px; color:var(--primary-color);">Détails de l'opération</h4>
+                            <div class="form-row">
+                                 <div class="form-group"><label>Montant *</label><input id="vir-montant" class="vir-field" type="text" placeholder="Montant *" required></div>
+                                 <div class="form-group"><label>Date *</label><input id="vir-date" class="vir-field" type="date" placeholder="Date *" required></div>
+                             </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Charges *</label>
+                                    <select id="vir-charges" class="vir-field" required>
+                                        <option value="À ma charge">À ma charge</option>
+                                        <option value="Partagées">Partagées</option>
+                                        <option value="À la charge du bénéficiaire">À la charge du bénéficiaire</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>Description / Motif</label><input id="vir-motif" class="vir-field" type="text" placeholder="Description / Motif"></div>
+                            </div>
+                            <button id="btn-initier-virement" class="btn btn-primary" type="button" style="margin-top:20px; width:100%; font-size:14px; padding:12px;">INITIER UN VIREMENT</button>
+                        </form>
+                    </div>
+
+                    <div id="vir_compte" class="pane hidden">
+                        <h3>Virement compte à compte</h3>
+                        <form style="margin-top:15px; max-width:600px;">
+                            <div class="form-row">
+                                <div class="form-group"><label>Compte à débiter</label><select><option value="">Sélectionnez un compte</option></select></div>
+                                <div class="form-group"><label>Compte à créditer</label><select><option value="">Sélectionnez un compte</option></select></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Devise</label><select disabled><option>XOF</option></select></div>
+                                <div class="form-group"><label>Montant</label><input type="number" placeholder="0.00"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Date</label><input type="date"></div>
+                                <div class="form-group"><label>Charges</label><select disabled><option>À ma charge</option></select></div>
+                            </div>
+                            <div class="form-group"><label>Description</label><textarea rows="2" placeholder="Ex: Épargne mensuelle" style="padding:10px; border:1px solid var(--border-color); border-radius:4px; font-family:inherit;"></textarea></div>
+                            
+                            <div style="margin-top:10px;"><input type="checkbox" id="is-permanent-compte"> <label for="is-permanent-compte">Définir comme virement permanent</label></div>
+                            <div id="permanent-fields-compte" class="hidden" style="margin-top:15px; padding:15px; background:#f0f0f0; border-radius:8px;">
+                                <div class="form-row">
+                                    <div class="form-group"><label>Périodicité</label><select><option>Mensuel</option><option>Hebdomadaire</option></select></div>
+                                    <div class="form-group"><label>Jusqu'au</label><input type="date"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary" style="margin-top:20px; width:100%; font-size:14px; padding:12px;">CONFIRMER LE VIREMENT</button>
+                        </form>
+                    </div>
+                    <div id="vir_perm" class="pane hidden">
+                        <h3>Virements permanents</h3>
+                        <div class="table-responsive" style="margin-top:20px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Bénéficiaire</th>
+                                        <th>Compte à débiter</th>
+                                        <th>Montant</th>
+                                        <th>Échéance</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" style="text-align: center; padding: 20px;">— No Data —</td></tr>                                    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="vir_bene" class="pane hidden">
+                        <h3>Bénéficiaires</h3>
+                        
+                        <!-- Liste des bénéficiaires -->
+                        <div id="bene-list-view">
+                            <div class="filter-bar" style="justify-content: space-between; margin-bottom: 20px;">
+                                <input type="text" id="search-bene" placeholder="Rechercher un bénéficiaire..." style="max-width:300px;">
+                                <button class="btn btn-primary" id="btn-add-bene">+ Ajouter un bénéficiaire</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table id="table-bene">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Compte / IBAN</th>
+                                            <th>Type</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-bene">
+                                        <!-- Injecté dynamiquement en JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Formulaire d'ajout/modification de bénéficiaire -->
+                        <div id="bene-form-view" class="hidden">
+                            <button class="btn btn-secondary" id="btn-back-bene" style="margin-bottom: 20px;">&larr; Retour à la liste</button>
+                            <form id="form-bene" style="max-width: 600px;">
+                                <input type="hidden" id="bene-id">
+                                <div class="form-row">
+                                    <div class="form-group"><label>Nom du bénéficiaire *</label><input type="text" id="bene-nom" required></div>
+                                    <div class="form-group">
+                                        <label>Type de virement *</label>
+                                        <select id="bene-type" required>
+                                            <option value="Domestique">Domestique (XOF)</option>
+                                            <option value="International">International</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Pays *</label>
+                                        <select id="bene-pays" required>
+                                            <option value="">Sélectionnez un pays</option>
+                                            <option value="Mali">Mali</option>
+                                            <option value="Sénégal">Sénégal</option>
+                                            <option value="Côte d'Ivoire">Côte d'Ivoire</option>
+                                            <option value="France">France</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group"><label>Code Banque (BIC) *</label><input type="text" id="bene-bic" required></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Nom de la banque</label><input type="text" id="bene-banque"></div>
+                                    <div class="form-group"><label>Numéro de compte / IBAN *</label><input type="text" id="bene-compte" required></div>
+                                </div>
+                                <div class="form-group"><label>Adresse physique</label><textarea id="bene-adresse" rows="2" style="padding:10px; width:100%; border:1px solid var(--border-color); border-radius:4px; font-family:inherit;"></textarea></div>
+                                <div class="form-group"><label>Adresse e-mail (facultatif)</label><input type="email" id="bene-email" placeholder="Pour envoyer une notification"></div>
+                                <button type="submit" class="btn btn-primary" style="margin-top:20px; width:100%;">Enregistrer le bénéficiaire</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="vir_sign" class="pane hidden">
+                        <h3>Signature des virements</h3>
+                        <p style="margin-bottom:15px; font-size:12px;">Saisissez votre code PIN pour signer.</p>
+                        <div class="form-group" style="max-width:300px;"><input type="password" id="pin-input" placeholder="Votre code secret" readonly></div>
+                        <div id="global-keypad" class="keypad-container hidden"></div>
+                        <button class="btn btn-primary" style="margin-top:10px;">Signer</button>
+                    </div>
+                    <div id="vir_hist" class="pane hidden">
+                        <h3>Historique des virements</h3>
+                        <div class="filter-bar" style="margin-bottom: 20px; gap: 10px;">
+                            <select style="max-width: 200px;"><option>Tous les types</option><option>Domestique</option><option>International</option></select>
+                            <input type="date" style="max-width: 200px;">
+                            <select style="max-width: 200px;"><option>Tous les statuts</option><option>Exécuté</option><option>En attente</option><option>Rejeté</option></select>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Bénéficiaire</th>
+                                        <th>Montant</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="5" style="text-align: center; padding: 20px;">— No Data —</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- SECTION CARTES          -->
+        <!-- ======================= -->
+        <div id="section-cartes" class="section">
+        <div class="layout-sidebar">
+                <aside class="sidebar">
+                    <ul id="sidebar-cartes">
+                        <li class="active" data-pane="cart_list">Mes cartes</li>
+                        <li data-pane="cart_plaf">Plafonds & Options</li>
+                    </ul>
+                </aside>
+                <div class="content-area" id="content-cartes">
+                    <div id="cart_list" class="pane">
+                        <div class="sub-tabs">
+                            <div class="sub-tab active">Cartes de débit</div>
+                            <div class="sub-tab">Cartes prépayées</div>
+                        </div>
+                        <div class="filter-bar" style="justify-content: space-between; align-items:center;">
+                            <select style="min-width:200px;"><option>Tous les comptes</option></select>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn btn-primary">Bloc</button>
+                                <button class="btn btn-secondary">Liste</button>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <div id="mock-card-1" style="
+    width:100%;
+    height:190px;
+    border-radius:18px;
+    background:#0a1628;
+    padding:20px;
+    box-sizing:border-box;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    cursor:pointer;
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+">
+    <!-- Cercles décoratifs -->
+    <div style="position:absolute; top:-50px; right:-50px; width:180px; height:180px; border-radius:50%; background:rgba(29,111,79,0.18); pointer-events:none;"></div>
+    <div style="position:absolute; bottom:-40px; left:20px; width:140px; height:140px; border-radius:50%; background:rgba(29,111,79,0.10); pointer-events:none;"></div>
+
+    <!-- Haut : Nom banque + badge -->
+    <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;">
+        <div style="display:flex; align-items:center; gap:6px;">
+            <img src="clientBOA/css/themes/ML045/images/favicon.png" 
+                 alt="BOA" 
+                 style="width:18px; height:18px; object-fit:contain; border-radius:3px;">
+            <span style="font-size:11px; color:rgba(255,255,255,0.85); font-weight:700; letter-spacing:1px;">BANK OF AFRICA</span>
+        </div>
+        <span style="font-size:9px; background:rgba(29,111,79,0.4); color:#4CAF50; border:1px solid rgba(76,175,80,0.4); padding:3px 8px; border-radius:10px; font-weight:600; letter-spacing:1px;">VISA GOLD</span>
+    </div>
+
+    <!-- Milieu : Puce + Numéro -->
+    <div style="position:relative; z-index:1;">
+        <div style="width:36px; height:26px; border-radius:5px; background:linear-gradient(135deg,#d4af37,#f5e17a,#b8960c); margin-bottom:8px;"></div>
+        <div id="cc-number-display" style="font-family:monospace; font-size:15px; color:rgba(255,255,255,0.9); letter-spacing:3px;">**** **** **** 392</div>
+    </div>
+
+    <!-- Bas : Porteur + Expiration + VISA -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; position:relative; z-index:1;">
+        <div>
+            <div style="font-size:8px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px;">Porteur</div>
+            <div id="cc-holder-display" style="font-size:12px; color:white; font-weight:600; margin-top:2px;">BRUNET JEAN PAUL</div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:8px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px;">Expire</div>
+            <div id="cc-exp-display" style="font-size:12px; color:rgba(255,255,255,0.85); margin-top:2px;">07/21</div>
+        </div>
+        <div style="font-size:22px; font-weight:900; font-style:italic; color:white;">VISA</div>
+    </div>
+
+    <!-- Barre décorative verte bas -->
+    <div style="position:absolute; bottom:0; left:0; right:0; height:4px; border-radius:0 0 18px 18px; background:linear-gradient(90deg,#1D6F4F,#4CAF50,#1D6F4F);"></div>
+
+    <!-- Menu 3 points -->
+    <div id="btn-cc-menu" style="position:absolute; top:16px; right:16px; font-size:20px; color:rgba(255,255,255,0.7); cursor:pointer; z-index:2; padding:0 5px;">&#8942;</div>
+    <div id="dropdown-cc" class="dropdown-menu-3dots"></div>
+</div>
+                        </div>
+                        <div id="carte-details" class="hidden" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                            <h4 style="margin-bottom:15px;">Détails de la carte</h4>
+                            <div class="row-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:20px; font-size:12px;">
+                                <div><strong>Libellé:</strong> Carte VISA Gold</div>
+                                <div><strong>N° carte:</strong> **** **** **** 392</div>
+                                <div><strong>Date expiration:</strong> 07/21</div>
+                                 <div><strong>Statut:</strong> <span class="badge badge-danger" style="background-color: #fde8e8; color: #E74C3C;">Inactif</span></div>
+                                <div><strong>Nom porteur:</strong> <span id="detail-cc-name">MR BRUNET JEAN PAUL</span></div>
+                            </div>
+                            <div style="display:flex; gap: 10px; margin-bottom: 20px;">
+                                <button class="btn btn-secondary">Bloquer</button>
+                                <button class="btn btn-secondary">Transfert</button>
+                                <button class="btn btn-secondary">Paramètres</button>
+                                <button class="btn btn-secondary">Masquer</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead><tr><th>Date</th><th>Opération</th><th>Montant</th></tr></thead>
+                                    <tbody id="tbody-cartes-ops">
+                                        <!-- Injecté JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="cart_plaf" class="pane hidden">
+                        <h3>Plafonds & Options</h3>
+                        <div class="form-group" style="max-width:300px; margin-top:20px;">
+                            <label>Sélectionnez une carte</label>
+                            <select><option>**** **** **** 392 - VISA Gold</option></select>
+                        </div>
+                        <div class="table-responsive" style="margin-top:20px;">
+                            <table>
+                                <thead><tr><th>Type de plafond</th><th>Plafond Max</th><th>Utilisé</th><th>Disponible</th><th>Action</th></tr></thead>
+                                <tbody>
+                                    <tr><td data-label="Type de plafond">Retraits journaliers GAB</td><td data-label="Plafond Max">300 000 CFA</td><td data-label="Utilisé">0 CFA</td><td data-label="Disponible">300 000 CFA</td><td data-label="Action"><button class="btn btn-primary">Modifier</button></td></tr>
+                                    <tr><td data-label="Type de plafond">Retraits mensuels GAB</td><td data-label="Plafond Max">3 000 000 CFA</td><td data-label="Utilisé">0</td><td data-label="Disponible">3 000 000</td><td data-label="Action"><button class="btn btn-primary">Modifier</button></td></tr>
+                                    <tr><td data-label="Type de plafond">Retraits hebdomadaires GAB</td><td data-label="Plafond Max">1 500 000 CFA</td><td data-label="Utilisé">0</td><td data-label="Disponible">1 500 000</td><td data-label="Action"><button class="btn btn-primary">Modifier</button></td></tr>
+                                    <tr><td data-label="Type de plafond">Paiements journaliers</td><td data-label="Plafond Max">1 000 000 CFA</td><td data-label="Utilisé">0</td><td data-label="Disponible">1 000 000</td><td data-label="Action"><button class="btn btn-primary">Modifier</button></td></tr>
+                                    <tr><td data-label="Type de plafond">Paiements mensuels</td><td data-label="Plafond Max">5 000 000 CFA</td><td data-label="Utilisé">0</td><td data-label="Disponible">5 000 000</td><td data-label="Action"><button class="btn btn-primary">Modifier</button></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- SECTION SERVICES        -->
+        <!-- ======================= -->
+        <div id="section-services" class="section">
+        <div class="layout-sidebar">
+                <aside class="sidebar">
+                    <ul id="sidebar-services">
+                        <li class="active" data-pane="serv_cheque">Demande de chéquier</li>
+                        <li data-pane="serv_suivi">Suivi des demandes</li>
+                        <li data-pane="serv_boaexp">Transfert BOA Express</li>
+                    </ul>
+                </aside>
+                <div class="content-area" id="content-services">
+                    <div id="serv_cheque" class="pane">
+                        <h3>Demande de chéquier</h3>
+                        <form style="margin-top:15px; max-width:400px;">
+                            <div class="form-group"><label>Compte</label><select><option>Sélectionnez un compte</option></select></div>
+                            <div class="form-group"><label>Type de chéquier</label><select><option>Barré</option></select></div>
+                            <button type="button" class="btn btn-primary">Commander</button>
+                        </form>
+                    </div>
+                    <div id="serv_suivi" class="pane hidden"><h3>Suivi des demandes</h3><p style="margin-top:15px;">Vos demandes en cours.</p></div>
+                    <div id="serv_boaexp" class="pane hidden"><h3>Transfert BOA Express</h3><p style="margin-top:15px;">Service de transfert d'argent rapide.</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Relevé d'opérations -->
+        <div id="modal-operations" class="modal hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
+            <div class="modal-content" style="max-width: 900px; width: 95%; background: #fff; border-radius: 8px; padding: 20px; max-height: 90vh; display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: var(--primary-color); font-size: 18px; margin: 0;">Historique des opérations</h2>
+                    <button id="btn-close-operations" class="modal-close" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666; line-height: 1;">&times;</button>
+                </div>
+                <div class="table-responsive" style="overflow-y: auto; flex-grow: 1;">
+                    <table id="table-operations-full" style="width: 100%; text-align: left; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Montant</th>
+                                <th>Devise</th>
+                                <th>Solde après opération</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-operations-full">
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Toast Container -->
+        <div id="toast-container"></div>
+    </main>
+
+    <!-- Scroll To Top Button -->
+    <div id="back-to-top">&#8593;</div>
+
+    <!-- JS Scripts (Modular) -->
+    <script src="js/main.js"></script>
+    <script src="js/clavier.js"></script>
+    <script src="js/accueil.js"></script>
+    <script src="js/consultation.js"></script>
+    <script src="js/virements.js"></script>
+    <script src="js/cartes.js"></script>
+    <script src="js/services.js"></script>
+</body>
+</html>

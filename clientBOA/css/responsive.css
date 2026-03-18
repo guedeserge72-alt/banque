@@ -1,0 +1,58 @@
+/* Responsive layout for MyBOA-MALI */
+
+@media (max-width: 768px) {
+    .home-wrapper h1 {
+        font-size: 28px;
+        text-align: center;
+    }
+    
+    #desc {
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .intro-form {
+        margin-top: 20px;
+    }
+
+    .auth_column_right, .auth_column_left {
+        float: none;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* Touch-friendly keypad styles */
+    .keyss button {
+        width: 48px !important;
+        height: 48px !important;
+        line-height: 48px !important;
+        font-size: 18px !important;
+        margin: 3px !important;
+    }
+    
+    #padDiv {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .form-group input {
+        font-size: 16px; /* prevent iOS zoom on focus */
+        padding: 10px;
+        height: 45px;
+    }
+    
+    .btn-shadow {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
+}

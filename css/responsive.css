@@ -1,0 +1,1233 @@
+/* css/responsive.css - Mobile Media Queries & Touch Interactions */
+
+/* Tous navigateurs mobiles — Chrome, Firefox, Safari, UC Browser,
+   Opera Mini, Samsung Internet, Huawei Browser, Phoenix Browser */
+*, *::before, *::after {
+    box-sizing: border-box !important;
+    -webkit-box-sizing: border-box !important;
+    -moz-box-sizing: border-box !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-text-size-adjust: none !important;
+    -moz-text-size-adjust: none !important;
+    -ms-text-size-adjust: none !important;
+    text-size-adjust: none !important;
+}
+
+html {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    scroll-behavior: smooth !important;
+    -webkit-scroll-behavior: smooth !important;
+}
+
+body {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    min-height: -moz-available !important;
+    min-height: fill-available !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-smoothing: antialiased !important;
+    position: relative !important;
+}
+
+img, video, iframe, embed, object, svg {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+}
+
+input, select, textarea, button {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    -webkit-box-sizing: border-box !important;
+    font-size: 16px !important; /* Empêche le zoom auto sur iOS et Android */
+    border-radius: 0 !important; /* Fix Safari iOS */
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+a { -webkit-tap-highlight-color: transparent !important; }
+
+.hidden-desktop {
+    display: none;
+}
+
+/* Tablet & Mobile (<= 1024px) */
+@media (max-width: 1024px) {
+    .menu-grid { grid-template-columns: repeat(3, 1fr); }
+    .layout-sidebar { grid-template-columns: 200px 1fr; }
+}
+
+/* Mobile Grand (<= 768px) */
+@media (max-width: 768px) {
+    /* PRIORITÉ 1 — Overflow horizontal & Box-sizing */
+    *, *::before, *::after {
+        box-sizing: border-box !important;
+    }
+
+    /* Image de fond très subtile — mobile uniquement */
+    body {
+        background-color: #0f1923 !important;
+        background-image: url('../clientBOA/css/themes/ML045/auth/images/auth_main.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+    }
+
+    /* Overlay très sombre pour rendre l'image à peine visible */
+    body::before {
+        content: '' !important;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(10, 18, 30, 0.93) !important;
+        z-index: 0 !important;
+        pointer-events: none !important;
+    }
+
+    /* S'assurer que le contenu reste par-dessus */
+    main, .main-content, header, .navbar, .mobile-bottom-nav {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    html, body {
+        overflow-x: hidden !important;
+        position: relative !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .hidden-desktop {
+        display: block !important;
+    }
+    
+    .navbar-menu, .nav-search, .navbar-profile .profile-text {
+        display: none !important;
+    }
+
+    main, .main-content, #app, .container, .layout-sidebar, .section.active, .row-grid {
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+        float: none !important;
+        transform: none !important;
+    }
+    .section:not(.active) {
+        display: none !important;
+    }
+
+    img, svg, video {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* FOND ET COULEURS GLOBALES (Dark Premium) */
+    main, .section, .pane, .content-area, .sidebar { 
+        background: #0f1923 !important; 
+        color: white !important;
+        border: none !important;
+    }
+
+    /* RÈGLE ABSOLUE : SUPPRESSION BLOCS NON CONFORMES — ACCUEIL */
+    #section-accueil .mes-comptes-card,
+    #section-accueil .accounts-table-container,
+    #section-accueil table,
+    #section-accueil .repartition-card,
+    #section-accueil .donut-title,
+    #section-accueil .menu-recap-card { display: none !important; }
+
+    /* CARDS STYLING */
+    .card, .stat-card, .releve-card, .account-balance-card, .boa-express-card, .form-group {
+        background: #1a2634 !important;
+        border: 1px solid #2a3a4a !important;
+        color: white !important;
+        margin: 0 12px 12px !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+    }
+
+    /* PRIORITÉ 3 — Select mobile visible sur toutes les sections */
+    .sidebar { display: none !important; }
+    .mobile-section-select {
+        display: block !important;
+        width: calc(100% - 24px) !important;
+        margin: 15px 12px 14px !important;
+        background: #1a2634 !important;
+        border: 1.5px solid #1D6F4F !important;
+        color: #4CAF50 !important;
+        border-radius: 10px !important;
+        padding: 12px 14px !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234CAF50' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 14px center !important;
+    }
+
+    /* Afficher le tableau mais en mode card */
+    #section-consultation table,
+    #section-consultation .historique-table,
+    #section-consultation [class*="historique"] table {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    #section-consultation thead {
+        display: none !important;
+    }
+
+    #section-consultation tbody {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    #section-consultation tbody tr {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 12px 14px !important;
+        margin: 0 12px 8px !important;
+        background: #1a2634 !important;
+        border-radius: 10px !important;
+        border: 1px solid #2a3a4a !important;
+        width: calc(100% - 24px) !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Masquer toutes les colonnes par défaut */
+    #section-consultation tbody tr td {
+        display: none !important;
+    }
+
+    /* Réafficher UNIQUEMENT date — colonne 1 */
+    #section-consultation tbody tr td:nth-child(1) {
+        display: block !important;
+        width: 100% !important;
+        color: #7a9bb5 !important;
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        margin-bottom: 3px !important;
+    }
+
+    /* Réafficher UNIQUEMENT libellé — colonne 3 */
+    #section-consultation tbody tr td:nth-child(3) {
+        display: block !important;
+        flex: 1 !important;
+        color: white !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        max-width: 60% !important;
+    }
+
+    /* Réafficher UNIQUEMENT montant — colonne 4 */
+    #section-consultation tbody tr td:nth-child(4) {
+        display: block !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        text-align: right !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Couleurs montants — Surcharge des styles inline du JS */
+    #section-consultation tbody tr td:nth-child(4) span,
+    #section-consultation .positif,
+    #section-consultation [class*="positif"] {
+        color: #4CAF50 !important;
+    }
+
+    #section-consultation tbody tr td:nth-child(4) span[style*="#EF4444"],
+    #section-consultation .negatif,
+    #section-consultation [class*="negatif"] {
+        color: #e74c3c !important;
+    }
+
+    /* Hover effect */
+    #section-consultation tbody tr:active {
+        background: #223344 !important;
+    }
+
+    #section-consultation .account-balance-card {
+        display: block !important;
+        border-left: 4px solid #1D6F4F !important;
+    }
+
+    #section-consultation .date-filter-row {
+        display: flex !important;
+        gap: 8px !important;
+        padding: 0 12px !important;
+        margin-bottom: 12px !important;
+    }
+
+    #section-consultation .date-filter-row input {
+        flex: 1 !important;
+        background: #1a2634 !important;
+        border: 1px solid #2a3a4a !important;
+        border-radius: 8px !important;
+        padding: 10px 12px !important;
+        color: white !important;
+    }
+
+    /* PRIORITÉ 2 — Carte bancaire dégradé bleu marine */
+    #section-cartes .credit-card-mock {
+        background: linear-gradient(135deg, #1E3A5F 0%, #2D5F8F 100%) !important;
+        padding: 20px !important;
+        min-height: 165px !important;
+        border: none !important;
+        position: relative !important;
+        aspect-ratio: 1.6/1;
+        width: auto !important;
+        margin: 15px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-end !important;
+    }
+    #section-cartes .cc-chip, #section-cartes .card-chip {
+        background: linear-gradient(135deg, #c8960c, #f0c040) !important;
+        width: 35px !important;
+        height: 26px !important;
+        border-radius: 6px !important;
+        display: block !important;
+        margin-bottom: 20px !important;
+    }
+
+    /* PRIORITÉ 5 — Services : bouton VALIDER et card BOA Express */
+    #section-services button[type="button"],
+    #section-services .btn-primary,
+    #section-services .btn-submit,
+    #section-services .btn-valider {
+        background: #1D6F4F !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        width: calc(100% - 24px) !important;
+        margin: 8px 12px 14px !important;
+        display: block !important;
+        text-align: center !important;
+    }
+    #section-services .boa-express-card {
+        border-left: 4px solid #1D6F4F !important;
+    }
+
+    /* PRIORITÉ 6 — Formulaires qui dépassent l'écran */
+    .form-group, .form-row {
+        width: auto !important;
+        margin: 0 0 15px 0 !important;
+        display: block !important;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100% !important;
+        background: #1a2634 !important;
+        border: 1px solid #2a3a4a !important;
+        border-radius: 10px !important;
+        padding: 11px 14px !important;
+        color: white !important;
+        font-size: 16px !important;
+    }
+    label { color: #7a9bb5 !important; font-size: 11px !important; margin-bottom: 4px !important; display: block; }
+    
+    .form-row-2col {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        padding: 0 !important;
+    }
+
+    /* HEADER MOBILE */
+    header, .navbar {
+        background: #0f1923 !important;
+        border-bottom: 1px solid #1a2634 !important;
+        height: 60px !important;
+        padding: 0 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        z-index: 2002 !important;
+    }
+    .navbar-logo img { height: 28px !important; }
+    .nav-notifications { display: flex !important; margin-right: 15px !important; position: relative; }
+    .user-avatar-badge {
+        width: 32px !important;
+        height: 32px !important;
+        background: rgba(29, 111, 79, 0.25) !important;
+        border: 1.5px solid #1D6F4F !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: white !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* SECTION 1 — ACCUEIL SPECIALS */
+    .hero-solde-card {
+        background: #1a2634 !important;
+        border: 1px solid #2a3a4a !important;
+        border-radius: 20px !important;
+        margin: 10px 12px 15px !important;
+        padding: 20px !important;
+        height: 160px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+    .solde-info { flex: 1 !important; }
+    .solde-label { font-size: 11px !important; color: #7a9bb5 !important; margin-bottom: 5px !important; }
+    .solde-montant { font-size: 24px !important; font-weight: 700 !important; color: white !important; }
+    .solde-devise { font-size: 14px !important; color: #4CAF50 !important; font-weight: 600 !important; }
+
+    /* Agrandir le cercle donut */
+    #section-accueil .donut-chart,
+    #section-accueil svg.donut,
+    #section-accueil [class*="donut"] svg,
+    #section-accueil .chart-svg,
+    #section-accueil .hero-solde-card svg,
+    #section-accueil .solde-principal svg,
+    #section-accueil .card-dark svg {
+        width: 110px !important;
+        height: 110px !important;
+        min-width: 110px !important;
+        min-height: 110px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Adapter le conteneur donut */
+    #section-accueil .donut-wrapper,
+    #section-accueil .donut-container,
+    #section-accueil [class*="donut-wrap"],
+    #section-accueil [class*="chart-wrap"] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        margin-top: 10px !important;
+    }
+
+    /* Adapter la légende à côté */
+    #section-accueil .donut-legend,
+    #section-accueil [class*="legend"] {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+
+    .donut-visual { width: 110px !important; height: 110px !important; }
+    .donut-visual svg { width: 110px !important; height: 110px !important; }
+    .donut-legend-mobile { display: block !important; font-size: 9px !important; color: #7a9bb5 !important; }
+    .donut-legend-text { display: none !important; } /* Hide titles inside hero donut */
+    .donut-legend-mobile .donut-legend-value { display: block !important; font-size: 10px !important; color: white !important; }
+
+    /* GRILLE 2x2 — obligatoire */
+    #section-accueil .dashboard-stats,
+    #section-accueil .kpi-grid,
+    #section-accueil .stats-container,
+    #section-accueil [class*="stats"],
+    #section-accueil [class*="kpi"] {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        grid-template-rows: auto auto !important;
+        gap: 8px !important;
+        padding: 0 12px !important;
+        margin-bottom: 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        /* Supprimer tout flex ou block existant */
+        flex-direction: unset !important;
+        flex-wrap: unset !important;
+    }
+
+    /* Chaque KPI occupe exactement 1 case */
+    #section-accueil .dashboard-stats .stat-card,
+    #section-accueil .kpi-grid .kpi,
+    #section-accueil [class*="stats"] > *,
+    #section-accueil [class*="kpi"] > * {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        min-height: 75px !important;
+        background: #1a2634 !important;
+        border-radius: 12px !important;
+        padding: 12px 14px !important;
+        border: 1px solid #2a3a4a !important;
+        border-left: 4px solid #2a3a4a !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Couleurs bordures gauche */
+    #section-accueil .stat-card:nth-child(1),
+    #section-accueil .kpi:nth-child(1) {
+        border-left-color: #1D6F4F !important;
+    }
+    #section-accueil .stat-card:nth-child(1) .value,
+    #section-accueil .kpi:nth-child(1) .value,
+    #section-accueil .stat-card:nth-child(1) .stat-value,
+    #section-accueil .kpi:nth-child(1) .stat-value {
+        color: #4CAF50 !important;
+        font-size: clamp(10px, 2.8vw, 13px) !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        word-break: break-all !important;
+    }
+
+    #section-accueil .stat-card:nth-child(2),
+    #section-accueil .kpi:nth-child(2) {
+        border-left-color: #9b59b6 !important;
+    }
+    #section-accueil .stat-card:nth-child(2) .value,
+    #section-accueil .kpi:nth-child(2) .value,
+    #section-accueil .stat-card:nth-child(2) .stat-value,
+    #section-accueil .kpi:nth-child(2) .stat-value {
+        color: #9b59b6 !important;
+        font-size: clamp(22px, 6vw, 28px) !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+    }
+
+    #section-accueil .stat-card:nth-child(3),
+    #section-accueil .kpi:nth-child(3) {
+        border-left-color: #f39c12 !important;
+    }
+    #section-accueil .stat-card:nth-child(3) .value,
+    #section-accueil .kpi:nth-child(3) .value,
+    #section-accueil .stat-card:nth-child(3) .stat-value,
+    #section-accueil .kpi:nth-child(3) .stat-value {
+        color: #f39c12 !important;
+        font-size: clamp(22px, 6vw, 28px) !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+    }
+
+    #section-accueil .stat-card:nth-child(4),
+    #section-accueil .kpi:nth-child(4) {
+        border-left-color: #3498db !important;
+    }
+    #section-accueil .stat-card:nth-child(4) .value,
+    #section-accueil .kpi:nth-child(4) .value,
+    #section-accueil .stat-card:nth-child(4) .stat-value,
+    #section-accueil .kpi:nth-child(4) .stat-value {
+        color: #3498db !important;
+        font-size: clamp(22px, 6vw, 28px) !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+    }
+
+    /* Labels */
+    #section-accueil .label,
+    #section-accueil .stat-label,
+    #section-accueil .kpi-label {
+        color: #7a9bb5 !important;
+        font-size: clamp(9px, 2.3vw, 11px) !important;
+        font-weight: 400 !important;
+        margin-bottom: 5px !important;
+        line-height: 1.3 !important;
+    }
+
+    /* RELEVE D'OPÉRATIONS */
+    .releve-card { margin: 0 12px 15px !important; padding: 16px !important; }
+    .releve-title { font-size: 14px !important; font-weight: 700 !important; margin-bottom: 12px !important; color: white !important; }
+    .releve-row { display: flex !important; justify-content: space-between !important; padding: 10px 0 !important; border-bottom: 1px solid #2a3a4a !important; }
+    .releve-row:last-child { border-bottom: none !important; }
+    .releve-nom { font-size: 13px !important; font-weight: 600 !important; color: white !important; }
+    .releve-date { font-size: 11px !important; color: #7a9bb5 !important; }
+    .montant-positif { color: #4CAF50 !important; font-weight: 700 !important; }
+    .montant-negatif { color: #e74c3c !important; font-weight: 700 !important; }
+
+    /* ACTIONS RAPIDES MOBILE */
+    .actions-rapides { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; padding: 0 12px 20px !important; }
+    .actions-rapides button {
+        background: #1a2634 !important;
+        border: 1px solid #2a3a4a !important;
+        color: white !important;
+        padding: 12px 8px !important;
+        border-radius: 12px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+    }
+    .actions-rapides button:first-child { background: #1D6F4F !important; border: none !important; }
+
+    /* GLOBAL MOBILE RULES */
+    main { padding-bottom: 100px !important; padding-top: 10px !important; }
+    .mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 75px !important;
+        background: #0f1923 !important;
+        border-top: 1px solid #1a2634 !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        z-index: 2000 !important;
+    }
+    .mob-item { display: flex !important; flex-direction: column !important; align-items: center !important; color: #4a6a8a !important; flex: 1 !important; }
+    .mob-item.active { color: #4CAF50 !important; }
+    .mob-item svg { width: 22px !important; height: 22px !important; fill: currentColor !important; margin-bottom: 4px !important; }
+    .mob-item span { font-size: 9px !important; }
+
+    /* Espace sous le header sur toutes les sections */
+    #section-accueil,
+    #section-consultation,
+    #section-virements,
+    #section-cartes,
+    #section-services {
+        padding-top: 16px !important;
+    }
+
+    /* Si le contenu est dans un wrapper */
+    #section-accueil > *:first-child,
+    #section-consultation > *:first-child,
+    #section-virements > *:first-child,
+    #section-cartes > *:first-child,
+    #section-services > *:first-child {
+        margin-top: 16px !important;
+    }
+
+    /* Hero card Accueil — descendre légèrement */
+    #section-accueil .hero-solde-card,
+    #section-accueil .solde-principal,
+    #section-accueil .card-dark:first-of-type {
+        margin-top: 16px !important;
+    }
+
+    /* Breadcrumb — ajouter espace */
+    .breadcrumb,
+    .fil-ariane {
+        padding: 10px 16px !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* Titre de section — espace au dessus */
+    .section-title,
+    #section-consultation h2,
+    #section-virements h2,
+    #section-cartes h2,
+    #section-services h2 {
+        padding-top: 16px !important;
+        margin-top: 0 !important;
+    }
+
+    /* Espace général entre chaque card */
+    .card-dark,
+    .kpi-grid,
+    .dashboard-stats {
+        margin-bottom: 12px !important;
+    }
+
+    /* ============================================
+       PLAFONDS & OPTIONS — textes lisibles
+       ============================================ */
+    #section-cartes .plafonds-container,
+    #section-cartes [class*="plafond"],
+    #section-cartes [class*="options"] {
+        background: #1a2634 !important;
+        border-radius: 12px !important;
+        padding: 14px !important;
+        margin: 0 12px 12px !important;
+        border: 1px solid #2a3a4a !important;
+    }
+
+    #section-cartes [class*="plafond"] label,
+    #section-cartes [class*="plafond"] span,
+    #section-cartes [class*="plafond"] p,
+    #section-cartes [class*="plafond"] div,
+    #section-cartes [class*="options"] label,
+    #section-cartes [class*="options"] span,
+    #section-cartes [class*="options"] p,
+    #section-cartes [class*="options"] div {
+        color: #7a9bb5 !important;
+        font-size: 12px !important;
+    }
+
+    /* Titre Plafonds & Options */
+    #section-cartes [class*="plafond"] h3,
+    #section-cartes [class*="plafond"] h4,
+    #section-cartes [class*="options"] h3,
+    #section-cartes [class*="options"] h4 {
+        color: white !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* Valeurs des plafonds */
+    #section-cartes [class*="plafond"] .value,
+    #section-cartes [class*="plafond"] input,
+    #section-cartes [class*="plafond"] .amount {
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    /* Type de plafonds — Retraits journaliers */
+    #section-cartes .plafond-type,
+    #section-cartes [class*="retrait"],
+    #section-cartes [class*="journalier"],
+    #section-cartes [class*="plafond-label"] {
+        color: #7a9bb5 !important;
+        font-size: 12px !important;
+    }
+
+    /* ============================================
+       TOUS LES COMPTES — textes lisibles
+       ============================================ */
+    #section-cartes .tous-comptes,
+    #section-cartes [class*="tous-comptes"],
+    #section-cartes .account-selector,
+    #section-cartes [class*="account-select"] {
+        background: #1a2634 !important;
+        border: 1px solid #2a3a4a !important;
+        border-radius: 10px !important;
+        color: white !important;
+        padding: 10px 14px !important;
+    }
+
+    /* Toutes les écritures noires dans Tous les comptes */
+    #section-cartes .tous-comptes *,
+    #section-cartes [class*="tous-comptes"] *,
+    #section-cartes .account-selector *,
+    #section-cartes .account-list *,
+    #section-cartes [class*="account-list"] * {
+        color: #7a9bb5 !important;
+    }
+
+    #section-cartes .account-name,
+    #section-cartes [class*="account-name"] {
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    /* ============================================
+       BOUTONS BLOC / LISTE — corriger débordement
+       ============================================ */
+    #section-cartes .view-toggle,
+    #section-cartes .bloc-liste,
+    #section-cartes [class*="view-toggle"],
+    #section-cartes [class*="bloc-liste"] {
+        display: flex !important;
+        gap: 4px !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #section-cartes .view-toggle button,
+    #section-cartes .bloc-liste button,
+    #section-cartes [class*="view-toggle"] button,
+    #section-cartes [class*="bloc-liste"] button,
+    #section-cartes .btn-bloc,
+    #section-cartes .btn-liste {
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        border-radius: 6px !important;
+        min-width: 0 !important;
+    }
+
+    /* Ligne contenant Tous les comptes + Bloc + Liste */
+    #section-cartes .card-filter-row,
+    #section-cartes [class*="filter-row"],
+    #section-cartes .comptes-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 0 12px !important;
+        margin-bottom: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    /* ============================================
+       TABLEAU PLAFONDS & OPTIONS — textes lisibles en blanc
+       ============================================ */
+    #cart_plaf table {
+        width: 100% !important;
+        display: table !important;
+    }
+    #cart_plaf thead {
+        display: table-header-group !important;
+    }
+    #cart_plaf tbody {
+        display: table-row-group !important;
+    }
+    #cart_plaf tr {
+        display: table-row !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+    #cart_plaf th {
+        background-color: #1D6F4F !important;
+        color: white !important;
+        font-size: 10px !important;
+        padding: 8px 6px !important;
+        white-space: nowrap !important;
+    }
+    #cart_plaf td {
+        color: white !important;
+        font-size: 11px !important;
+        padding: 8px 6px !important;
+        border-bottom: 0.5px solid rgba(255,255,255,0.1) !important;
+        display: table-cell !important;
+        text-align: left !important;
+        background: transparent !important;
+        white-space: nowrap !important;
+    }
+    #cart_plaf td::before {
+        display: none !important;
+    }
+    #cart_plaf td:last-child {
+        text-align: right !important;
+    }
+    #cart_plaf .btn {
+        padding: 5px 8px !important;
+        font-size: 11px !important;
+        white-space: nowrap !important;
+    }
+    #cart_plaf .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* ============================================
+       BOUTONS BLOC / LISTE — ne pas déborder
+       ============================================ */
+    .sub-tabs,
+    [class*="view-toggle"],
+    [class*="btn-group"] {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+        padding: 0 12px !important;
+        gap: 6px !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* Conteneur Tous les comptes + BLOC + LISTE */
+    #section-cartes .sub-tabs,
+    #section-cartes [class*="filter"],
+    #section-cartes [class*="controls"],
+    #section-cartes .card > div:first-child {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 6px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        padding: 0 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Select "Tous les comptes" */
+    #section-cartes select,
+    #section-cartes .compte-select {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: calc(100% - 100px) !important;
+        font-size: 12px !important;
+        padding: 6px 8px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    /* Boutons BLOC et LISTE */
+    #section-cartes button[id*="bloc"],
+    #section-cartes button[id*="liste"],
+    #section-cartes .btn-vue,
+    #section-cartes [class*="btn-bloc"],
+    #section-cartes [class*="btn-liste"] {
+        flex: 0 0 auto !important;
+        min-width: 42px !important;
+        max-width: 48px !important;
+        padding: 6px 8px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* ============================================
+       CORRECTION 1 — Tableau opérations cartes — Date et Opération en blanc
+       ============================================ */
+    #tbody-cartes-ops tr td[data-label="Date"],
+    #tbody-cartes-ops tr td[data-label="Opération"] {
+        color: white !important;
+        font-size: 12px !important;
+    }
+
+    /* Montants — conserver le rouge */
+    #tbody-cartes-ops tr td[data-label="Montant"] {
+        color: #EF4444 !important;
+        font-weight: bold !important;
+    }
+
+    /* Entêtes tableau cartes */
+    #section-cartes #content-cartes table th {
+        background-color: #1D6F4F !important;
+        color: white !important;
+        font-size: 11px !important;
+        padding: 8px 6px !important;
+    }
+
+    /* Bordures lignes */
+    #tbody-cartes-ops tr td {
+        border-bottom: 0.5px solid rgba(255,255,255,0.08) !important;
+        padding: 10px 6px !important;
+    }
+
+    /* ============================================
+       CORRECTION 2 — Onglets "Cartes de débit" et "Cartes prépayées" en blanc
+       ============================================ */
+    #section-cartes .sub-tab {
+        color: rgba(255, 255, 255, 0.55) !important;
+    }
+
+    #section-cartes .sub-tab.active {
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    #section-cartes .sub-tab.active::after {
+        background-color: #4CAF50 !important;
+    }
+
+    #section-cartes .sub-tabs {
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+    }
+
+    /* ============================================
+       CORRECTION 3 — Select "Mes cartes" et carte bancaire légèrement plus grands
+       ============================================ */
+    #section-cartes .mobile-section-select {
+        font-size: 15px !important;
+        padding: 14px 16px !important;
+        border-radius: 12px !important;
+        border: 2px solid #1D6F4F !important;
+        margin-bottom: 14px !important;
+    }
+
+    /* Carte bancaire — légèrement plus grande */
+    #section-cartes #mock-card-1,
+    #section-cartes .credit-card-mock {
+        width: calc(100% - 24px) !important;
+        max-width: 100% !important;
+        height: 195px !important;
+        margin: 0 12px 16px !important;
+        padding: 22px !important;
+        box-sizing: border-box !important;
+    }
+
+    #section-cartes .cc-number {
+        font-size: 19px !important;
+        letter-spacing: 2px !important;
+        margin: 12px 0 !important;
+    }
+
+    #section-cartes .cc-name {
+        font-size: 15px !important;
+    }
+
+    #section-cartes .cc-visa {
+        font-size: 26px !important;
+    }
+
+    /* ============================================
+       CORRECTION 4 — Accueil : remonter "Solde disponible" et agrandir le montant
+       ============================================ */
+    #section-accueil .solde-label {
+        margin-top: -6px !important;
+        margin-bottom: 2px !important;
+        font-size: 12px !important;
+        display: block !important;
+        color: rgba(255,255,255,0.7) !important;
+    }
+
+    /* Montant solde — plus grand et gras */
+    #section-accueil .solde-montant {
+        font-size: 26px !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        margin-top: 2px !important;
+        color: white !important;
+    }
+
+    /* CFA — vert et lisible */
+    #section-accueil .solde-devise {
+        font-size: 14px !important;
+        color: #4CAF50 !important;
+        font-weight: 600 !important;
+        margin-top: 2px !important;
+        display: block !important;
+    }
+
+    /* Nouvelle carte BOA Green Premium */
+    #section-cartes #mock-card-1 {
+        width: calc(100% - 24px) !important;
+        height: 190px !important;
+        margin: 0 12px 16px !important;
+        border-radius: 18px !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+    }
+
+    #section-cartes #mock-card-1:active {
+        transform: scale(0.98) !important;
+    }
+}
+
+
+/* ============================================
+   TECNO, ITEL, INFINIX — petits écrans africains
+   Résolutions courantes : 240x320, 320x480, 360x640
+   ============================================ */
+@media screen and (max-width: 360px) {
+    .card-dark, .card, .stat-card, .releve-card {
+        padding: clamp(8px, 3vw, 12px) !important;
+        margin: 0 clamp(6px, 2vw, 10px) clamp(8px, 2vw, 10px) !important;
+    }
+    .kpi, .stat-card { padding: clamp(6px, 2.5vw, 10px) !important; }
+    .section-title { font-size: clamp(13px, 4vw, 16px) !important; }
+    .solde-montant { font-size: clamp(13px, 4.5vw, 18px) !important; }
+    .stat-value { font-size: clamp(14px, 5vw, 20px) !important; }
+    .hac-number { font-size: clamp(10px, 3vw, 13px) !important; letter-spacing: 1px !important; }
+    .mobile-bottom-nav { height: clamp(50px, 12vw, 56px) !important; }
+    .mob-item svg { width: clamp(16px, 5vw, 20px) !important; height: clamp(16px, 5vw, 20px) !important; }
+    .mob-item { font-size: clamp(7px, 2vw, 9px) !important; }
+    .btn-initier, .btn-valider, button[type="submit"] {
+        padding: clamp(10px, 3vw, 14px) !important;
+        font-size: clamp(12px, 3.5vw, 14px) !important;
+    }
+    .mobile-section-select { padding: clamp(8px, 3vw, 12px) !important; }
+    .user-avatar-badge { width: 28px !important; height: 28px !important; font-size: 10px !important; }
+
+    /* Petits écrans — donut légèrement plus petit */
+    #section-accueil .donut-chart,
+    #section-accueil svg.donut,
+    #section-accueil [class*="donut"] svg,
+    #section-accueil .card-dark svg {
+        width: 90px !important;
+        height: 90px !important;
+        min-width: 90px !important;
+        min-height: 90px !important;
+    }
+}
+
+/* ============================================
+   SAMSUNG GALAXY A, XIAOMI REDMI — 360px à 393px
+   ============================================ */
+@media screen and (min-width: 361px) and (max-width: 393px) {
+    .card-dark, .card, .stat-card, .releve-card { padding: 12px !important; margin: 0 10px 10px !important; }
+    .kpi, .stat-card { padding: 10px !important; }
+    .solde-montant { font-size: 18px !important; }
+    .stat-value { font-size: 20px !important; }
+    .hac-number { font-size: 13px !important; }
+    .mobile-bottom-nav { height: 56px !important; }
+    .mob-item svg { width: 20px !important; height: 20px !important; }
+    .mob-item { font-size: 9px !important; }
+    .user-avatar-badge { width: 30px !important; height: 30px !important; font-size: 11px !important; }
+}
+
+/* ============================================
+   iPhone 12/13/14, Samsung Galaxy S — 393px à 414px
+   ============================================ */
+@media screen and (min-width: 394px) and (max-width: 414px) {
+    .card-dark, .card, .stat-card, .releve-card { padding: 14px !important; margin: 0 12px 12px !important; }
+    .kpi, .stat-card { padding: 12px !important; }
+    .solde-montant { font-size: 20px !important; }
+    .stat-value { font-size: 22px !important; }
+    .hac-number { font-size: 14px !important; letter-spacing: 2px !important; }
+    .mobile-bottom-nav { height: 58px !important; }
+    .mob-item svg { width: 22px !important; height: 22px !important; }
+    .mob-item { font-size: 9px !important; }
+    .user-avatar-badge { width: 32px !important; height: 32px !important; font-size: 11px !important; }
+}
+
+/* ============================================
+   iPhone 14 Plus/Pro Max, Samsung Ultra — 415px à 480px
+   ============================================ */
+@media screen and (min-width: 415px) and (max-width: 480px) {
+    .card-dark, .card, .stat-card, .releve-card { padding: 16px !important; margin: 0 14px 14px !important; }
+    .kpi, .stat-card { padding: 14px !important; }
+    .solde-montant { font-size: 24px !important; }
+    .stat-value { font-size: 24px !important; }
+    .hac-number { font-size: 15px !important; letter-spacing: 3px !important; }
+    .mobile-bottom-nav { height: 62px !important; }
+    .mob-item svg { width: 22px !important; height: 22px !important; }
+    .mob-item { font-size: 10px !important; }
+    .user-avatar-badge { width: 34px !important; height: 34px !important; font-size: 12px !important; }
+}
+
+/* ============================================
+   Phablettes, Tecno Pouvoir — 481px à 600px
+   ============================================ */
+@media screen and (min-width: 481px) and (max-width: 600px) {
+    .card-dark, .card, .stat-card, .releve-card { padding: 16px !important; margin: 0 16px 14px !important; }
+    .kpi, .stat-card { padding: 14px !important; }
+    .solde-montant { font-size: 26px !important; }
+    .stat-value { font-size: 26px !important; }
+    .mobile-bottom-nav { height: 64px !important; }
+    .mob-item svg { width: 24px !important; height: 24px !important; }
+    .mob-item { font-size: 10px !important; }
+    .credit-card-mock { max-width: 420px !important; margin: 0 auto 14px !important; }
+}
+
+/* ============================================
+   Mini tablettes, grands Tecno — 601px à 768px
+   ============================================ */
+@media screen and (min-width: 601px) and (max-width: 768px) {
+    .card-dark, .card, .stat-card, .releve-card { padding: 18px !important; margin: 0 20px 16px !important; }
+    .kpi, .stat-card { padding: 16px !important; }
+    .solde-montant { font-size: 30px !important; }
+    .stat-value { font-size: 28px !important; }
+    .mobile-bottom-nav { height: 68px !important; }
+    .mob-item svg { width: 26px !important; height: 26px !important; }
+    .mob-item { font-size: 11px !important; }
+    .credit-card-mock {
+        max-width: 500px !important;
+        margin: 0 auto 16px !important;
+        padding: 24px 20px !important;
+        min-height: 200px !important;
+    }
+}
+
+/* ============================================
+   CORRECTIONS iOS SPÉCIFIQUES
+   Safari, Chrome iOS, Firefox iOS
+   ============================================ */
+@supports (-webkit-overflow-scrolling: touch) {
+    .mobile-bottom-nav {
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+        padding-bottom: constant(safe-area-inset-bottom, 0px) !important;
+    }
+    main {
+        padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+    button, .btn {
+        cursor: pointer !important;
+        -webkit-appearance: none !important;
+    }
+    * {
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
+
+/* ============================================
+   CORRECTIONS ANDROID SPÉCIFIQUES
+   Chrome Android, Samsung Internet, UC Browser,
+   Opera Mini, Huawei Browser, Phoenix Browser
+   ============================================ */
+@media screen and (max-width: 768px) {
+    /* Fix rendering GPU Android */
+    .credit-card-mock,
+    .mobile-bottom-nav,
+    .card-dark, .card, .stat-card, .releve-card {
+        -webkit-transform: translateZ(0) !important;
+        -moz-transform: translateZ(0) !important;
+        transform: translateZ(0) !important;
+        will-change: transform !important;
+        backface-visibility: hidden !important;
+        -webkit-backface-visibility: hidden !important;
+    }
+
+    /* Fix flexbox vieux Android (4.x) */
+    .mobile-bottom-nav {
+        display: -webkit-box !important;
+        display: -webkit-flex !important;
+        display: flex !important;
+        -webkit-justify-content: space-around !important;
+        justify-content: space-around !important;
+        -webkit-align-items: center !important;
+        align-items: center !important;
+    }
+
+    .mob-item {
+        display: -webkit-box !important;
+        display: -webkit-flex !important;
+        display: flex !important;
+        -webkit-flex-direction: column !important;
+        flex-direction: column !important;
+        -webkit-align-items: center !important;
+        align-items: center !important;
+    }
+
+    /* Fix grid vieux Android */
+    .dashboard-stats, .kpi-grid {
+        display: -webkit-box !important;
+        display: -webkit-flex !important;
+        display: flex !important;
+        -webkit-flex-wrap: wrap !important;
+        flex-wrap: wrap !important;
+    }
+
+    .stat-card, .kpi {
+        -webkit-box-flex: 0 !important;
+        -webkit-flex: 0 0 calc(50% - 4px) !important;
+        flex: 0 0 calc(50% - 4px) !important;
+        max-width: calc(50% - 4px) !important;
+    }
+
+    /* Fix select Android */
+    select {
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234CAF50' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 14px center !important;
+    }
+
+    /* Fix Opera Mini */
+    .credit-card-mock {
+        background-color: #1E3A5F !important;
+    }
+}
+
+/* Grands écrans mobiles — donut légèrement plus grand */
+@media (min-width: 415px) and (max-width: 768px) {
+    #section-accueil .donut-chart,
+    #section-accueil svg.donut,
+    #section-accueil [class*="donut"] svg,
+    #section-accueil .card-dark svg {
+        width: 130px !important;
+        height: 130px !important;
+        min-width: 130px !important;
+        min-height: 130px !important;
+    }
+}

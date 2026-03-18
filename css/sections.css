@@ -1,0 +1,137 @@
+/* css/consultation.css, css/virements.css, etc. */
+/* I am combining the layout CSS for sidebar-based sections into a generic layout to avoid code duplication, but naming it appropriately. */
+
+.layout-sidebar {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Sidebar Menu */
+.sidebar {
+    background: #FFF;
+    border: 0.5px solid var(--border-color);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar li {
+    padding: 15px 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-bottom: 0.5px solid #EEE;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.sidebar li:last-child {
+    border-bottom: none;
+}
+
+.sidebar li:hover {
+    background-color: #F9F9F9;
+    color: var(--text-main);
+}
+
+.sidebar li.active {
+    background-color: #EAF7F2;
+    color: #1D6F4F;
+    font-weight: 600;
+    border-left: 3px solid #1D6F4F;
+}
+
+/* Main Content Area in Sidebar Layout */
+.content-area {
+    background: #FFF;
+    border: 0.5px solid var(--border-color);
+    border-radius: var(--radius-card);
+    padding: 20px;
+    min-height: 400px;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 12px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-badge);
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-green);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Virtual Keypad Container */
+.keypad-container {
+    background: #F8F8F8;
+    padding: 15px;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-color);
+    max-width: 300px;
+    margin: 20px 0;
+}
+
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.keypad-btn {
+    background: #4A4A4A;
+    color: #FFF;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 0;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.keypad-btn:hover { background: #333; }
+.keypad-btn:disabled { background: #CCC; cursor: not-allowed; }
+
+/* Filter Bar */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: #F9F9F9;
+    padding: 10px;
+    border-radius: var(--radius-badge);
+}
+.filter-bar input, .filter-bar select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+}

