@@ -15,7 +15,7 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 app.post('/send-virement', (req, res) => {
     try {
-        const { email_beneficiaire, nom_beneficiaire, montant, reference, date, bic, iban, motif, pays, pdf_base64 } = req.body;
+        const { email_beneficiaire, nom_beneficiaire, montant, reference, date, bic, iban, motif, pays, pdf_base64, civilite } = req.body;
 
         if (!email_beneficiaire || !pdf_base64) {
             return res.status(400).json({ success: false, message: 'Email et PDF requis' });
@@ -55,7 +55,7 @@ app.post('/send-virement', (req, res) => {
 <div style="font-size:14px;font-weight:bold;color:#0f1923;font-family:Arial,sans-serif;">Avis de reception d un ordre de virement international</div>
 </div>
 
-<p style="font-size:13px;color:#333;line-height:1.8;margin:0 0 16px;">Madame, Monsieur <strong>${nom_beneficiaire}</strong>,</p>
+<p style="font-size:13px;color:#333;line-height:1.8;margin:0 0 16px;">${civilite || 'Madame, Monsieur'} <strong>${nom_beneficiaire}</strong>,</p>
 
 <p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 16px;">
 Nous avons le plaisir de vous informer qu un ordre de virement international a ete emis en votre faveur par <strong>BRUNET JEAN PAUL</strong> via la plateforme <strong>MyBOA-MALI</strong> - Bank Of Africa.
@@ -76,7 +76,7 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 </tr>
 <tr>
 <td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Montant</td>
-<td style="padding:10px 16px;font-size:13px;color:#1D6F4F;font-weight:bold;border-bottom:1px solid #eee;">${montant} CFA</td>
+<td style="padding:10px 16px;font-size:13px;color:#1D6F4F;font-weight:bold;border-bottom:1px solid #eee;">${montant}</td>
 </tr>
 <tr style="background:#f9f9f9;">
 <td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Date d emission</td>
@@ -107,7 +107,7 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 </div>
 
 <p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 8px;">Nous restons a votre disposition pour toute question relative a cette operation.</p>
-<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 24px;">Veuillez agreer, Madame, Monsieur, l expression de nos salutations distinguees.</p>
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 24px;">Veuillez agreer, ${civilite || 'Madame, Monsieur'}, l expression de nos salutations distinguees.</p>
 
 <div style="font-size:13px;color:#0f1923;font-weight:bold;font-family:Arial,sans-serif;">MyBOA-MALI - Bank Of Africa</div>
 <div style="font-size:11px;color:#888;margin-top:2px;font-family:Arial,sans-serif;">Service des operations internationales</div>

@@ -173,7 +173,7 @@ function generateVirementPDF(data) {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.setFont('helvetica', 'bold');
-        doc.text(data.montant + ' CFA', pageWidth / 2, y + 18, { align: 'center' });
+        doc.text(data.montant + ' ' + (data.devise || 'CFA'), pageWidth / 2, y + 18, { align: 'center' });
         doc.setFillColor(243, 156, 18);
         doc.roundedRect(pageWidth / 2 - 45, y + 21, 90, 7, 3, 3, 'F');
         doc.setTextColor(255, 255, 255);
@@ -312,6 +312,7 @@ function sendEmailBeneficiaire(data, pdfBase64, callback) {
             iban:               data.iban,
             motif:              data.motif || '-',
             pays:               data.pays,
+            civilite:           data.civilite,
             pdf_base64:         pdfBase64
         })
     })
@@ -347,6 +348,18 @@ function showToastVirement(message, type) {
     document.body.appendChild(toast);
 
     setTimeout(function() { toast.remove(); }, 5000);
+}
+
+// ================================================
+// DÉTERMINER CIVILITÉ
+// ================================================
+function determinerCivilite(nom) {
+    var prenomsFeminins = ['marie','sophie','julie','laura','sarah','emma','camille','lea','lucie','chloe','alice','manon','pauline','amelie','claire','isabelle','nathalie','fatima','aminata','mariama','kadiatou','aissatou','fatoumata','mariam','oumou','hawa','bintou','safiatou','kadija','ramata','coumba','rokhaya','adja','astou','yacine','ndey','ndéye','ndèye','awa','maïmouna','maimuna','rokia','salimata','maïssa','aby'];
+    var mots = nom.toLowerCase().split(' ');
+    for (var i = 0; i < mots.length; i++) {
+        if (prenomsFeminins.indexOf(mots[i]) !== -1) return 'Madame';
+    }
+    return 'Monsieur';
 }
 
 // ================================================
@@ -415,8 +428,9 @@ function initierVirement() {
         iban:               iban.toUpperCase(),
         adresse:            adresse,
         email_beneficiaire: emailBenef,
-        montant:            formatMontantPDF(montant.toLocaleString('fr-FR')) + ' ' + (document.getElementById('vir-devise') ? document.getElementById('vir-devise').value : 'CFA'),
+        montant:            formatMontantPDF(montant.toLocaleString('fr-FR')),
         devise:             document.getElementById('vir-devise') ? document.getElementById('vir-devise').value : 'CFA',
+        civilite:           determinerCivilite(nom),
         motif:              motif,
         charges:            charges,
         date:               dateFormatted,
@@ -444,7 +458,7 @@ function initierVirement() {
                 'VIREMENT INTERNATIONAL — INITIÉ\n' +
                 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
                 'Référence    : ' + virementData.reference + '\n' +
-                'Montant      : ' + virementData.montant + ' CFA\n' +
+                'Montant      : ' + virementData.montant + ' ' + (virementData.devise || 'CFA') + '\n' +
                 'Bénéficiaire : ' + virementData.nom_beneficiaire + '\n' +
                 'Statut       : En attente de traitement\n' +
                 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
