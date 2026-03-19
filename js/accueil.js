@@ -115,6 +115,25 @@ function afficherHistorique() {
             '<td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:11px;">' + op.statut + '</span></td>';
         tbody.appendChild(tr);
     });
+
+    var tbodyMobile = document.getElementById('tbody-historique-mobile');
+    if (tbodyMobile) {
+        if (historique.length === 0) {
+            tbodyMobile.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">Aucune opération</td></tr>';
+        } else {
+            tbodyMobile.innerHTML = '';
+            historique.slice(0, 5).forEach(function(op) {
+                var tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #f0f0f0';
+                tr.innerHTML =
+                    '<td style="padding:8px;font-size:11px;color:#666;">' + op.date + '</td>' +
+                    '<td style="padding:8px;font-size:12px;">Vers ' + op.description.replace('Vers ','') + '</td>' +
+                    '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + op.montant + ' ' + op.devise + '</td>' +
+                    '<td style="padding:8px;text-align:center;"><span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:8px;font-size:10px;">En attente</span></td>';
+                tbodyMobile.appendChild(tr);
+            });
+        }
+    }
 }
 
 function mettreAJourBadge() {
