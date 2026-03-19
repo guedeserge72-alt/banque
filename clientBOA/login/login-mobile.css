@@ -163,27 +163,6 @@
         letter-spacing: 4px !important;
     }
 
-    .code-cursor-fake {
-        display: none;
-        width: 2px !important;
-        height: 20px !important;
-        background: #4CAF50 !important;
-        border-radius: 1px !important;
-        position: absolute !important;
-        left: 16px !important;
-        top: 50% !important;
-        transform: translateY(-50%) !important;
-        animation: blink-cursor 1s step-end infinite !important;
-    }
-
-    .code-cursor-fake.visible {
-        display: block !important;
-    }
-
-    @keyframes blink-cursor {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0; }
-    }
 
     .virtual-keyboard {
         display: grid !important;

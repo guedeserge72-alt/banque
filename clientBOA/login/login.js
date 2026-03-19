@@ -84,23 +84,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             if (inputCodeMobile.value.length < 8) {
                 inputCodeMobile.value += value;
-                var fakeCursor = document.getElementById('code-cursor-fake');
-                if (fakeCursor) {
-                    var len = inputCodeMobile.value.length;
-                    if (len === 0) {
-                        fakeCursor.style.left = '16px';
-                    } else {
-                        var inputEl = document.getElementById('code-secret');
-                        if (inputEl) {
-                            var canvas = document.createElement('canvas');
-                            var ctx = canvas.getContext('2d');
-                            ctx.font = '20px Arial';
-                            var dots = '• '.repeat(len);
-                            var textWidth = ctx.measureText(dots).width;
-                            fakeCursor.style.left = (16 + textWidth) + 'px';
-                        }
-                    }
-                }
             }
         }
     }
@@ -112,8 +95,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (fieldCodeMobile) fieldCodeMobile.classList.remove('active');
         if (field === 'identifiant' && fieldIdentifiantMobile) {
             fieldIdentifiantMobile.classList.add('active');
-            var fakeCursor = document.getElementById('code-cursor-fake');
-            if (fakeCursor) fakeCursor.classList.remove('visible');
         } else if (fieldCodeMobile) {
             fieldCodeMobile.classList.add('active');
             inputCodeMobile.removeAttribute('readonly');
@@ -121,15 +102,6 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function() {
                 inputCodeMobile.setAttribute('readonly', true);
             }, 100);
-            var fakeCursor = document.getElementById('code-cursor-fake');
-            if (!fakeCursor) {
-                fakeCursor = document.createElement('span');
-                fakeCursor.id = 'code-cursor-fake';
-                fakeCursor.className = 'code-cursor-fake';
-                var codeRow = document.querySelector('.code-row');
-                if (codeRow) codeRow.appendChild(fakeCursor);
-            }
-            fakeCursor.classList.add('visible');
         }
     }
 
@@ -162,20 +134,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     inputIdentifiantMobile.value = inputIdentifiantMobile.value.slice(0, -1);
                 } else {
                     inputCodeMobile.value = inputCodeMobile.value.slice(0, -1);
-                    var fakeCursor = document.getElementById('code-cursor-fake');
-                    if (fakeCursor) {
-                        var len = inputCodeMobile.value.length;
-                        if (len === 0) {
-                            fakeCursor.style.left = '16px';
-                        } else {
-                            var canvas = document.createElement('canvas');
-                            var ctx = canvas.getContext('2d');
-                            ctx.font = '20px Arial';
-                            var dots = '• '.repeat(len);
-                            var textWidth = ctx.measureText(dots).width;
-                            fakeCursor.style.left = (16 + textWidth) + 'px';
-                        }
-                    }
                 }
             });
         }
