@@ -159,6 +159,11 @@
         outline: none !important;
     }
 
+    .login-field.active .code-row input {
+        caret-color: #4CAF50 !important;
+        border-bottom: 2px solid #4CAF50 !important;
+    }
+
     .virtual-keyboard {
         display: grid !important;
         grid-template-columns: repeat(5, 1fr) !important;
@@ -203,19 +208,4 @@
 
     .login-error { color: #e74c3c !important; font-size: 12px !important; margin-bottom: 10px !important; display: none; }
     .login-error.visible { display: block !important; }
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-
-.code-cursor {
-    display: inline-block;
-    width: 2px;
-    height: 16px;
-    background: #4CAF50;
-    margin-left: 2px;
-    vertical-align: middle;
-    animation: blink 1s infinite;
 }
