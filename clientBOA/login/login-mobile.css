@@ -215,4 +215,9 @@
 
     .login-error { color: #e74c3c !important; font-size: 12px !important; margin-bottom: 10px !important; display: none; }
     .login-error.visible { display: block !important; }
+
+    @keyframes cursorBlink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
 }

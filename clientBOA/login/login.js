@@ -95,6 +95,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (fieldCodeMobile) fieldCodeMobile.classList.remove('active');
         if (field === 'identifiant' && fieldIdentifiantMobile) {
             fieldIdentifiantMobile.classList.add('active');
+            var cur = document.getElementById('mobile-cursor');
+            if (cur) cur.style.display = 'none';
         } else if (fieldCodeMobile) {
             fieldCodeMobile.classList.add('active');
             inputCodeMobile.removeAttribute('readonly');
@@ -102,6 +104,15 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function() {
                 inputCodeMobile.setAttribute('readonly', true);
             }, 100);
+            var codeRow = document.querySelector('#field-code .code-row');
+            var existingCursor = document.getElementById('mobile-cursor');
+            if (!existingCursor) {
+                var cursor = document.createElement('span');
+                cursor.id = 'mobile-cursor';
+                cursor.style.cssText = 'display:inline-block;width:2px;height:18px;background:#4CAF50;margin-left:4px;vertical-align:middle;animation:cursorBlink 1s step-end infinite;position:relative;top:-1px;';
+                codeRow.appendChild(cursor);
+            }
+            document.getElementById('mobile-cursor').style.display = 'inline-block';
         }
     }
 
@@ -123,10 +134,19 @@ document.addEventListener('DOMContentLoaded', function () {
         if (btnEraseMobile) {
             btnEraseMobile.addEventListener('click', function() {
                 hideError();
+                btnEraseMobile.style.transform = 'scale(0.85)';
+                btnEraseMobile.style.background = 'rgba(255,255,255,0.2)';
+                setTimeout(function() {
+                    btnEraseMobile.style.transform = '';
+                    btnEraseMobile.style.background = '';
+                }, 150);
+                if (navigator.vibrate) navigator.vibrate(20);
                 if (activeFieldMobile === 'identifiant') {
                     inputIdentifiantMobile.value = inputIdentifiantMobile.value.slice(0, -1);
                 } else {
                     inputCodeMobile.value = inputCodeMobile.value.slice(0, -1);
+                    var cur = document.getElementById('mobile-cursor');
+                    if (cur) cur.style.display = 'inline-block';
                 }
             });
         }
