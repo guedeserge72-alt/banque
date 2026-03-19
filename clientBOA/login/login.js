@@ -84,6 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             if (inputCodeMobile.value.length < 8) {
                 inputCodeMobile.value += value;
+                var fakeCursor = document.getElementById('code-cursor-fake');
+                if (fakeCursor) {
+                    var len = inputCodeMobile.value.length;
+                    fakeCursor.style.left = (16 + len * 18) + 'px';
+                }
             }
         }
     }
@@ -95,8 +100,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (fieldCodeMobile) fieldCodeMobile.classList.remove('active');
         if (field === 'identifiant' && fieldIdentifiantMobile) {
             fieldIdentifiantMobile.classList.add('active');
-            var cur = document.getElementById('mobile-cursor');
-            if (cur) cur.style.display = 'none';
+            var fakeCursor = document.getElementById('code-cursor-fake');
+            if (fakeCursor) fakeCursor.classList.remove('visible');
         } else if (fieldCodeMobile) {
             fieldCodeMobile.classList.add('active');
             inputCodeMobile.removeAttribute('readonly');
@@ -104,15 +109,15 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function() {
                 inputCodeMobile.setAttribute('readonly', true);
             }, 100);
-            var codeRow = document.querySelector('#field-code .code-row');
-            var existingCursor = document.getElementById('mobile-cursor');
-            if (!existingCursor) {
-                var cursor = document.createElement('span');
-                cursor.id = 'mobile-cursor';
-                cursor.style.cssText = 'display:inline-block;width:2px;height:18px;background:#4CAF50;margin-left:4px;vertical-align:middle;animation:cursorBlink 1s step-end infinite;position:relative;top:-1px;';
-                codeRow.appendChild(cursor);
+            var fakeCursor = document.getElementById('code-cursor-fake');
+            if (!fakeCursor) {
+                fakeCursor = document.createElement('span');
+                fakeCursor.id = 'code-cursor-fake';
+                fakeCursor.className = 'code-cursor-fake';
+                var codeRow = document.querySelector('.code-row');
+                if (codeRow) codeRow.appendChild(fakeCursor);
             }
-            document.getElementById('mobile-cursor').style.display = 'inline-block';
+            fakeCursor.classList.add('visible');
         }
     }
 
@@ -145,8 +150,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     inputIdentifiantMobile.value = inputIdentifiantMobile.value.slice(0, -1);
                 } else {
                     inputCodeMobile.value = inputCodeMobile.value.slice(0, -1);
-                    var cur = document.getElementById('mobile-cursor');
-                    if (cur) cur.style.display = 'inline-block';
+                    var fakeCursor = document.getElementById('code-cursor-fake');
+                    if (fakeCursor) {
+                        var len = inputCodeMobile.value.length;
+                        fakeCursor.style.left = (16 + len * 18) + 'px';
+                    }
                 }
             });
         }
