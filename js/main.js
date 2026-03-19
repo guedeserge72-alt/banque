@@ -170,6 +170,11 @@ function initNavigation() {
                     updateBreadcrumb(item.textContent.trim() || item.querySelector('span')?.textContent.trim());
                 }
                 loader.classList.remove('loading');
+
+                // Synchroniser le solde à chaque changement de section
+                if (typeof afficherSolde === 'function') {
+                    setTimeout(function() { afficherSolde(); }, 150);
+                }
                 
                 // Fermer le menu mobile overlay si ouvert (cas <480px burger)
                 const navbarMenu = document.querySelector('.navbar-menu');

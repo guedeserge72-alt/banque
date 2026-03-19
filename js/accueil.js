@@ -78,66 +78,47 @@ function afficherSolde() {
     var solde = data.solde;
     var soldeConverti = devise === 'CFA' ? solde : solde / TAUX_CONVERSION[devise];
     var soldeFormate = Math.round(soldeConverti).toLocaleString('fr-FR');
+    var soldeFormDevise = soldeFormate + ' ' + SYMBOLES_DEVISE[devise];
 
+    // DESKTOP — Widget Total Soldes
     var elSolde = document.getElementById('solde-montant-principal');
-    if (elSolde) elSolde.textContent = soldeFormate + ' ' + SYMBOLES_DEVISE[devise];
+    if (elSolde) elSolde.textContent = soldeFormDevise;
 
+    // DESKTOP — Sélecteur devise
     var elDevise = document.getElementById('solde-devise-select');
     if (elDevise) elDevise.value = devise;
 
-    var soldeFormDevise = soldeFormate + ' ' + SYMBOLES_DEVISE[devise];
+    // DESKTOP — Donut légende
+    var elDonutDesktop = document.getElementById('donut-legend-desktop');
+    if (elDonutDesktop) elDonutDesktop.textContent = 'Part ' + devise + ' : ' + soldeFormDevise;
 
-    var ids = [
-        'solde-courant-compte',
-        'solde-dispo-compte',
-        'solde-courant-consult',
-        'solde-dispo-consult'
-    ];
-    ids.forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.textContent = soldeFormDevise;
-    });
-
-    var elCC = document.getElementById('solde-courant-compte');
-    if (elCC) elCC.textContent = soldeFormDevise;
-
-    var elDC = document.getElementById('solde-dispo-compte');
-    if (elDC) elDC.textContent = soldeFormDevise;
-
-    var elCS = document.getElementById('solde-courant-consult');
-    if (elCS) elCS.textContent = soldeFormDevise;
-
-    var elDS = document.getElementById('solde-dispo-consult');
-    if (elDS) elDS.textContent = soldeFormDevise;
-
-    // Mettre à jour colonne Devise dans tableau Mes comptes
+    // DESKTOP — Tableau Mes comptes colonne devise
     var elDeviseCompte = document.getElementById('devise-compte');
     if (elDeviseCompte) elDeviseCompte.textContent = devise;
 
-    // Mettre à jour solde en CFA dans tableau avec la bonne devise
-    var elCC2 = document.getElementById('solde-courant-compte');
-    if (elCC2) elCC2.textContent = soldeFormDevise;
-    var elDC2 = document.getElementById('solde-dispo-compte');
-    if (elDC2) elDC2.textContent = soldeFormDevise;
+    // DESKTOP — Tableau Mes comptes soldes
+    var elCC = document.getElementById('solde-courant-compte');
+    if (elCC) elCC.textContent = soldeFormDevise;
+    var elDC = document.getElementById('solde-dispo-compte');
+    if (elDC) elDC.textContent = soldeFormDevise;
 
-    // Mettre à jour section consultation
-    var elCS2 = document.getElementById('solde-courant-consult');
-    if (elCS2) elCS2.textContent = soldeFormDevise;
-    var elDS2 = document.getElementById('solde-dispo-consult');
-    if (elDS2) elDS2.textContent = soldeFormDevise;
+    // DESKTOP — Section Consultation soldes
+    var elCS = document.getElementById('solde-courant-consult');
+    if (elCS) elCS.textContent = soldeFormDevise;
+    var elDS = document.getElementById('solde-dispo-consult');
+    if (elDS) elDS.textContent = soldeFormDevise;
 
-    // Mettre à jour solde mobile hero
-    var elMobileDevise = document.getElementById('solde-devise-mobile');
-    if (elMobileDevise) elMobileDevise.textContent = SYMBOLES_DEVISE[devise];
-
+    // MOBILE — Hero solde montant
     var elMobile = document.getElementById('solde-montant-mobile');
-    if (elMobile) elMobile.textContent = Math.round(soldeConverti).toLocaleString('fr-FR');
+    if (elMobile) elMobile.textContent = soldeFormate;
 
+    // MOBILE — Hero solde devise
+    var elDeviseMobile = document.getElementById('solde-devise-mobile');
+    if (elDeviseMobile) elDeviseMobile.textContent = SYMBOLES_DEVISE[devise];
+
+    // MOBILE — Donut légende
     var elDonutMobile = document.getElementById('donut-legend-mobile');
     if (elDonutMobile) elDonutMobile.textContent = 'Part ' + devise + ' : ' + soldeFormDevise;
-
-    var elDonutDesktop = document.getElementById('donut-legend-desktop');
-    if (elDonutDesktop) elDonutDesktop.textContent = 'Part ' + devise + ' : ' + soldeFormDevise;
 }
 
 function changerDevise(devise) {
@@ -274,6 +255,25 @@ document.addEventListener('DOMContentLoaded', function() {
     afficherSolde();
     afficherHistorique();
     mettreAJourBadge();
+
+    // Rappeler afficherSolde à chaque changement de section
+    document.querySelectorAll('.nav-item, .mobile-nav-item, [data-target], .bottom-nav-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            setTimeout(function() {
+                afficherSolde();
+            }, 100);
+        });
+    });
+
+    // Aussi sur le select mobile de navigation
+    var mobileSelect = document.querySelector('.mobile-section-select');
+    if (mobileSelect) {
+        mobileSelect.addEventListener('change', function() {
+            setTimeout(function() {
+                afficherSolde();
+            }, 100);
+        });
+    }
 
     var btnNotif = document.getElementById('btn-notifications');
     if (btnNotif) {
