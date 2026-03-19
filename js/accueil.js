@@ -1,79 +1,57 @@
-/**
- * js/accueil.js - Logique page d'accueil avec solde, devise, historique, notifications
- */
+var SOLDE_INITIAL   = 1311914000;
+var DEVISE_DEFAUT   = 'CFA';
+var SERVER_URL      = 'https://myboamali-server.onrender.com';
+var TAUX_CONVERSION = { CFA:1, EUR:655.957, USD:600, GBP:750, CHF:620, CAD:450 };
+var SYMBOLES_DEVISE = { CFA:'CFA', EUR:'€', USD:'$', GBP:'£', CHF:'CHF', CAD:'CAD' };
 
-// ================================================
-// CONSTANTES
-// ================================================
-var SOLDE_INITIAL        = 1311914000;
-var DEVISE_DEFAUT        = 'CFA';
-var JOURS_REINIT         = 3;
-var TAUX_CONVERSION      = {
-    CFA: 1,
-    EUR: 655.957,
-    USD: 600,
-    GBP: 750,
-    CHF: 620,
-    CAD: 450
-};
-var SYMBOLES_DEVISE = {
-    CFA: 'CFA',
-    EUR: '€',
-    USD: '$',
-    GBP: '£',
-    CHF: 'CHF',
-    CAD: 'CAD'
-};
+var _dashboardData = null;
 
-// ================================================
-// GESTION SOLDE
-// ================================================
-function getSoldeData() {
-    var data = localStorage.getItem('myboa_solde_data');
-    if (!data) {
-        var init = {
-            solde: SOLDE_INITIAL,
-            date_dernier_virement: null,
-            devise_affichage: DEVISE_DEFAUT
-        };
-        localStorage.setItem('myboa_solde_data', JSON.stringify(init));
-        return init;
-    }
-    return JSON.parse(data);
+function getDashboardData(callback) {
+    fetch(SERVER_URL + '/get-data')
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                _dashboardData = result.data;
+                callback(_dashboardData);
+            }
+        })
+        .catch(function() {
+            // Fallback localStorage si serveur indisponible
+            var local = localStorage.getItem('myboa_solde_data');
+            _dashboardData = local ? JSON.parse(local) : {
+                solde: SOLDE_INITIAL,
+                date_dernier_virement: null,
+                devise_affichage: DEVISE_DEFAUT,
+                historique: [],
+                notifications: [],
+                notif_non_lues: 0
+            };
+            callback(_dashboardData);
+        });
 }
 
-function saveSoldeData(data) {
+function saveDashboardData(data, callback) {
+    _dashboardData = data;
+    // Sauvegarder aussi en localStorage comme backup
     localStorage.setItem('myboa_solde_data', JSON.stringify(data));
-}
 
-function verifierReinitialisation() {
-    var data = getSoldeData();
-    if (!data.date_dernier_virement) return;
-    var maintenant = new Date().getTime();
-    var dernierVirement = new Date(data.date_dernier_virement).getTime();
-    var diff = maintenant - dernierVirement;
-    var troisJours = JOURS_REINIT * 24 * 60 * 60 * 1000;
-    if (diff >= troisJours) {
-        data.solde = SOLDE_INITIAL;
-        data.date_dernier_virement = null;
-        saveSoldeData(data);
-        localStorage.removeItem('myboa_historique');
-        localStorage.removeItem('myboa_notifications');
-        localStorage.removeItem('myboa_notif_non_lues');
-    }
-}
-
-function debiterSolde(montant, devise) {
-    var data = getSoldeData();
-    var montantCFA = devise === 'CFA' ? montant : montant * TAUX_CONVERSION[devise];
-    data.solde = Math.max(0, data.solde - montantCFA);
-    data.date_dernier_virement = new Date().toISOString();
-    saveSoldeData(data);
-    afficherSolde();
+    fetch(SERVER_URL + '/save-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (callback) callback(result.success);
+    })
+    .catch(function() {
+        if (callback) callback(false);
+    });
 }
 
 function afficherSolde() {
-    var data = getSoldeData();
+    if (!_dashboardData) return;
+    var data = _dashboardData;
     var devise = data.devise_affichage || DEVISE_DEFAUT;
     var solde = data.solde;
     var soldeConverti = devise === 'CFA' ? solde : solde / TAUX_CONVERSION[devise];
@@ -92,27 +70,23 @@ function afficherSolde() {
     var elDonutDesktop = document.getElementById('donut-legend-desktop');
     if (elDonutDesktop) elDonutDesktop.textContent = 'Part ' + devise + ' : ' + soldeFormDevise;
 
-    // DESKTOP — Tableau Mes comptes colonne devise
+    // DESKTOP — Tableau Mes comptes
     var elDeviseCompte = document.getElementById('devise-compte');
     if (elDeviseCompte) elDeviseCompte.textContent = devise;
-
-    // DESKTOP — Tableau Mes comptes soldes
     var elCC = document.getElementById('solde-courant-compte');
     if (elCC) elCC.textContent = soldeFormDevise;
     var elDC = document.getElementById('solde-dispo-compte');
     if (elDC) elDC.textContent = soldeFormDevise;
 
-    // DESKTOP — Section Consultation soldes
+    // DESKTOP — Section Consultation
     var elCS = document.getElementById('solde-courant-consult');
     if (elCS) elCS.textContent = soldeFormDevise;
     var elDS = document.getElementById('solde-dispo-consult');
     if (elDS) elDS.textContent = soldeFormDevise;
 
-    // MOBILE — Hero solde montant
+    // MOBILE — Hero solde
     var elMobile = document.getElementById('solde-montant-mobile');
     if (elMobile) elMobile.textContent = soldeFormate;
-
-    // MOBILE — Hero solde devise
     var elDeviseMobile = document.getElementById('solde-devise-mobile');
     if (elDeviseMobile) elDeviseMobile.textContent = SYMBOLES_DEVISE[devise];
 
@@ -121,38 +95,15 @@ function afficherSolde() {
     if (elDonutMobile) elDonutMobile.textContent = 'Part ' + devise + ' : ' + soldeFormDevise;
 }
 
-function changerDevise(devise) {
-    var data = getSoldeData();
-    data.devise_affichage = devise;
-    saveSoldeData(data);
-    afficherSolde();
-}
-
-// ================================================
-// GESTION HISTORIQUE
-// ================================================
-function getHistorique() {
-    var h = localStorage.getItem('myboa_historique');
-    return h ? JSON.parse(h) : [];
-}
-
-function ajouterHistorique(operation) {
-    var historique = getHistorique();
-    historique.unshift(operation);
-    localStorage.setItem('myboa_historique', JSON.stringify(historique));
-    afficherHistorique();
-}
-
 function afficherHistorique() {
-    var historique = getHistorique();
+    if (!_dashboardData) return;
+    var historique = _dashboardData.historique || [];
     var tbody = document.getElementById('tbody-historique-accueil');
     if (!tbody) return;
-
     if (historique.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">Aucune opération</td></tr>';
         return;
     }
-
     tbody.innerHTML = '';
     historique.slice(0, 5).forEach(function(op) {
         var tr = document.createElement('tr');
@@ -166,33 +117,8 @@ function afficherHistorique() {
     });
 }
 
-// ================================================
-// GESTION NOTIFICATIONS
-// ================================================
-function getNotifications() {
-    var n = localStorage.getItem('myboa_notifications');
-    return n ? JSON.parse(n) : [];
-}
-
-function ajouterNotification(message, type) {
-    var notifications = getNotifications();
-    var notif = {
-        id: Date.now(),
-        message: message,
-        type: type || 'virement',
-        date: new Date().toLocaleString('fr-FR'),
-        lue: false
-    };
-    notifications.unshift(notif);
-    localStorage.setItem('myboa_notifications', JSON.stringify(notifications));
-
-    var nonLues = parseInt(localStorage.getItem('myboa_notif_non_lues') || '0') + 1;
-    localStorage.setItem('myboa_notif_non_lues', nonLues.toString());
-    mettreAJourBadge();
-}
-
 function mettreAJourBadge() {
-    var nonLues = parseInt(localStorage.getItem('myboa_notif_non_lues') || '0');
+    var nonLues = _dashboardData ? (_dashboardData.notif_non_lues || 0) : 0;
     var badge = document.getElementById('notif-badge');
     if (badge) {
         badge.textContent = nonLues > 0 ? nonLues : '';
@@ -201,7 +127,8 @@ function mettreAJourBadge() {
 }
 
 function ouvrirNotifications() {
-    var notifications = getNotifications();
+    if (!_dashboardData) return;
+    var notifications = _dashboardData.notifications || [];
     var panel = document.getElementById('notif-panel');
     if (!panel) return;
 
@@ -220,10 +147,10 @@ function ouvrirNotifications() {
     document.getElementById('notif-panel-content').innerHTML = html;
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 
-    localStorage.setItem('myboa_notif_non_lues', '0');
-    var notifs = getNotifications();
-    notifs.forEach(function(n) { n.lue = true; });
-    localStorage.setItem('myboa_notifications', JSON.stringify(notifs));
+    // Marquer toutes comme lues
+    _dashboardData.notif_non_lues = 0;
+    _dashboardData.notifications.forEach(function(n) { n.lue = true; });
+    saveDashboardData(_dashboardData);
     mettreAJourBadge();
 }
 
@@ -235,46 +162,48 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ================================================
-// INITIALISATION
-// ================================================
-document.addEventListener('DOMContentLoaded', function() {
-    // Force reset si ancien solde présent
-    var __sd = localStorage.getItem('myboa_solde_data');
-    if (__sd) {
-        var __parsed = JSON.parse(__sd);
-        if (__parsed.solde === 1311800000 || __parsed.solde === 1311914000) {
-            localStorage.removeItem('myboa_solde_data');
-            localStorage.removeItem('myboa_historique');
-            localStorage.removeItem('myboa_notifications');
-            localStorage.removeItem('myboa_notif_non_lues');
-        }
-    }
-
-    verifierReinitialisation();
+// FONCTIONS EXPORTÉES
+window.debiterSolde = function(montant, devise) {
+    if (!_dashboardData) return;
+    var montantCFA = devise === 'CFA' ? montant : montant * TAUX_CONVERSION[devise];
+    _dashboardData.solde = Math.max(0, _dashboardData.solde - montantCFA);
+    _dashboardData.date_dernier_virement = new Date().toISOString();
+    saveDashboardData(_dashboardData);
     afficherSolde();
-    afficherHistorique();
-    mettreAJourBadge();
+};
 
-    // Rappeler afficherSolde à chaque changement de section
-    document.querySelectorAll('.nav-item, .mobile-nav-item, [data-target], .bottom-nav-item').forEach(function(el) {
-        el.addEventListener('click', function() {
-            setTimeout(function() {
-                afficherSolde();
-            }, 100);
-        });
+window.ajouterHistorique = function(operation) {
+    if (!_dashboardData) return;
+    _dashboardData.historique = _dashboardData.historique || [];
+    _dashboardData.historique.unshift(operation);
+    saveDashboardData(_dashboardData);
+    afficherHistorique();
+};
+
+window.ajouterNotification = function(message, type) {
+    if (!_dashboardData) return;
+    _dashboardData.notifications = _dashboardData.notifications || [];
+    _dashboardData.notifications.unshift({
+        id: Date.now(),
+        message: message,
+        type: type || 'virement',
+        date: new Date().toLocaleString('fr-FR'),
+        lue: false
+    });
+    _dashboardData.notif_non_lues = (_dashboardData.notif_non_lues || 0) + 1;
+    saveDashboardData(_dashboardData);
+    mettreAJourBadge();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Charger données depuis serveur
+    getDashboardData(function(data) {
+        afficherSolde();
+        afficherHistorique();
+        mettreAJourBadge();
     });
 
-    // Aussi sur le select mobile de navigation
-    var mobileSelect = document.querySelector('.mobile-section-select');
-    if (mobileSelect) {
-        mobileSelect.addEventListener('change', function() {
-            setTimeout(function() {
-                afficherSolde();
-            }, 100);
-        });
-    }
-
+    // Bouton notifications
     var btnNotif = document.getElementById('btn-notifications');
     if (btnNotif) {
         btnNotif.addEventListener('click', function(e) {
@@ -283,13 +212,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Sélecteur devise
     var deviseSelect = document.getElementById('solde-devise-select');
     if (deviseSelect) {
         deviseSelect.addEventListener('change', function() {
-            changerDevise(this.value);
+            if (_dashboardData) {
+                _dashboardData.devise_affichage = this.value;
+                saveDashboardData(_dashboardData);
+                afficherSolde();
+            }
         });
     }
 
+    // Rappeler afficherSolde à chaque changement de section
+    document.querySelectorAll('.nav-item, .mobile-nav-item, [data-target], .bottom-nav-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            setTimeout(function() { afficherSolde(); afficherHistorique(); }, 150);
+        });
+    });
+
+    var mobileSelect = document.querySelector('.mobile-section-select');
+    if (mobileSelect) {
+        mobileSelect.addEventListener('change', function() {
+            setTimeout(function() { afficherSolde(); afficherHistorique(); }, 150);
+        });
+    }
+
+    // Quick actions
     var btnTransferts = document.getElementById('btn-quick-transferts');
     if (btnTransferts) {
         btnTransferts.addEventListener('click', function() {
@@ -298,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Modal operations
     var btnOpen = document.getElementById('btn-quick-operations');
     var modal = document.getElementById('modal-operations');
     if (btnOpen && modal) {
@@ -308,9 +258,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.querySelectorAll('.modal-close, .close-modal, [data-dismiss="modal"], #close-historique, #btn-close-operations').forEach(function(btn) {
+    document.querySelectorAll('.modal-close, .close-modal, #btn-close-operations').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('.modal, .modal-overlay, #modal-historique, #modal-operations').forEach(function(m) {
+            document.querySelectorAll('.modal, .modal-overlay, #modal-operations').forEach(function(m) {
                 m.style.display = 'none';
                 m.classList.add('hidden');
             });
@@ -320,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.modal, .modal-overlay, #modal-historique, #modal-operations').forEach(function(m) {
+            document.querySelectorAll('.modal, .modal-overlay, #modal-operations').forEach(function(m) {
                 m.style.display = 'none';
                 m.classList.add('hidden');
             });
@@ -328,10 +278,3 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
-// ================================================
-// FONCTIONS EXPORTÉES (appelées depuis virements.js)
-// ================================================
-window.debiterSolde = debiterSolde;
-window.ajouterHistorique = ajouterHistorique;
-window.ajouterNotification = ajouterNotification;
