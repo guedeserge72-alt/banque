@@ -63,6 +63,15 @@ document.addEventListener('DOMContentLoaded', function () {
             key.type = 'button';
             key.addEventListener('click', function() {
                 handleKeyPressMobile(digit.toString());
+                key.style.transform = 'scale(0.88)';
+                key.style.background = 'rgba(29,111,79,0.6)';
+                key.style.color = 'white';
+                setTimeout(function() {
+                    key.style.transform = '';
+                    key.style.background = '';
+                    key.style.color = '';
+                }, 150);
+                if (navigator.vibrate) navigator.vibrate(30);
             });
             keyboard.appendChild(key);
         });
