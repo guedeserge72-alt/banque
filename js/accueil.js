@@ -5,7 +5,7 @@
 // ================================================
 // CONSTANTES
 // ================================================
-var SOLDE_INITIAL        = 1311800000;
+var SOLDE_INITIAL        = 1311914000;
 var DEVISE_DEFAUT        = 'CFA';
 var JOURS_REINIT         = 3;
 var TAUX_CONVERSION      = {
