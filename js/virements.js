@@ -441,19 +441,33 @@ function initierVirement() {
     generateVirementPDF(virementData).then(function(pdfBase64) {
 
         function afterEmail() {
-            var nouveauSolde = soldeActuel - montant;
-            localStorage.setItem('solde_courant', nouveauSolde.toString());
+            // Débiter le solde via accueil.js
+            var montantNum = parseFloat(virementData.montant.replace(/\s/g, '').replace(',', '.'));
+            var deviseVirement = virementData.devise || 'CFA';
+            if (window.debiterSolde) {
+                window.debiterSolde(montantNum, deviseVirement);
+            }
 
-            var soldeEl = document.querySelector('.solde-montant, .hac-balance, #solde-display');
-            if (soldeEl) soldeEl.textContent = nouveauSolde.toLocaleString('fr-FR');
+            // Ajouter à l'historique
+            if (window.ajouterHistorique) {
+                window.ajouterHistorique({
+                    date: virementData.date,
+                    type: 'Virement international',
+                    description: 'Vers ' + virementData.nom_beneficiaire,
+                    montant: virementData.montant,
+                    devise: deviseVirement,
+                    reference: virementData.reference,
+                    statut: 'En attente de traitement'
+                });
+            }
 
-            ajouterTransaction({
-                date:    virementData.date,
-                libelle: 'Virement vers ' + virementData.nom_beneficiaire,
-                montant: -montant,
-                type:    'Virement émis',
-                ref:     virementData.reference
-            });
+            // Ajouter notification avec devise
+            if (window.ajouterNotification) {
+                window.ajouterNotification(
+                    'Virement de ' + virementData.montant + ' ' + deviseVirement + ' initié — Réf: ' + virementData.reference,
+                    'virement'
+                );
+            }
 
             showToastVirement(
                 'VIREMENT INTERNATIONAL — INITIÉ\n' +
@@ -466,7 +480,6 @@ function initierVirement() {
                 'Avis de virement envoyé par email ✓',
                 'success'
             );
-            // Secours si toast invisible
             console.log('VIREMENT OK - Référence:', virementData.reference);
 
             setTimeout(function() {
@@ -476,12 +489,6 @@ function initierVirement() {
                     btnInitier.disabled = false;
                 }
             }, 2000);
-
-            setTimeout(function() {
-                localStorage.setItem('solde_courant', '1311800000');
-                var soldeEl2 = document.querySelector('.solde-montant, .hac-balance, #solde-display');
-                if (soldeEl2) soldeEl2.textContent = '1 311 800 000';
-            }, 3600000);
         }
 
         if (emailBenef) {

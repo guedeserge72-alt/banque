@@ -85,9 +85,18 @@
         <!-- Bloc droit -->
         <div class="navbar-right">
             <!-- Notifications (Mobile & Desktop) -->
-            <div class="nav-notifications">
-                <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
-                <span class="notif-badge">3</span>
+            <div class="nav-notifications" style="position:relative;">
+                <div id="btn-notifications" style="cursor:pointer;position:relative;display:inline-flex;align-items:center;">
+                    <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+                    <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:bold;display:none;align-items:center;justify-content:center;"></span>
+                </div>
+                <div id="notif-panel" style="display:none;position:absolute;right:0;top:40px;width:340px;background:white;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:9999;overflow:hidden;border:1px solid #eee;">
+                    <div style="background:#0f1923;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="color:white;font-size:13px;font-weight:bold;">Notifications</span>
+                        <span onclick="document.getElementById('notif-panel').style.display='none'" style="color:#aaa;cursor:pointer;font-size:16px;">✕</span>
+                    </div>
+                    <div id="notif-panel-content" style="max-height:300px;overflow-y:auto;"></div>
+                </div>
             </div>
 
             <!-- Profile (Desktop) -->
@@ -166,8 +175,16 @@
             <!-- Statistiques Résumé -->
             <div class="dashboard-stats">
                 <div class="stat-card">
-                    <span class="label">Total Soldes (CFA)</span>
-                    <span class="value" id="stat-total-soldes">1 311 800 000</span>
+                    <span class="label">Total Soldes</span>
+                    <span class="value" id="solde-montant-principal">1 311 800 000 CFA</span>
+                    <select id="solde-devise-select" style="margin-top:6px;background:transparent;border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:11px;color:#555;cursor:pointer;">
+                        <option value="CFA">CFA</option>
+                        <option value="EUR">€ EUR</option>
+                        <option value="USD">$ USD</option>
+                        <option value="GBP">£ GBP</option>
+                        <option value="CHF">CHF</option>
+                        <option value="CAD">CAD</option>
+                    </select>
                 </div>
                 <div class="stat-card">
                     <span class="label">Nombre de comptes</span>
@@ -272,6 +289,27 @@
                 <button>Mes transferts à signer</button>
             </div>
             
+            <!-- Historique des opérations récentes -->
+            <div class="card" style="margin-top:20px;">
+                <h3 style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--primary-color);">Dernières opérations</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-historique-accueil">
+                            <tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">Aucune opération</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Menu Grid -->
             <div class="card menu-recap-card" style="margin-top:20px;">
                 <h3 style="font-size: 13px; font-weight: 500; margin-bottom: 10px;">Récapitulatif des menus</h3>
