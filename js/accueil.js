@@ -204,6 +204,18 @@ document.addEventListener('click', function(e) {
 // INITIALISATION
 // ================================================
 document.addEventListener('DOMContentLoaded', function() {
+    // Forcer réinitialisation si solde différent du nouveau SOLDE_INITIAL
+    var soldeData = localStorage.getItem('myboa_solde_data');
+    if (soldeData) {
+        var parsed = JSON.parse(soldeData);
+        if (parsed.solde === 1311800000) {
+            localStorage.removeItem('myboa_solde_data');
+            localStorage.removeItem('myboa_historique');
+            localStorage.removeItem('myboa_notifications');
+            localStorage.removeItem('myboa_notif_non_lues');
+        }
+    }
+
     verifierReinitialisation();
     afficherSolde();
     afficherHistorique();
