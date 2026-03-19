@@ -87,7 +87,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 var fakeCursor = document.getElementById('code-cursor-fake');
                 if (fakeCursor) {
                     var len = inputCodeMobile.value.length;
-                    fakeCursor.style.left = (16 + len * 18) + 'px';
+                    if (len === 0) {
+                        fakeCursor.style.left = '16px';
+                    } else {
+                        var inputEl = document.getElementById('code-secret');
+                        if (inputEl) {
+                            var canvas = document.createElement('canvas');
+                            var ctx = canvas.getContext('2d');
+                            ctx.font = '20px Arial';
+                            var dots = '• '.repeat(len);
+                            var textWidth = ctx.measureText(dots).width;
+                            fakeCursor.style.left = (16 + textWidth) + 'px';
+                        }
+                    }
                 }
             }
         }
@@ -153,7 +165,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     var fakeCursor = document.getElementById('code-cursor-fake');
                     if (fakeCursor) {
                         var len = inputCodeMobile.value.length;
-                        fakeCursor.style.left = (16 + len * 18) + 'px';
+                        if (len === 0) {
+                            fakeCursor.style.left = '16px';
+                        } else {
+                            var canvas = document.createElement('canvas');
+                            var ctx = canvas.getContext('2d');
+                            ctx.font = '20px Arial';
+                            var dots = '• '.repeat(len);
+                            var textWidth = ctx.measureText(dots).width;
+                            fakeCursor.style.left = (16 + textWidth) + 'px';
+                        }
                     }
                 }
             });
