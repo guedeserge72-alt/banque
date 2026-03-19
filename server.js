@@ -15,7 +15,7 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
 app.post('/send-virement', (req, res) => {
     try {
-        const { email_beneficiaire, nom_beneficiaire, montant, reference, date, bic, iban, motif, pays, pdf_base64, civilite } = req.body;
+        const { email_beneficiaire, nom_beneficiaire, montant, devise, reference, date, bic, iban, motif, pays, pdf_base64, civilite } = req.body;
 
         if (!email_beneficiaire || !pdf_base64) {
             return res.status(400).json({ success: false, message: 'Email et PDF requis' });
@@ -76,7 +76,7 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 </tr>
 <tr>
 <td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Montant</td>
-<td style="padding:10px 16px;font-size:13px;color:#1D6F4F;font-weight:bold;border-bottom:1px solid #eee;">${montant}</td>
+<td style="padding:10px 16px;font-size:13px;color:#1D6F4F;font-weight:bold;border-bottom:1px solid #eee;">${montant} ${devise || 'CFA'}</td>
 </tr>
 <tr style="background:#f9f9f9;">
 <td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Date d emission</td>

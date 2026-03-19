@@ -156,7 +156,7 @@ function generateVirementPDF(data) {
         doc.setTextColor(80, 80, 80);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text('Madame, Monsieur ' + data.nom_beneficiaire + ',', 15, y);
+        doc.text((data.civilite || 'Monsieur') + ' ' + data.nom_beneficiaire + ',', 15, y);
         y += 6;
         var message = 'Un ordre de virement international a été émis en votre faveur par BRUNET JEAN PAUL via MyBOA-MALI.';
         var msgLines = doc.splitTextToSize(message, pageWidth - 30);
@@ -312,6 +312,7 @@ function sendEmailBeneficiaire(data, pdfBase64, callback) {
             iban:               data.iban,
             motif:              data.motif || '-',
             pays:               data.pays,
+            devise:             data.devise,
             civilite:           data.civilite,
             pdf_base64:         pdfBase64
         })
