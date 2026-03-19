@@ -468,6 +468,16 @@ function simulateVirementIntl(btn) {
  * Updates all balances (Accueil, Consultation, Virement) and the Donut Chart.
  */
 function syncDashboardUI() {
+    // Récupérer le solde depuis localStorage myboa_solde_data
+    var soldeData = localStorage.getItem('myboa_solde_data');
+    var soldeDynamic = soldeData ? JSON.parse(soldeData) : null;
+    var soldeActuel = soldeDynamic ? soldeDynamic.solde : 1311914000;
+    var deviseActuelle = soldeDynamic ? (soldeDynamic.devise_affichage || 'CFA') : 'CFA';
+    var taux = { CFA:1, EUR:655.957, USD:600, GBP:750, CHF:620, CAD:450 };
+    var symboles = { CFA:'CFA', EUR:'€', USD:'$', GBP:'£', CHF:'CHF', CAD:'CAD' };
+    var soldeConverti = deviseActuelle === 'CFA' ? soldeActuel : soldeActuel / taux[deviseActuelle];
+    var soldeFormate = Math.round(soldeConverti).toLocaleString('fr-FR') + ' ' + symboles[deviseActuelle];
+
     // 1. Update Virement Select
     const intlCompteDebiter = document.getElementById('intl-compte-debiter');
     if (intlCompteDebiter) {
@@ -499,9 +509,9 @@ function syncDashboardUI() {
             tbody.innerHTML = `
                 <tr>
                     <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
-                    <td data-label="Devise">CFA</td>
-                    <td data-label="Solde Courant">${cfaAcc.solde.toLocaleString('fr-FR')} CFA</td>
-                    <td data-label="Solde Dispo">${cfaAcc.solde.toLocaleString('fr-FR')} CFA</td>
+                    <td data-label="Devise" id="devise-compte">${deviseActuelle}</td>
+                    <td data-label="Solde Courant" id="solde-courant-compte">${soldeFormate}</td>
+                    <td data-label="Solde Dispo" id="solde-dispo-compte">${soldeFormate}</td>
                 </tr>
             `;
             // Re-apply masking
@@ -519,9 +529,9 @@ function syncDashboardUI() {
             tbody.innerHTML = `
                 <tr>
                     <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
-                    <td data-label="Devise">CFA</td>
-                    <td data-label="Solde courant">${cfaAcc.solde.toLocaleString('fr-FR')} CFA</td>
-                    <td data-label="Solde disponible">${cfaAcc.solde.toLocaleString('fr-FR')} CFA</td>
+                    <td data-label="Devise" id="devise-consult">${deviseActuelle}</td>
+                    <td data-label="Solde courant" id="solde-courant-consult">${soldeFormate}</td>
+                    <td data-label="Solde disponible" id="solde-dispo-consult">${soldeFormate}</td>
                 </tr>
             `;
             tbody.querySelectorAll('.mask-account').forEach(el => {
