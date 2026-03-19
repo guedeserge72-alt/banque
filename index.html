@@ -154,7 +154,7 @@
             <div class="hero-solde-card hidden-desktop">
                 <div class="solde-info">
                     <div class="solde-label">Solde disponible</div>
-                    <div class="solde-montant">1 311 800 000</div>
+                    <div class="solde-montant" id="solde-montant-mobile">1 311 914 000</div>
                     <div class="solde-devise">CFA</div>
                 </div>
                 <div class="donut-flex">
@@ -166,7 +166,7 @@
                     </div>
                     <div class="donut-legend-mobile">
                         <div class="donut-legend-text">Répartition des soldes</div>
-                        <div class="donut-legend-value"><span style="color:#534AB7;">■</span> Part CFA : 1 311 800 000</div>
+                        <div class="donut-legend-value"><span style="color:#534AB7;">■</span> <span id="donut-legend-mobile">Part CFA : 1 311 914 000</span></div>
                         <div class="donut-legend-text">Poids total du portefeuille</div>
                     </div>
                 </div>
@@ -176,7 +176,7 @@
             <div class="dashboard-stats">
                 <div class="stat-card">
                     <span class="label">Total Soldes</span>
-                    <span class="value" id="solde-montant-principal">1 311 800 000 CFA</span>
+                    <span class="value" id="solde-montant-principal">1 311 914 000 CFA</span>
                     <select id="solde-devise-select" style="margin-top:6px;background:transparent;border:1px solid #ddd;border-radius:4px;padding:3px 6px;font-size:11px;color:#555;cursor:pointer;">
                         <option value="CFA">CFA</option>
                         <option value="EUR">€ EUR</option>
@@ -225,8 +225,8 @@
                                 <tr>
                                     <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
                                     <td data-label="Devise">CFA</td>
-                                    <td data-label="Solde Courant">1 311 800 000 CFA</td>
-                                    <td data-label="Solde Dispo">1 311 800 000 CFA</td>
+                                    <td data-label="Solde Courant" id="solde-courant-compte">1 311 914 000 CFA</td>
+                                    <td data-label="Solde Dispo" id="solde-dispo-compte">1 311 914 000 CFA</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -242,7 +242,7 @@
                 <div class="card repartition-card">
                     <div style="font-size: 11px; font-weight: 600; color: #666; margin-bottom: 5px;">RÉPARTITION DES SOLDES</div>
                     <div class="donut-legend" style="margin-bottom: 15px; font-size: 13px;">
-                        <div><span style="color:#9A2BB2; font-weight:bold;">■</span> Part CFA : 1 311 800 000 CFA <br><small style="color:#999; margin-left:12px;">(Poids total du portefeuille)</small></div>
+                        <div><span style="color:#9A2BB2; font-weight:bold;">■</span> <span id="donut-legend-desktop">Part CFA : 1 311 914 000 CFA</span> <br><small style="color:#999; margin-left:12px;">(Poids total du portefeuille)</small></div>
                     </div>
                     <div class="donut-container">
                         <svg class="donut-chart" viewBox="0 0 100 100" style="transform: rotate(-90deg); overflow: visible;">
@@ -364,8 +364,8 @@
                                     <tr>
                                         <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
                                         <td data-label="Devise">CFA</td>
-                                        <td data-label="Solde courant">1 311 800 000 CFA</td>
-                                        <td data-label="Solde disponible">1 311 800 000 CFA</td>
+                                        <td data-label="Solde courant" id="solde-courant-consult">1 311 914 000 CFA</td>
+                                        <td data-label="Solde disponible" id="solde-dispo-consult">1 311 914 000 CFA</td>
                                     </tr>
                                 </tbody>
                             </table>

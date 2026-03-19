@@ -84,6 +84,50 @@ function afficherSolde() {
 
     var elDevise = document.getElementById('solde-devise-select');
     if (elDevise) elDevise.value = devise;
+
+    // Mettre à jour TOUS les éléments solde dans le dashboard
+    var soldeCFA = Math.round(data.solde);
+    var soldeFormCFA = soldeCFA.toLocaleString('fr-FR') + ' CFA';
+    var soldeFormDevise = soldeFormate + ' ' + SYMBOLES_DEVISE[devise];
+
+    // Mobile hero
+    var elMobile = document.getElementById('solde-montant-mobile');
+    if (elMobile) elMobile.textContent = Math.round(soldeConverti).toLocaleString('fr-FR');
+
+    // Donut mobile
+    var elDonutMobile = document.getElementById('donut-legend-mobile');
+    if (elDonutMobile) elDonutMobile.textContent = 'Part ' + devise + ' : ' + soldeFormDevise;
+
+    // Donut desktop
+    var elDonutDesktop = document.getElementById('donut-legend-desktop');
+    if (elDonutDesktop) elDonutDesktop.textContent = 'Part ' + devise + ' : ' + soldeFormDevise;
+
+    // Tableau mes comptes
+    var elCourant = document.getElementById('solde-courant-compte');
+    if (elCourant) elCourant.textContent = soldeFormDevise;
+
+    var elDispo = document.getElementById('solde-dispo-compte');
+    if (elDispo) elDispo.textContent = soldeFormDevise;
+
+    // Section consultation
+    var elConsultCourant = document.getElementById('solde-courant-consult');
+    if (elConsultCourant) elConsultCourant.textContent = soldeFormDevise;
+
+    var elConsultDispo = document.getElementById('solde-dispo-consult');
+    if (elConsultDispo) elConsultDispo.textContent = soldeFormDevise;
+
+    // Forcer reset si ancien solde encore présent
+    var soldeData = localStorage.getItem('myboa_solde_data');
+    if (soldeData) {
+        var parsed = JSON.parse(soldeData);
+        if (parsed.solde === 1311800000) {
+            localStorage.removeItem('myboa_solde_data');
+            localStorage.removeItem('myboa_historique');
+            localStorage.removeItem('myboa_notifications');
+            localStorage.removeItem('myboa_notif_non_lues');
+            location.reload();
+        }
+    }
 }
 
 function changerDevise(devise) {
