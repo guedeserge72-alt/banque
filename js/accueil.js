@@ -98,6 +98,18 @@ function afficherSolde() {
         if (el) el.textContent = soldeFormDevise;
     });
 
+    var elCC = document.getElementById('solde-courant-compte');
+    if (elCC) elCC.textContent = soldeFormDevise;
+
+    var elDC = document.getElementById('solde-dispo-compte');
+    if (elDC) elDC.textContent = soldeFormDevise;
+
+    var elCS = document.getElementById('solde-courant-consult');
+    if (elCS) elCS.textContent = soldeFormDevise;
+
+    var elDS = document.getElementById('solde-dispo-consult');
+    if (elDS) elDS.textContent = soldeFormDevise;
+
     var elMobile = document.getElementById('solde-montant-mobile');
     if (elMobile) elMobile.textContent = Math.round(soldeConverti).toLocaleString('fr-FR');
 
