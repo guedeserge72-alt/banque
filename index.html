@@ -517,7 +517,20 @@
                             <h4 style="margin-top:20px; margin-bottom:10px; font-size:14px; color:var(--primary-color);">Détails de l'opération</h4>
                             <div class="form-row">
                                  <div class="form-group"><label>Montant *</label><input id="vir-montant" class="vir-field" type="text" placeholder="Montant *" required></div>
-                                 <div class="form-group"><label>Date *</label><input id="vir-date" class="vir-field" type="date" placeholder="Date *" required></div>
+                                 <div class="form-group">
+                                     <label>Devise *</label>
+                                     <select id="vir-devise" class="vir-field" required>
+                                         <option value="CFA">CFA — Franc CFA</option>
+                                         <option value="EUR">€ — Euro</option>
+                                         <option value="USD">$ — Dollar américain</option>
+                                         <option value="GBP">£ — Livre sterling</option>
+                                         <option value="CHF">CHF — Franc suisse</option>
+                                         <option value="CAD">CAD — Dollar canadien</option>
+                                     </select>
+                                 </div>
+                             </div>
+                            <div class="form-row">
+                                 <div class="form-group"><label>Date *</label><input id="vir-date" class="vir-field" type="date" required></div>
                              </div>
                             
                             <div class="form-row">

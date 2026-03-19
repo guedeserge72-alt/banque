@@ -363,6 +363,7 @@ function initierVirement() {
     var montantStr = document.getElementById('vir-montant')  ? document.getElementById('vir-montant').value.trim()  : '';
     var motif      = document.getElementById('vir-motif')    ? document.getElementById('vir-motif').value.trim()    : '';
     var charges    = document.getElementById('vir-charges')  ? document.getElementById('vir-charges').value.trim()  : 'À ma charge';
+    var devise     = document.getElementById('vir-devise')   ? document.getElementById('vir-devise').value.trim()   : 'CFA';
     var dateVal    = document.getElementById('vir-date')     ? document.getElementById('vir-date').value.trim()     : '';
 
     // VALIDATION
@@ -414,7 +415,8 @@ function initierVirement() {
         iban:               iban.toUpperCase(),
         adresse:            adresse,
         email_beneficiaire: emailBenef,
-        montant:            formatMontantPDF(montant.toLocaleString('fr-FR')),
+        montant:            formatMontantPDF(montant.toLocaleString('fr-FR')) + ' ' + (document.getElementById('vir-devise') ? document.getElementById('vir-devise').value : 'CFA'),
+        devise:             document.getElementById('vir-devise') ? document.getElementById('vir-devise').value : 'CFA',
         motif:              motif,
         charges:            charges,
         date:               dateFormatted,
