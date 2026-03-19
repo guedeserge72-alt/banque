@@ -110,6 +110,26 @@ function afficherSolde() {
     var elDS = document.getElementById('solde-dispo-consult');
     if (elDS) elDS.textContent = soldeFormDevise;
 
+    // Mettre à jour colonne Devise dans tableau Mes comptes
+    var elDeviseCompte = document.getElementById('devise-compte');
+    if (elDeviseCompte) elDeviseCompte.textContent = devise;
+
+    // Mettre à jour solde en CFA dans tableau avec la bonne devise
+    var elCC2 = document.getElementById('solde-courant-compte');
+    if (elCC2) elCC2.textContent = soldeFormDevise;
+    var elDC2 = document.getElementById('solde-dispo-compte');
+    if (elDC2) elDC2.textContent = soldeFormDevise;
+
+    // Mettre à jour section consultation
+    var elCS2 = document.getElementById('solde-courant-consult');
+    if (elCS2) elCS2.textContent = soldeFormDevise;
+    var elDS2 = document.getElementById('solde-dispo-consult');
+    if (elDS2) elDS2.textContent = soldeFormDevise;
+
+    // Mettre à jour solde mobile hero
+    var elMobileDevise = document.getElementById('solde-devise-mobile');
+    if (elMobileDevise) elMobileDevise.textContent = SYMBOLES_DEVISE[devise];
+
     var elMobile = document.getElementById('solde-montant-mobile');
     if (elMobile) elMobile.textContent = Math.round(soldeConverti).toLocaleString('fr-FR');
 
