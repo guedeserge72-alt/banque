@@ -112,6 +112,15 @@
         margin-bottom: 10px !important;
     }
 
+    .login-field.active {
+        border: 1.5px solid #4CAF50 !important;
+        background: rgba(76,175,80,0.08) !important;
+    }
+
+    .login-field.active label {
+        color: #4CAF50 !important;
+    }
+
     .login-field label { color: #7a9bb5 !important; font-size: 9px !important; text-transform: uppercase !important; }
 
     .login-field input {
@@ -194,4 +203,19 @@
 
     .login-error { color: #e74c3c !important; font-size: 12px !important; margin-bottom: 10px !important; display: none; }
     .login-error.visible { display: block !important; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.code-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background: #4CAF50;
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink 1s infinite;
 }

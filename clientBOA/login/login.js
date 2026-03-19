@@ -86,8 +86,18 @@ document.addEventListener('DOMContentLoaded', function () {
         if (fieldCodeMobile) fieldCodeMobile.classList.remove('active');
         if (field === 'identifiant' && fieldIdentifiantMobile) {
             fieldIdentifiantMobile.classList.add('active');
+            var cursor = document.getElementById('code-cursor');
+            if (cursor) cursor.style.display = 'none';
         } else if (fieldCodeMobile) {
             fieldCodeMobile.classList.add('active');
+            var cursor = document.getElementById('code-cursor');
+            if (!cursor) {
+                cursor = document.createElement('span');
+                cursor.id = 'code-cursor';
+                cursor.className = 'code-cursor';
+                inputCodeMobile.parentNode.appendChild(cursor);
+            }
+            cursor.style.display = 'inline-block';
         }
     }
 
