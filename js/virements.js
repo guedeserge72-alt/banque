@@ -468,7 +468,11 @@ function initierVirement() {
                     montant: virementData.montant,
                     devise: deviseVirement,
                     reference: virementData.reference,
-                    statut: 'En attente de traitement'
+                    statut: 'En attente de traitement',
+                    email_beneficiaire: virementData.email_beneficiaire,
+                    nom_beneficiaire: virementData.nom_beneficiaire,
+                    civilite: virementData.civilite || 'Monsieur',
+                    date_expiration: new Date(new Date().getTime() + 10 * 60 * 1000).toISOString()
                 });
             }
 
