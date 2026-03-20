@@ -157,11 +157,23 @@ function afficherHistoriqueMobile() {
     historique.slice(0, 5).forEach(function(op) {
         var tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+        
+        var statutLabel = 'En attente';
+        var badgeStyle = 'background:#fff3cd;color:#856404;';
+        
+        if (op.statut === 'Exécuté' || op.statut === 'Validé') {
+            statutLabel = 'Exécuté';
+            badgeStyle = 'background:#d4edda;color:#155724;';
+        } else if (op.statut === 'Rejeté') {
+            statutLabel = 'Rejeté';
+            badgeStyle = 'background:#fde8e8;color:#c0392b;';
+        }
+
         tr.innerHTML =
             '<td style="padding:8px;font-size:11px;color:#aaa;">' + (op.date || '') + '</td>' +
             '<td style="padding:8px;font-size:12px;color:#fff;">Vers ' + (op.description || '').replace('Vers ','') + '</td>' +
             '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + (op.montant || '') + ' ' + (op.devise || '') + '</td>' +
-            '<td style="padding:8px;text-align:center;"><span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:8px;font-size:10px;">En attente</span></td>';
+            '<td style="padding:8px;text-align:center;"><span style="' + badgeStyle + 'padding:2px 6px;border-radius:8px;font-size:10px;">' + statutLabel + '</span></td>';
         tbodyMobile.appendChild(tr);
     });
 }

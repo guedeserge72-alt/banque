@@ -1344,3 +1344,51 @@ a { -webkit-tap-highlight-color: transparent !important; }
         min-height: 130px !important;
     }
 }
+
+/* Virement History Responsive Table */
+@media (max-width: 768px) {
+    #table-historique-virements,
+    #table-historique-virements thead,
+    #table-historique-virements tbody,
+    #table-historique-virements th,
+    #table-historique-virements td,
+    #table-historique-virements tr {
+        display: block !important;
+    }
+    
+    #table-historique-virements thead tr {
+        display: none !important;
+    }
+    
+    #table-historique-virements td {
+        position: relative !important;
+        padding-left: 40% !important;
+        white-space: normal !important;
+        color: white !important;
+        border: none !important;
+        text-align: left !important;
+        margin-bottom: 5px;
+        min-height: 30px;
+    }
+    
+    #table-historique-virements td:before {
+        content: attr(data-label);
+        position: absolute !important;
+        left: 10px !important;
+        font-size: 11px !important;
+        color: #aaa !important;
+        font-weight: bold !important;
+        text-transform: uppercase;
+        top: 10px;
+    }
+    
+    #table-historique-virements tr {
+        margin-bottom: 15px !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 8px !important;
+        padding: 10px !important;
+        background: rgba(255,255,255,0.05) !important;
+        width: calc(100% - 24px) !important;
+        margin-left: 12px !important;
+    }
+}

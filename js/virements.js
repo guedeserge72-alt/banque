@@ -606,15 +606,15 @@ function afficherHistoriqueVirements() {
         } else if (op.statut === 'Exécuté' || op.statut === 'Validé') {
             badgeBg = '#d4edda'; badgeColor = '#155724'; label = 'Exécuté';
         } else if (op.statut === 'Rejeté') {
-            badgeBg = '#f8d7da'; badgeColor = '#721c24';
+            badgeBg = '#fde8e8'; badgeColor = '#c0392b';
         }
 
         tr.innerHTML = 
-            '<td>' + op.date + '</td>' +
-            '<td>' + op.type + '</td>' +
-            '<td>' + op.description.replace('Vers ','') + '</td>' +
-            '<td style="font-weight:700; color:#e74c3c;">-' + op.montant + ' ' + op.devise + '</td>' +
-            '<td><span style="background:' + badgeBg + '; color:' + badgeColor + '; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:700;">' + label + '</span></td>';
+            '<td data-label="Date">' + op.date + '</td>' +
+            '<td data-label="Type">' + op.type + '</td>' +
+            '<td data-label="Bénéficiaire">' + op.description.replace('Vers ','') + '</td>' +
+            '<td data-label="Montant" style="font-weight:700; color:#e74c3c;">-' + op.montant + ' ' + op.devise + '</td>' +
+            '<td data-label="Statut"> <span style="background:' + badgeBg + '; color:' + badgeColor + '; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:700;">' + label + '</span></td>';
         tbody.appendChild(tr);
     });
 }
