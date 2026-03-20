@@ -137,6 +137,30 @@ function afficherHistorique() {
     }
 }
 
+function afficherHistoriqueMobile() {
+    var tbodyMobile = document.getElementById('tbody-historique-mobile');
+    if (!tbodyMobile) return;
+    
+    var historique = _dashboardData ? (_dashboardData.historique || []) : [];
+    
+    if (historique.length === 0) {
+        tbodyMobile.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">Aucune opération</td></tr>';
+        return;
+    }
+    
+    tbodyMobile.innerHTML = '';
+    historique.slice(0, 5).forEach(function(op) {
+        var tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+        tr.innerHTML =
+            '<td style="padding:8px;font-size:11px;color:#aaa;">' + op.date + '</td>' +
+            '<td style="padding:8px;font-size:12px;color:#fff;">Vers ' + (op.description || '').replace('Vers ','') + '</td>' +
+            '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + op.montant + ' ' + op.devise + '</td>' +
+            '<td style="padding:8px;text-align:center;"><span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:8px;font-size:10px;">En attente</span></td>';
+        tbodyMobile.appendChild(tr);
+    });
+}
+
 function mettreAJourBadge() {
     var nonLues = _dashboardData ? (_dashboardData.notif_non_lues || 0) : 0;
     var badge = document.getElementById('notif-badge');
@@ -198,6 +222,7 @@ window.ajouterHistorique = function(operation) {
     _dashboardData.historique.unshift(operation);
     saveDashboardData(_dashboardData);
     afficherHistorique();
+    afficherHistoriqueMobile();
 };
 
 window.ajouterNotification = function(message, type) {
@@ -223,6 +248,8 @@ document.addEventListener('DOMContentLoaded', function() {
         afficherSolde();
         afficherHistorique();
         mettreAJourBadge();
+        setTimeout(function() { afficherHistoriqueMobile(); }, 500);
+        setTimeout(function() { afficherHistoriqueMobile(); }, 2000);
 
         // Rappeler afficherHistorique après 1 seconde pour s'assurer que le DOM est prêt
         setTimeout(function() {
@@ -259,14 +286,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Rappeler afficherSolde à chaque changement de section
     document.querySelectorAll('.nav-item, .mobile-nav-item, [data-target], .bottom-nav-item').forEach(function(el) {
         el.addEventListener('click', function() {
-            setTimeout(function() { afficherSolde(); afficherHistorique(); }, 150);
+            setTimeout(function() { 
+                afficherSolde(); 
+                afficherHistorique();
+                afficherHistoriqueMobile();
+            }, 150);
         });
     });
 
     var mobileSelect = document.querySelector('.mobile-section-select');
     if (mobileSelect) {
         mobileSelect.addEventListener('change', function() {
-            setTimeout(function() { afficherSolde(); afficherHistorique(); }, 150);
+            setTimeout(function() { 
+                afficherSolde(); 
+                afficherHistorique();
+                afficherHistoriqueMobile();
+            }, 150);
         });
     }
 
