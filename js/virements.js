@@ -14,7 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
             item.classList.add('active');
             var targetId = item.getAttribute('data-pane');
             var targetPane = document.getElementById(targetId);
-            if (targetPane) targetPane.classList.remove('hidden');
+            if (targetPane) {
+                targetPane.classList.remove('hidden');
+                if (targetId === 'vir_hist' && typeof afficherHistoriqueVirements === 'function') {
+                    afficherHistoriqueVirements();
+                }
+            }
         });
     });
 
@@ -41,9 +46,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var mobileSelect = document.querySelector('#section-virements .mobile-section-select');
     if (mobileSelect) {
         mobileSelect.addEventListener('change', function() {
+            var targetId = this.value;
             contentPanes.forEach(function(p) { p.classList.add('hidden'); });
-            var targetPane = document.getElementById(this.value);
-            if (targetPane) targetPane.classList.remove('hidden');
+            var targetPane = document.getElementById(targetId);
+            if (targetPane) {
+                targetPane.classList.remove('hidden');
+                if (targetId === 'vir_hist' && typeof afficherHistoriqueVirements === 'function') {
+                    afficherHistoriqueVirements();
+                }
+            }
         });
     }
 });
@@ -528,5 +539,91 @@ function resetVirementForm() {
         if (el) { el.value = ''; el.style.borderColor = ''; el.style.boxShadow = ''; }
     });
 }
+
+// ================================================
+// HISTORIQUE DES VIREMENTS (FILTRES & DONNÉES)
+// ================================================
+function afficherHistoriqueVirements() {
+    var tbody = document.getElementById('tbody-virement-historique');
+    if (!tbody) return;
+
+    var config = {
+        type:   document.getElementById('filt-vir-type').value,
+        date:   document.getElementById('filt-vir-date').value,
+        statut: document.getElementById('filt-vir-statut').value
+    };
+
+    var historique = (window._dashboardData && window._dashboardData.historique) || [];
+    
+    // Filtrage
+    var filtered = historique.filter(function(op) {
+        var matchType = true;
+        if (config.type) {
+            matchType = op.type.toLowerCase().indexOf(config.type.toLowerCase()) !== -1;
+        }
+
+        var matchDate = true;
+        if (config.date) {
+            // op.date est au format "DD/MM/YYYY à HH:mm"
+            var parts = op.date.split(' ')[0].split('/');
+            var opDateISO = parts[2] + '-' + parts[1] + '-' + parts[0];
+            matchDate = opDateISO === config.date;
+        }
+
+        var matchStatut = true;
+        if (config.statut) {
+            if (config.statut === 'En attente') {
+                matchStatut = op.statut === 'En attente de traitement';
+            } else if (config.statut === 'Exécuté') {
+                matchStatut = (op.statut === 'Exécuté' || op.statut === 'Validé');
+            } else if (config.statut === 'Rejeté') {
+                matchStatut = op.statut === 'Rejeté';
+            }
+        }
+
+        return matchType && matchDate && matchStatut;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Aucune opération trouvée avec ces filtres.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '';
+    filtered.forEach(function(op) {
+        var tr = document.createElement('tr');
+        var color = '#fff';
+        var badgeBg = '#fff3cd';
+        var badgeColor = '#856404';
+        var label = op.statut;
+
+        if (op.statut === 'En attente de traitement') {
+            label = 'En attente';
+        } else if (op.statut === 'Exécuté' || op.statut === 'Validé') {
+            badgeBg = '#d4edda'; badgeColor = '#155724'; label = 'Exécuté';
+        } else if (op.statut === 'Rejeté') {
+            badgeBg = '#f8d7da'; badgeColor = '#721c24';
+        }
+
+        tr.innerHTML = 
+            '<td>' + op.date + '</td>' +
+            '<td>' + op.type + '</td>' +
+            '<td>' + op.description.replace('Vers ','') + '</td>' +
+            '<td style="font-weight:700; color:#e74c3c;">-' + op.montant + ' ' + op.devise + '</td>' +
+            '<td><span style="background:' + badgeBg + '; color:' + badgeColor + '; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:700;">' + label + '</span></td>';
+        tbody.appendChild(tr);
+    });
+}
+
+// Initialisation des listeners
+document.addEventListener('DOMContentLoaded', function() {
+    ['filt-vir-type', 'filt-vir-date', 'filt-vir-statut'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('change', afficherHistoriqueVirements);
+    });
+    
+    // Initial call
+    setTimeout(afficherHistoriqueVirements, 1000);
+});
 
 

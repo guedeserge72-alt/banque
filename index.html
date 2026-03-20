@@ -729,9 +729,9 @@
                     <div id="vir_hist" class="pane hidden">
                         <h3>Historique des virements</h3>
                         <div class="filter-bar" style="margin-bottom: 20px; gap: 10px;">
-                            <select style="max-width: 200px;"><option>Tous les types</option><option>Domestique</option><option>International</option></select>
-                            <input type="date" style="max-width: 200px;">
-                            <select style="max-width: 200px;"><option>Tous les statuts</option><option>Exécuté</option><option>En attente</option><option>Rejeté</option></select>
+                            <select id="filt-vir-type" style="max-width: 200px;"><option value="">Tous les types</option><option value="Domestique">Domestique</option><option value="International">International</option></select>
+                            <input type="date" id="filt-vir-date" style="max-width: 200px;">
+                            <select id="filt-vir-statut" style="max-width: 200px;"><option value="">Tous les statuts</option><option value="Exécuté">Exécuté</option><option value="En attente">En attente</option><option value="Rejeté">Rejeté</option></select>
                         </div>
                         <div class="table-responsive">
                             <table>
@@ -744,8 +744,8 @@
                                         <th>Statut</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr><td colspan="5" style="text-align: center; padding: 20px;">— No Data —</td></tr>
+                                <tbody id="tbody-virement-historique">
+                                    <!-- Injected via JS -->
                                 </tbody>
                             </table>
                         </div>
