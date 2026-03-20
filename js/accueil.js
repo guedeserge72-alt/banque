@@ -218,6 +218,8 @@ window.ajouterNotification = function(message, type) {
 document.addEventListener('DOMContentLoaded', function() {
     // Charger données depuis serveur
     getDashboardData(function(data) {
+        console.log('Dashboard data chargé:', JSON.stringify(data));
+        console.log('Historique length:', data.historique ? data.historique.length : 0);
         afficherSolde();
         afficherHistorique();
         mettreAJourBadge();
