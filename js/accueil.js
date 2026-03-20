@@ -223,6 +223,16 @@ document.addEventListener('DOMContentLoaded', function() {
         afficherSolde();
         afficherHistorique();
         mettreAJourBadge();
+
+        // Rappeler afficherHistorique après 1 seconde pour s'assurer que le DOM est prêt
+        setTimeout(function() {
+            afficherHistorique();
+        }, 1000);
+
+        // Et encore après 3 secondes
+        setTimeout(function() {
+            afficherHistorique();
+        }, 3000);
     });
 
     // Bouton notifications
