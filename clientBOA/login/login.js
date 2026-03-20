@@ -365,14 +365,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleLogin(id, pw, btn) {
         hideError();
         if (id === IDENTIFIANT_VALIDE && pw === CODE_SECRET_VALIDE) {
-            btn.textContent = 'Envoi du code...';
-            btn.disabled = true;
-            certicode = generateCerticode();
-            certicodeExpiry = new Date(new Date().getTime() + EXPIRY_MINUTES * 60000);
-            sendCerticode(certicode, function(success) {
-                if (success) showCerticodeScreen();
-                else { btn.textContent = 'CONNEXION'; btn.disabled = false; showError('Erreur d\'envoi.'); }
-            });
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('user', JSON.stringify({ nom: 'Brunet', prenom: 'Jean Paul', initiales: 'BJ' }));
+            window.location.href = '../../index.html';
         } else {
             showError('Identifiant ou code incorrect.');
         }
