@@ -139,23 +139,28 @@ function afficherHistorique() {
 
 function afficherHistoriqueMobile() {
     var tbodyMobile = document.getElementById('tbody-historique-mobile');
-    if (!tbodyMobile) return;
-    
-    var historique = _dashboardData ? (_dashboardData.historique || []) : [];
-    
+    if (!tbodyMobile) {
+        console.log('tbody-historique-mobile introuvable');
+        return;
+    }
+    if (!_dashboardData) {
+        console.log('_dashboardData null');
+        return;
+    }
+    var historique = _dashboardData.historique || [];
+    console.log('historique mobile:', historique.length, 'operations');
     if (historique.length === 0) {
         tbodyMobile.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">Aucune opération</td></tr>';
         return;
     }
-    
     tbodyMobile.innerHTML = '';
     historique.slice(0, 5).forEach(function(op) {
         var tr = document.createElement('tr');
         tr.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
         tr.innerHTML =
-            '<td style="padding:8px;font-size:11px;color:#aaa;">' + op.date + '</td>' +
+            '<td style="padding:8px;font-size:11px;color:#aaa;">' + (op.date || '') + '</td>' +
             '<td style="padding:8px;font-size:12px;color:#fff;">Vers ' + (op.description || '').replace('Vers ','') + '</td>' +
-            '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + op.montant + ' ' + op.devise + '</td>' +
+            '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + (op.montant || '') + ' ' + (op.devise || '') + '</td>' +
             '<td style="padding:8px;text-align:center;"><span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:8px;font-size:10px;">En attente</span></td>';
         tbodyMobile.appendChild(tr);
     });
