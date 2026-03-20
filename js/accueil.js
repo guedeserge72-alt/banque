@@ -99,22 +99,23 @@ function afficherHistorique() {
     if (!_dashboardData) return;
     var historique = _dashboardData.historique || [];
     var tbody = document.getElementById('tbody-historique-accueil');
-    if (!tbody) return;
-    if (historique.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">Aucune opération</td></tr>';
-        return;
+    if (tbody) {
+        if (historique.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">Aucune opération</td></tr>';
+        } else {
+            tbody.innerHTML = '';
+            historique.slice(0, 5).forEach(function(op) {
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + op.date + '</td>' +
+                    '<td>' + op.type + '</td>' +
+                    '<td>' + op.description + '</td>' +
+                    '<td style="color:#e74c3c;font-weight:600;">-' + op.montant + ' ' + op.devise + '</td>' +
+                    '<td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:11px;">' + op.statut + '</span></td>';
+                tbody.appendChild(tr);
+            });
+        }
     }
-    tbody.innerHTML = '';
-    historique.slice(0, 5).forEach(function(op) {
-        var tr = document.createElement('tr');
-        tr.innerHTML =
-            '<td>' + op.date + '</td>' +
-            '<td>' + op.type + '</td>' +
-            '<td>' + op.description + '</td>' +
-            '<td style="color:#e74c3c;font-weight:600;">-' + op.montant + ' ' + op.devise + '</td>' +
-            '<td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:11px;">' + op.statut + '</span></td>';
-        tbody.appendChild(tr);
-    });
 
     var tbodyMobile = document.getElementById('tbody-historique-mobile');
     if (tbodyMobile) {
