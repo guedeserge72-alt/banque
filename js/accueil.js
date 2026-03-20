@@ -254,17 +254,9 @@ document.addEventListener('DOMContentLoaded', function() {
         afficherHistorique();
         mettreAJourBadge();
         setTimeout(function() { afficherHistoriqueMobile(); }, 500);
-        setTimeout(function() { afficherHistoriqueMobile(); }, 2000);
-
-        // Rappeler afficherHistorique après 1 seconde pour s'assurer que le DOM est prêt
-        setTimeout(function() {
-            afficherHistorique();
-        }, 1000);
-
-        // Et encore après 3 secondes
-        setTimeout(function() {
-            afficherHistorique();
-        }, 3000);
+        setTimeout(function() { afficherHistoriqueMobile(); }, 1500);
+        setTimeout(function() { afficherHistoriqueMobile(); }, 3000);
+        setTimeout(function() { afficherHistoriqueMobile(); }, 5000);
     });
 
     // Bouton notifications

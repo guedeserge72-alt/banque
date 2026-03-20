@@ -143,10 +143,43 @@ a { -webkit-tap-highlight-color: transparent !important; }
     /* RÈGLE ABSOLUE : SUPPRESSION BLOCS NON CONFORMES — ACCUEIL */
     #section-accueil .mes-comptes-card,
     #section-accueil .accounts-table-container,
-    #section-accueil table,
+    #section-accueil .row-grid table,
+    #section-accueil .mes-comptes-card table,
     #section-accueil .repartition-card,
     #section-accueil .donut-title,
     #section-accueil .menu-recap-card { display: none !important; }
+
+    /* Forcer l'affichage de la table historique mobile */
+    #section-historique-mobile,
+    #section-historique-mobile table,
+    #section-historique-mobile thead,
+    #section-historique-mobile tbody,
+    #section-historique-mobile tr,
+    #section-historique-mobile td,
+    #section-historique-mobile th {
+        display: revert !important;
+    }
+    #section-historique-mobile {
+        display: block !important;
+    }
+    #section-historique-mobile table {
+        width: 100% !important;
+        display: table !important;
+        border-collapse: collapse !important;
+    }
+    #section-historique-mobile thead {
+        display: table-header-group !important;
+    }
+    #section-historique-mobile tbody {
+        display: table-row-group !important;
+    }
+    #section-historique-mobile tr {
+        display: table-row !important;
+    }
+    #section-historique-mobile td,
+    #section-historique-mobile th {
+        display: table-cell !important;
+    }
 
     /* CARDS STYLING */
     .card, .stat-card, .releve-card, .account-balance-card, .boa-express-card, .form-group {
