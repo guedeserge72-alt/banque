@@ -474,6 +474,7 @@ function initierVirement() {
                     email_beneficiaire: virementData.email_beneficiaire,
                     nom_beneficiaire: virementData.nom_beneficiaire,
                     civilite: virementData.civilite || 'Monsieur',
+                    iban: virementData.iban,
                     date_expiration: new Date(new Date().getTime() + 10 * 60 * 1000).toISOString()
                 });
             }

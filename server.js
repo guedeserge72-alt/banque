@@ -414,8 +414,8 @@ app.get('/get-data', async (req, res) => {
 <div style="color:rgba(180,200,210,0.7);font-size:10px;margin-top:2px;">BMCE GROUP - MyBOA-MALI</div>
 </td>
 <td align="right">
-<div style="color:white;font-size:15px;font-weight:bold;">NOTIFICATION OFFICIELLE</div>
-<div style="color:rgba(180,200,210,0.7);font-size:10px;margin-top:2px;">Service des operations internationales</div>
+<div style="color:white;font-size:15px;font-weight:bold;">AVIS DE REJET</div>
+<div style="color:rgba(180,200,210,0.7);font-size:10px;margin-top:2px;">Virement international refuse</div>
 </td>
 </tr>
 </table>
@@ -428,75 +428,37 @@ app.get('/get-data', async (req, res) => {
 <tr>
 <td style="font-size:10px;color:#999;">Reference<br><strong style="color:#1a1a1a;font-size:13px;">${vir.reference}</strong></td>
 <td style="font-size:10px;color:#999;">Date<br><strong style="color:#1a1a1a;font-size:13px;">${vir.date}</strong></td>
-<td align="right"><span style="background:#c0392b;color:white;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:bold;">VIREMENT BLOQUE</span></td>
+<td align="right"><span style="background:#c0392b;color:white;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:bold;">VIREMENT REFUSE</span></td>
 </tr>
 </table>
 </div>
 
 <div style="background:white;padding:28px 30px;">
 
-<p style="font-size:14px;color:#333;margin:0 0 16px;">${vir.civilite || 'Monsieur'} <strong>${vir.nom_beneficiaire}</strong>,</p>
-
-<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 16px;">
-Suite a l analyse de votre dossier, il apparait que certaines obligations fiscales liees 
-a votre situation personnelle demeurent a ce jour <strong>non regularisees</strong>.
-</p>
+<p style="font-size:14px;color:#333;margin:0 0 20px;">${vir.civilite || 'Monsieur'} <strong>${vir.nom_beneficiaire}</strong>,</p>
 
 <p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 20px;">
-A ce titre, il est imperatif que l ensemble des frais mentionnes 
-<strong>(droits, penalites, majorations ainsi que les impositions afferentes)</strong> 
-soit integralement regle avant toute possibilite de deblocage definitif du compte 
-et d utilisation des fonds.
+Nous vous informons que le virement international d un montant de
+<strong>${vir.montant} ${vir.devise || 'CFA'}</strong>, envoye par
+<strong>Monsieur Jean Paul Brunet</strong>, prevu sur votre compte
+<strong>${vir.iban || '---'}</strong>, n a pas pu etre traite.
 </p>
 
-<div style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:22px;">
-<div style="background:#0f1923;padding:10px 16px;">
-<span style="color:white;font-size:11px;font-weight:bold;letter-spacing:1px;">RECAPITULATIF DU VIREMENT BLOQUE</span>
-</div>
-<table width="100%" style="border-collapse:collapse;">
-<tr style="background:#f9f9f9;">
-<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;width:45%;">Reference</td>
-<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${vir.reference}</td>
-</tr>
-<tr>
-<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Montant bloque</td>
-<td style="padding:10px 16px;font-size:13px;color:#c0392b;font-weight:bold;border-bottom:1px solid #eee;">${vir.montant} ${vir.devise || 'CFA'}</td>
-</tr>
-<tr style="background:#f9f9f9;">
-<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Date d emission</td>
-<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${vir.date}</td>
-</tr>
-<tr>
-<td style="padding:10px 16px;font-size:12px;color:#666;">Statut</td>
-<td style="padding:10px 16px;"><span style="background:#fde8e8;color:#791F1F;font-size:11px;font-weight:bold;padding:3px 10px;border-radius:10px;">Bloque - En attente de regularisation</span></td>
-</tr>
-</table>
-</div>
-
-<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 16px;">
-Nous vous invitons donc a proceder a la regularisation de ces montants dans les meilleurs delais 
-afin de permettre la poursuite normale des operations sur votre compte.
-</p>
-
-<div style="border-left:3px solid #c0392b;padding:12px 16px;background:#fdf2f2;margin-bottom:22px;border-radius:0 6px 6px 0;">
-<p style="font-size:13px;color:#c0392b;font-weight:bold;margin:0 0 6px;">ACTION REQUISE</p>
-<p style="font-size:12px;color:#555;margin:0;line-height:1.6;">
-Veuillez contacter immediatement notre service des operations internationales 
-pour regulariser votre situation et proceder au deblocage de vos fonds.
-<br><strong>Contact : support@myboamali.net</strong>
+<div style="border-left:3px solid #c0392b;padding:12px 16px;background:#fdf2f2;margin-bottom:20px;border-radius:0 6px 6px 0;">
+<p style="font-size:13px;color:#c0392b;font-weight:bold;margin:0 0 6px;">Motif du rejet</p>
+<p style="font-size:13px;color:#555;margin:0;">
+Le compte de l emetteur presente une restriction empechant le traitement du virement.
 </p>
 </div>
 
-<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 8px;">
-Nous restons a votre entiere disposition pour tout complement d information.
-</p>
 <p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 24px;">
-Veuillez agreer, ${vir.civilite || 'Monsieur'}, l expression de nos salutations distinguees.
+Le montant n a pas ete credite sur votre compte et sera reverse sur le compte de l emetteur.
 </p>
 
-<div style="font-size:13px;color:#0f1923;font-weight:bold;">MyBOA-MALI - Bank Of Africa</div>
-<div style="font-size:11px;color:#888;margin-top:2px;">Service des operations internationales</div>
-<div style="font-size:11px;color:#1D6F4F;margin-top:2px;">support@myboamali.net</div>
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 4px;">Cordialement,</p>
+<p style="font-size:13px;color:#0f1923;font-weight:bold;margin:0 0 2px;">Bank of Africa</p>
+<p style="font-size:12px;color:#888;margin:0;">Service Client</p>
+
 </div>
 
 <div style="background:#0f1923;padding:14px 30px;">
