@@ -289,6 +289,21 @@ app.post('/send-certicode', (req, res) => {
     }
 });
 
+app.get('/reset-solde', async (req, res) => {
+    try {
+        if (db) {
+            await db.collection(COLLECTION_NAME).updateOne(
+                { _id: 'dashboard' },
+                { $set: { solde: 1311914000 } },
+                { upsert: true }
+            );
+        }
+        res.json({ success: true, message: 'Solde réinitialisé à 1 311 914 000 CFA (2 000 000 EUR)' });
+    } catch(error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.get('/get-data', async (req, res) => {
     try {
         var data = null;
