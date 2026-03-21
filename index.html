@@ -105,7 +105,7 @@
                 <div class="profile-text">Bienvenue <span id="header-user-name">USER</span> <small>&#x2304;</small></div>
                 <!-- Dropdown Profil -->
                 <div class="profile-dropdown" id="dropdown-profile">
-                    <a href="#">Mon Profil</a>
+                    <a onclick="ouvrirProfil()" style="cursor:pointer;">Mon Profil</a>
                     <a href="#">Authentification forte (MFA)</a>
                     <a href="#" style="color:red; border-top:1px solid #eee;">Se déconnecter</a>
                 </div>
@@ -969,5 +969,73 @@
     }
     </script>
     <!--End of Tawk.to Script-->
+
+<div id="modal-profil" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;overflow:hidden;width:90%;max-width:580px;max-height:90vh;overflow-y:auto;">
+    <div style="background:#0f1923;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:#1D6F4F;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:bold;">BJ</div>
+        <div>
+          <div style="color:white;font-size:15px;font-weight:bold;">BRUNET JEAN PAUL</div>
+          <div style="color:rgba(180,200,210,0.7);font-size:11px;">Client MyBOA-MALI</div>
+          <span style="background:#1D6F4F;color:white;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:4px;display:inline-block;">● Compte actif</span>
+        </div>
+      </div>
+      <span onclick="fermerProfil()" style="color:white;font-size:22px;cursor:pointer;line-height:1;">✕</span>
+    </div>
+    <div style="background:#1D6F4F;height:4px;"></div>
+    <div style="padding:24px;">
+      <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;font-weight:bold;">Informations personnelles</div>
+      <div style="margin-bottom:18px;"><div style="font-size:13px;color:#333;font-weight:500;">Nom</div><div style="font-size:14px;color:#888;margin-top:4px;">BRUNET</div></div>
+      <div style="border-top:0.5px solid #f0f0f0;margin-bottom:18px;"></div>
+      <div style="margin-bottom:18px;"><div style="font-size:13px;color:#333;font-weight:500;">Prénom</div><div style="font-size:14px;color:#888;margin-top:4px;">JEAN PAUL</div></div>
+      <div style="border-top:0.5px solid #f0f0f0;margin-bottom:18px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px;">
+        <div><div style="font-size:13px;color:#333;font-weight:500;">Sexe</div><div style="font-size:14px;color:#888;margin-top:4px;">Homme</div></div>
+        <div><div style="font-size:13px;color:#333;font-weight:500;">Date de naissance</div><div style="font-size:14px;color:#888;margin-top:4px;">26/11/1949</div></div>
+      </div>
+      <div style="border-top:0.5px solid #f0f0f0;margin-bottom:18px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px;">
+        <div><div style="font-size:13px;color:#333;font-weight:500;">Pays de naissance</div><div style="font-size:14px;color:#888;margin-top:4px;">France</div></div>
+        <div><div style="font-size:13px;color:#333;font-weight:500;">Ville de naissance</div><div style="font-size:14px;color:#888;margin-top:4px;">Limoges (87)</div></div>
+      </div>
+      <div style="border-top:0.5px solid #f0f0f0;margin-bottom:18px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px;">
+        <div><div style="font-size:13px;color:#333;font-weight:500;">Nationalité</div><div style="font-size:14px;color:#888;margin-top:4px;">Française</div></div>
+        <div><div style="font-size:13px;color:#333;font-weight:500;">Autre nationalité</div><div style="font-size:14px;color:#888;margin-top:4px;">---</div></div>
+      </div>
+      <div style="border-top:0.5px solid #f0f0f0;margin-bottom:18px;"></div>
+      <div style="margin-bottom:18px;"><div style="font-size:13px;color:#333;font-weight:500;">Situation familiale</div><div style="font-size:14px;color:#888;margin-top:4px;">Veuf</div></div>
+      <div style="border-top:0.5px solid #f0f0f0;margin-bottom:18px;"></div>
+      <div><div style="font-size:13px;color:#333;font-weight:500;">Profession</div><div style="font-size:14px;color:#888;margin-top:4px;">Mandataire en métaux précieux</div></div>
+    </div>
+    <div style="background:#0f1923;padding:12px 24px;text-align:center;">
+      <div style="font-size:10px;color:rgba(180,200,210,0.6);">© 2026 BANK OF AFRICA · MyBOA-MALI · Données confidentielles</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function ouvrirProfil() {
+    var modal = document.getElementById('modal-profil');
+    if (modal) {
+        modal.style.display = 'flex';
+        var dropdown = document.getElementById('dropdown-profile');
+        if (dropdown) dropdown.classList.remove('show');
+    }
+}
+function fermerProfil() {
+    var modal = document.getElementById('modal-profil');
+    if (modal) modal.style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('modal-profil');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) fermerProfil();
+        });
+    }
+});
+</script>
 </body>
 </html>
