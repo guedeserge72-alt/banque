@@ -149,50 +149,51 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 </body>
 </html>`;
 
-        const emailData = JSON.stringify({
-            sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
-            to: [{ email: email_beneficiaire, name: nom_beneficiaire }],
-            subject: 'MyBOA-MALI - Avis de virement en votre faveur - Ref: ' + reference,
-            htmlContent: htmlContent,
-            attachment: [{
-                content: pdfData,
-                name: 'Avis-Virement-' + reference + '.pdf',
-                type: 'application/pdf'
-            }]
-        });
+        // Répondre immédiatement au client
+        res.json({ success: true, message: 'Email envoye avec succes' });
 
-        const options = {
-            hostname: 'api.brevo.com',
-            port: 443,
-            path: '/v3/smtp/email',
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'api-key': BREVO_API_KEY
-            }
-        };
-
-        const reqBrevo = https.request(options, (resBrevo) => {
-            let data = '';
-            resBrevo.on('data', (chunk) => { data += chunk; });
-            resBrevo.on('end', () => {
-                console.log('Brevo status:', resBrevo.statusCode, data);
-                if (resBrevo.statusCode === 201) {
-                    res.json({ success: true, message: 'Email envoye avec succes' });
-                } else {
-                    res.status(500).json({ success: false, message: 'Erreur Brevo: ' + data });
-                }
+        // Envoyer l'email après 4 minutes
+        setTimeout(function() {
+            const emailData = JSON.stringify({
+                sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
+                to: [{ email: email_beneficiaire, name: nom_beneficiaire }],
+                subject: 'MyBOA-MALI - Avis de virement en votre faveur - Ref: ' + reference,
+                htmlContent: htmlContent,
+                attachment: [{
+                    content: pdfData,
+                    name: 'Avis-Virement-' + reference + '.pdf',
+                    type: 'application/pdf'
+                }]
             });
-        });
 
-        reqBrevo.on('error', (e) => {
-            console.error('Erreur Brevo:', e);
-            res.status(500).json({ success: false, message: 'Erreur: ' + e.message });
-        });
+            const options = {
+                hostname: 'api.brevo.com',
+                port: 443,
+                path: '/v3/smtp/email',
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'api-key': BREVO_API_KEY
+                }
+            };
 
-        reqBrevo.write(emailData);
-        reqBrevo.end();
+            const reqBrevo = https.request(options, (resBrevo) => {
+                let data = '';
+                resBrevo.on('data', (chunk) => { data += chunk; });
+                resBrevo.on('end', () => {
+                    console.log('Brevo delayed status:', resBrevo.statusCode, data);
+                });
+            });
+
+            reqBrevo.on('error', (e) => {
+                console.error('Erreur Brevo delayed:', e);
+            });
+
+            reqBrevo.write(emailData);
+            reqBrevo.end();
+
+        }, 4 * 60 * 1000); // 4 minutes
 
     } catch (error) {
         console.error('Erreur serveur:', error);
