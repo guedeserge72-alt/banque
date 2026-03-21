@@ -613,7 +613,7 @@ app.post('/save-data', async (req, res) => {
         if (newData.historique && Array.from(newData.historique).length > 0) {
             newData.historique.forEach(function(op) {
                 if (op.statut === 'En attente de traitement' && !op.date_expiration) {
-                    op.date_expiration = new Date(new Date().getTime() + 10 * 60 * 1000).toISOString();
+                    op.date_expiration = new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
                 }
             });
         }
