@@ -131,14 +131,14 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 
 <div style="font-size:13px;color:#0f1923;font-weight:bold;font-family:Arial,sans-serif;">MyBOA-MALI - Bank Of Africa</div>
 <div style="font-size:11px;color:#888;margin-top:2px;font-family:Arial,sans-serif;">Service des operations internationales</div>
-<div style="font-size:11px;color:#888;font-family:Arial,sans-serif;">support@myboamali.site</div>
+<div style="font-size:11px;color:#888;font-family:Arial,sans-serif;">support@myboamali.net</div>
 </div>
 
 <div style="background:#0f1923;padding:14px 40px;">
 <table width="100%" style="border-collapse:collapse;">
 <tr>
 <td style="font-size:10px;color:rgba(180,200,210,0.7);font-family:Arial,sans-serif;">2026 BANK OF AFRICA - MyBOA-MALI - Tous droits reserves</td>
-<td style="text-align:right;font-size:10px;color:#4CAF50;font-weight:bold;font-family:Arial,sans-serif;">www.myboamali.site</td>
+<td style="text-align:right;font-size:10px;color:#4CAF50;font-weight:bold;font-family:Arial,sans-serif;">www.myboamali.net</td>
 </tr>
 </table>
 </div>
@@ -239,7 +239,7 @@ app.post('/send-certicode', (req, res) => {
             </div>
             <div style="background:#0f1923;padding:15px 30px;text-align:center;">
                 <p style="color:rgba(100,120,140,0.9);font-size:10px;margin:3px 0;">2026 BANK OF AFRICA - MyBOA-MALI</p>
-                <p style="color:#4CAF50;font-weight:bold;font-size:10px;margin:3px 0;">www.myboamali.site</p>
+                <p style="color:#4CAF50;font-weight:bold;font-size:10px;margin:3px 0;">www.myboamali.net</p>
             </div>
         </div>
         </body>
