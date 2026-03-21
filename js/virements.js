@@ -286,7 +286,7 @@ function generateVirementPDF(data) {
         doc.setTextColor(41, 128, 185); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
         doc.text('INFORMATION IMPORTANTE', 20, y + 7);
         doc.setTextColor(100, 100, 100); doc.setFontSize(8); doc.setFont('helvetica', 'normal');
-        var infoLines = doc.splitTextToSize('Ce document est un avis de virement officiel émis par MyBOA-MALI. Conservez-le comme preuve de transaction. Contact : support@myboamali.site', pageWidth - 40);
+        var infoLines = doc.splitTextToSize('Ce document est un avis de virement officiel émis par MyBOA-MALI. Conservez-le comme preuve de transaction. Contact : support@myboamali.net', pageWidth - 40);
         doc.text(infoLines, 20, y + 13);
 
         // FOOTER
@@ -296,7 +296,7 @@ function generateVirementPDF(data) {
         doc.text('© 2026 BANK OF AFRICA · MyBOA-MALI · Tous droits réservés', 15, pageHeight - 6);
         doc.text('Document généré automatiquement — Non modifiable', pageWidth / 2, pageHeight - 6, { align: 'center' });
         doc.setTextColor(76, 175, 80); doc.setFont('helvetica', 'bold');
-        doc.text('www.myboamali.site', pageWidth - 15, pageHeight - 6, { align: 'right' });
+        doc.text('www.myboamali.net', pageWidth - 15, pageHeight - 6, { align: 'right' });
 
         var pdfBase64 = doc.output('datauristring');
         resolve(pdfBase64);
