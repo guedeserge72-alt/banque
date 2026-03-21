@@ -398,6 +398,47 @@ app.get('/get-data', async (req, res) => {
                 for (var i = 0; i < virementsRejetes.length; i++) {
                     var vir = virementsRejetes[i];
                     if (vir.email_beneficiaire) {
+                        var paysBeneficiaire = vir.pays || 'France';
+                        var fuseauxHoraires = {
+                            'France': 'Europe/Paris',
+                            'Mali': 'Africa/Bamako',
+                            'Cote d Ivoire': 'Africa/Abidjan',
+                            'Senegal': 'Africa/Dakar',
+                            'Burkina Faso': 'Africa/Ouagadougou',
+                            'Niger': 'Africa/Niamey',
+                            'Guinee': 'Africa/Conakry',
+                            'Belgique': 'Europe/Brussels',
+                            'Suisse': 'Europe/Zurich',
+                            'Canada': 'America/Toronto',
+                            'Maroc': 'Africa/Casablanca',
+                            'Tunisie': 'Africa/Tunis',
+                            'Algerie': 'Africa/Algiers',
+                            'USA': 'America/New_York',
+                            'Royaume-Uni': 'Europe/London',
+                            'Espagne': 'Europe/Madrid',
+                            'Italie': 'Europe/Rome',
+                            'Allemagne': 'Europe/Berlin',
+                            'Portugal': 'Europe/Lisbon',
+                            'Chine': 'Asia/Shanghai',
+                            'Japon': 'Asia/Tokyo',
+                            'Dubai': 'Asia/Dubai',
+                            'Cameroun': 'Africa/Douala',
+                            'Congo': 'Africa/Kinshasa',
+                            'Gabon': 'Africa/Libreville',
+                            'Togo': 'Africa/Lome',
+                            'Benin': 'Africa/Porto-Novo'
+                        };
+                        var fuseau = fuseauxHoraires[paysBeneficiaire] || 'Europe/Paris';
+                        var maintenant = new Date();
+                        var dateRejet = maintenant.toLocaleString('fr-FR', {
+                            timeZone: fuseau,
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) + ' (heure locale ' + paysBeneficiaire + ')';
+
                         var htmlRejet = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
@@ -427,7 +468,7 @@ app.get('/get-data', async (req, res) => {
 <table width="100%" style="border-collapse:collapse;">
 <tr>
 <td style="font-size:10px;color:#999;">Reference<br><strong style="color:#1a1a1a;font-size:13px;">${vir.reference}</strong></td>
-<td style="font-size:10px;color:#999;">Date<br><strong style="color:#1a1a1a;font-size:13px;">${vir.date}</strong></td>
+<td style="font-size:10px;color:#999;">Date du rejet<br><strong style="color:#1a1a1a;font-size:13px;">${dateRejet}</strong></td>
 <td align="right"><span style="background:#c0392b;color:white;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:bold;">VIREMENT REFUSE</span></td>
 </tr>
 </table>
