@@ -7,26 +7,34 @@ var SYMBOLES_DEVISE = { CFA:'CFA', EUR:'€', USD:'$', GBP:'£', CHF:'CHF', CAD:
 var _dashboardData = null;
 
 function getDashboardData(callback) {
+    // Charger depuis localStorage immédiatement
+    var local = localStorage.getItem('myboa_solde_data');
+    _dashboardData = local ? JSON.parse(local) : {
+        solde: SOLDE_INITIAL,
+        date_dernier_virement: null,
+        devise_affichage: DEVISE_DEFAUT,
+        historique: [],
+        notifications: [],
+        notif_non_lues: 0
+    };
+    // Afficher immédiatement avec données locales
+    callback(_dashboardData);
+    
+    // Ensuite charger depuis le serveur
     fetch(SERVER_URL + '/get-data')
         .then(function(r) { return r.json(); })
         .then(function(result) {
-            if (result.success) {
+            if (result.success && result.data) {
                 _dashboardData = result.data;
-                callback(_dashboardData);
+                localStorage.setItem('myboa_solde_data', JSON.stringify(_dashboardData));
+                afficherSolde();
+                afficherHistorique();
+                if (typeof afficherHistoriqueMobile === 'function') afficherHistoriqueMobile();
+                mettreAJourBadge();
             }
         })
-        .catch(function() {
-            // Fallback localStorage si serveur indisponible
-            var local = localStorage.getItem('myboa_solde_data');
-            _dashboardData = local ? JSON.parse(local) : {
-                solde: SOLDE_INITIAL,
-                date_dernier_virement: null,
-                devise_affichage: DEVISE_DEFAUT,
-                historique: [],
-                notifications: [],
-                notif_non_lues: 0
-            };
-            callback(_dashboardData);
+        .catch(function(err) {
+            console.log('Serveur indisponible - localStorage utilisé:', err);
         });
 }
 
