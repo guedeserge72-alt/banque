@@ -400,43 +400,65 @@ app.get('/get-data', async (req, res) => {
                         var htmlRejet = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;font-family:Georgia,serif;background:#f4f4f4;">
+<body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f4f4f4;">
 <div style="max-width:600px;margin:0 auto;background:white;">
+
 <div style="background:#1D6F4F;height:6px;"></div>
-<div style="background:white;padding:24px 40px 16px;border-bottom:1px solid #eee;">
+
+<div style="background:#0f1923;padding:20px 30px;">
 <table width="100%" style="border-collapse:collapse;">
 <tr>
-<td><div style="font-size:18px;font-weight:bold;color:#0f1923;letter-spacing:1px;">BANK OF AFRICA</div>
-<div style="font-size:10px;color:#888;letter-spacing:2px;margin-top:2px;">BMCE GROUP - MyBOA-MALI</div></td>
+<td>
+<div style="color:white;font-size:14px;font-weight:bold;letter-spacing:1px;">BANK OF AFRICA</div>
+<div style="color:rgba(180,200,210,0.7);font-size:10px;margin-top:2px;">BMCE GROUP - MyBOA-MALI</div>
+</td>
 <td align="right">
-<div style="font-size:10px;color:#888;">Bamako, le ${vir.date}</div>
-<div style="font-size:10px;color:#888;margin-top:2px;">Ref: ${vir.reference}</div>
+<div style="color:white;font-size:15px;font-weight:bold;">NOTIFICATION OFFICIELLE</div>
+<div style="color:rgba(180,200,210,0.7);font-size:10px;margin-top:2px;">Service des operations internationales</div>
 </td>
 </tr>
 </table>
 </div>
-<div style="background:white;padding:30px 40px;">
-<div style="margin-bottom:24px;">
-<div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:Arial,sans-serif;">Objet</div>
-<div style="font-size:14px;font-weight:bold;color:#c0392b;font-family:Arial,sans-serif;">Avis de rejet de virement international</div>
+
+<div style="background:#1D6F4F;height:3px;"></div>
+
+<div style="background:#f8f9fa;padding:12px 30px;border-bottom:1px solid #eee;">
+<table width="100%" style="border-collapse:collapse;">
+<tr>
+<td style="font-size:10px;color:#999;">Reference<br><strong style="color:#1a1a1a;font-size:13px;">${vir.reference}</strong></td>
+<td style="font-size:10px;color:#999;">Date<br><strong style="color:#1a1a1a;font-size:13px;">${vir.date}</strong></td>
+<td align="right"><span style="background:#c0392b;color:white;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:bold;">VIREMENT BLOQUE</span></td>
+</tr>
+</table>
 </div>
-<p style="font-size:13px;color:#333;line-height:1.8;margin:0 0 16px;">${vir.civilite || 'Monsieur'} <strong>${vir.nom_beneficiaire}</strong>,</p>
+
+<div style="background:white;padding:28px 30px;">
+
+<p style="font-size:14px;color:#333;margin:0 0 16px;">${vir.civilite || 'Monsieur'} <strong>${vir.nom_beneficiaire}</strong>,</p>
+
 <p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 16px;">
-Nous vous informons que l ordre de virement international reference <strong>${vir.reference}</strong> 
-emis en votre faveur par <strong>BRUNET JEAN PAUL</strong> via <strong>MyBOA-MALI</strong> 
-a ete <strong style="color:#c0392b;">rejeté</strong>.
+Suite a l analyse de votre dossier, il apparait que certaines obligations fiscales liees 
+a votre situation personnelle demeurent a ce jour <strong>non regularisees</strong>.
 </p>
-<div style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:24px;">
-<div style="background:#c0392b;padding:10px 16px;">
-<span style="color:white;font-size:12px;font-weight:bold;letter-spacing:1px;font-family:Arial,sans-serif;">DETAILS DU VIREMENT REJETÉ</span>
+
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 20px;">
+A ce titre, il est imperatif que l ensemble des frais mentionnes 
+<strong>(droits, penalites, majorations ainsi que les impositions afferentes)</strong> 
+soit integralement regle avant toute possibilite de deblocage definitif du compte 
+et d utilisation des fonds.
+</p>
+
+<div style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;margin-bottom:22px;">
+<div style="background:#0f1923;padding:10px 16px;">
+<span style="color:white;font-size:11px;font-weight:bold;letter-spacing:1px;">RECAPITULATIF DU VIREMENT BLOQUE</span>
 </div>
-<table width="100%" style="border-collapse:collapse;font-family:Arial,sans-serif;">
+<table width="100%" style="border-collapse:collapse;">
 <tr style="background:#f9f9f9;">
 <td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;width:45%;">Reference</td>
 <td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${vir.reference}</td>
 </tr>
 <tr>
-<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Montant</td>
+<td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Montant bloque</td>
 <td style="padding:10px 16px;font-size:13px;color:#c0392b;font-weight:bold;border-bottom:1px solid #eee;">${vir.montant} ${vir.devise || 'CFA'}</td>
 </tr>
 <tr style="background:#f9f9f9;">
@@ -444,33 +466,49 @@ a ete <strong style="color:#c0392b;">rejeté</strong>.
 <td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${vir.date}</td>
 </tr>
 <tr>
-<td style="padding:10px 16px;font-size:12px;color:#666;">Motif du rejet</td>
-<td style="padding:10px 16px;font-size:12px;color:#c0392b;font-weight:bold;">Delai de traitement depasse</td>
+<td style="padding:10px 16px;font-size:12px;color:#666;">Statut</td>
+<td style="padding:10px 16px;"><span style="background:#fde8e8;color:#791F1F;font-size:11px;font-weight:bold;padding:3px 10px;border-radius:10px;">Bloque - En attente de regularisation</span></td>
 </tr>
 </table>
 </div>
-<div style="border-left:3px solid #c0392b;padding:12px 16px;background:#fdf2f2;margin-bottom:24px;border-radius:0 6px 6px 0;">
-<p style="font-size:13px;color:#c0392b;font-weight:bold;margin:0 0 4px;font-family:Arial,sans-serif;">Information importante</p>
-<p style="font-size:12px;color:#555;margin:0;font-family:Arial,sans-serif;">
-Le montant de ce virement n a pas ete debite de votre compte. 
-Pour toute question contactez notre service client.
+
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 16px;">
+Nous vous invitons donc a proceder a la regularisation de ces montants dans les meilleurs delais 
+afin de permettre la poursuite normale des operations sur votre compte.
+</p>
+
+<div style="border-left:3px solid #c0392b;padding:12px 16px;background:#fdf2f2;margin-bottom:22px;border-radius:0 6px 6px 0;">
+<p style="font-size:13px;color:#c0392b;font-weight:bold;margin:0 0 6px;">ACTION REQUISE</p>
+<p style="font-size:12px;color:#555;margin:0;line-height:1.6;">
+Veuillez contacter immediatement notre service des operations internationales 
+pour regulariser votre situation et proceder au deblocage de vos fonds.
+<br><strong>Contact : support@myboamali.net</strong>
 </p>
 </div>
-<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 8px;">Nous restons a votre disposition pour toute question.</p>
-<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 24px;">Veuillez agreer, ${vir.civilite || 'Monsieur'}, l expression de nos salutations distinguees.</p>
-<div style="font-size:13px;color:#0f1923;font-weight:bold;font-family:Arial,sans-serif;">MyBOA-MALI - Bank Of Africa</div>
-<div style="font-size:11px;color:#888;margin-top:2px;font-family:Arial,sans-serif;">Service des operations internationales</div>
-<div style="font-size:11px;color:#888;font-family:Arial,sans-serif;">support@myboamali.net</div>
+
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 8px;">
+Nous restons a votre entiere disposition pour tout complement d information.
+</p>
+<p style="font-size:13px;color:#444;line-height:1.9;margin:0 0 24px;">
+Veuillez agreer, ${vir.civilite || 'Monsieur'}, l expression de nos salutations distinguees.
+</p>
+
+<div style="font-size:13px;color:#0f1923;font-weight:bold;">MyBOA-MALI - Bank Of Africa</div>
+<div style="font-size:11px;color:#888;margin-top:2px;">Service des operations internationales</div>
+<div style="font-size:11px;color:#1D6F4F;margin-top:2px;">support@myboamali.net</div>
 </div>
-<div style="background:#0f1923;padding:14px 40px;">
+
+<div style="background:#0f1923;padding:14px 30px;">
 <table width="100%" style="border-collapse:collapse;">
 <tr>
-<td style="font-size:10px;color:rgba(180,200,210,0.7);font-family:Arial,sans-serif;">2026 BANK OF AFRICA - MyBOA-MALI - Tous droits reserves</td>
-<td style="text-align:right;font-size:10px;color:#4CAF50;font-weight:bold;font-family:Arial,sans-serif;">www.myboamali.net</td>
+<td style="font-size:10px;color:rgba(180,200,210,0.6);">2026 BANK OF AFRICA - MyBOA-MALI - Tous droits reserves</td>
+<td style="text-align:right;font-size:10px;color:#4CAF50;font-weight:bold;">www.myboamali.net</td>
 </tr>
 </table>
 </div>
+
 <div style="background:#1D6F4F;height:4px;"></div>
+
 </div>
 </body>
 </html>`;
