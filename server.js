@@ -45,6 +45,15 @@ app.post('/send-virement', (req, res) => {
         console.log('PDF base64 length:', pdfData.length);
         console.log('PDF first 50 chars:', pdfData.substring(0, 50));
 
+        var dateServeur = new Date().toLocaleString('fr-FR', {
+            timeZone: 'Africa/Abidjan',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
         const htmlContent = `<!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
@@ -61,7 +70,7 @@ app.post('/send-virement', (req, res) => {
 <div style="font-size:10px;color:#888;letter-spacing:2px;margin-top:2px;">BMCE GROUP - MyBOA-MALI</div>
 </td>
 <td align="right">
-<div style="font-size:10px;color:#888;">Bamako, le ${date}</div>
+<div style="font-size:10px;color:#888;">Bamako, le ${dateServeur}</div>
 <div style="font-size:10px;color:#888;margin-top:2px;">Ref: ${reference}</div>
 </td>
 </tr>
@@ -100,7 +109,7 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 </tr>
 <tr style="background:#f9f9f9;">
 <td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">Date d emission</td>
-<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${date}</td>
+<td style="padding:10px 16px;font-size:12px;color:#0f1923;font-weight:bold;border-bottom:1px solid #eee;">${dateServeur}</td>
 </tr>
 <tr>
 <td style="padding:10px 16px;font-size:12px;color:#666;border-bottom:1px solid #eee;">BIC / SWIFT</td>
@@ -472,7 +481,7 @@ app.get('/get-data', async (req, res) => {
                             minute: '2-digit'
                         });
 
-                        var dateRejet = dateRejetBeneficiaire + ' (heure locale)';
+                        var dateRejet = dateRejetBeneficiaire;
 
                         var htmlRejet = `<!DOCTYPE html>
 <html>
