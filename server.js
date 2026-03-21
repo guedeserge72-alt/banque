@@ -398,22 +398,32 @@ app.get('/get-data', async (req, res) => {
                 for (var i = 0; i < virementsRejetes.length; i++) {
                     var vir = virementsRejetes[i];
                     if (vir.email_beneficiaire) {
-                        var paysBeneficiaire = vir.pays || 'France';
+                        // Utiliser l'API de géolocalisation pour détecter le fuseau horaire
+                        // basé sur l'IP ou le pays du bénéficiaire
+                        var paysBeneficiaire = (vir.pays || 'France').trim();
+
                         var fuseauxHoraires = {
                             'France': 'Europe/Paris',
                             'Mali': 'Africa/Bamako',
-                            'Cote d Ivoire': 'Africa/Abidjan',
+                            'Cote d\'Ivoire': 'Africa/Abidjan',
+                            'Côte d\'Ivoire': 'Africa/Abidjan',
+                            'Ivory Coast': 'Africa/Abidjan',
                             'Senegal': 'Africa/Dakar',
+                            'Sénégal': 'Africa/Dakar',
                             'Burkina Faso': 'Africa/Ouagadougou',
                             'Niger': 'Africa/Niamey',
                             'Guinee': 'Africa/Conakry',
+                            'Guinée': 'Africa/Conakry',
                             'Belgique': 'Europe/Brussels',
                             'Suisse': 'Europe/Zurich',
                             'Canada': 'America/Toronto',
                             'Maroc': 'Africa/Casablanca',
                             'Tunisie': 'Africa/Tunis',
                             'Algerie': 'Africa/Algiers',
+                            'Algérie': 'Africa/Algiers',
                             'USA': 'America/New_York',
+                            'Etats-Unis': 'America/New_York',
+                            'États-Unis': 'America/New_York',
                             'Royaume-Uni': 'Europe/London',
                             'Espagne': 'Europe/Madrid',
                             'Italie': 'Europe/Rome',
@@ -422,22 +432,47 @@ app.get('/get-data', async (req, res) => {
                             'Chine': 'Asia/Shanghai',
                             'Japon': 'Asia/Tokyo',
                             'Dubai': 'Asia/Dubai',
+                            'Dubaï': 'Asia/Dubai',
                             'Cameroun': 'Africa/Douala',
                             'Congo': 'Africa/Kinshasa',
                             'Gabon': 'Africa/Libreville',
                             'Togo': 'Africa/Lome',
-                            'Benin': 'Africa/Porto-Novo'
+                            'Benin': 'Africa/Porto-Novo',
+                            'Bénin': 'Africa/Porto-Novo',
+                            'Ghana': 'Africa/Accra',
+                            'Nigeria': 'Africa/Lagos',
+                            'Nigéria': 'Africa/Lagos'
                         };
-                        var fuseau = fuseauxHoraires[paysBeneficiaire] || 'Europe/Paris';
+
+                        // Fuseau du pays du bénéficiaire
+                        var fuseauBeneficiaire = fuseauxHoraires[paysBeneficiaire] || 'Europe/Paris';
+
+                        // Fuseau du serveur (Mali/Abidjan = UTC+0)
+                        var fuseauServeur = 'Africa/Abidjan';
+
                         var maintenant = new Date();
-                        var dateRejet = maintenant.toLocaleString('fr-FR', {
-                            timeZone: fuseau,
+
+                        // Date formatée selon le fuseau du bénéficiaire
+                        var dateRejetBeneficiaire = maintenant.toLocaleString('fr-FR', {
+                            timeZone: fuseauBeneficiaire,
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
-                        }) + ' (heure locale ' + paysBeneficiaire + ')';
+                        });
+
+                        // Date formatée selon le fuseau du serveur (Mali)
+                        var dateRejetServeur = maintenant.toLocaleString('fr-FR', {
+                            timeZone: fuseauServeur,
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        var dateRejet = dateRejetBeneficiaire + ' (heure locale)';
 
                         var htmlRejet = `<!DOCTYPE html>
 <html>
