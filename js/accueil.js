@@ -117,12 +117,13 @@ function afficherHistorique() {
         } else {
             tbody.innerHTML = '';
             historique.slice(0, 5).forEach(function(op) {
+                var montantNum = parseFloat((op.montant + '').replace(/\s/g, '').replace(',', '.')) || 0;
                 var tr = document.createElement('tr');
                 tr.innerHTML =
                     '<td>' + op.date + '</td>' +
                     '<td>' + op.type + '</td>' +
                     '<td>' + op.description + '</td>' +
-                    '<td style="color:#e74c3c;font-weight:600;">-' + op.montant + ' ' + op.devise + '</td>' +
+                    '<td style="color:#e74c3c;font-weight:600;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + op.montant + ' ' + op.devise + '</td>' +
                     '<td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:11px;">' + op.statut + '</span></td>';
                 tbody.appendChild(tr);
             });
@@ -136,17 +137,19 @@ function afficherHistorique() {
         } else {
             tbodyMobile.innerHTML = '';
             historique.slice(0, 5).forEach(function(op) {
+                var montantNum = parseFloat((op.montant + '').replace(/\s/g, '').replace(',', '.')) || 0;
                 var tr = document.createElement('tr');
                 tr.style.borderBottom = '1px solid #f0f0f0';
                 tr.innerHTML =
                     '<td style="padding:8px;font-size:11px;color:#666;">' + op.date + '</td>' +
                     '<td style="padding:8px;font-size:12px;">Vers ' + op.description.replace('Vers ','') + '</td>' +
-                    '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + op.montant + ' ' + op.devise + '</td>' +
+                    '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + op.montant + ' ' + op.devise + '</td>' +
                     '<td style="padding:8px;text-align:center;"><span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:8px;font-size:10px;">En attente</span></td>';
                 tbodyMobile.appendChild(tr);
             });
         }
     }
+    convertirTousMontants(window.DEVISE_ACTUELLE || 'CFA');
 }
 
 function afficherHistoriqueMobile() {
@@ -181,13 +184,15 @@ function afficherHistoriqueMobile() {
             badgeStyle = 'background:#fde8e8;color:#c0392b;';
         }
 
+        var montantNum = parseFloat(((op.montant || '') + '').replace(/\s/g, '').replace(',', '.')) || 0;
         tr.innerHTML =
             '<td style="padding:8px;font-size:11px;color:#aaa;">' + (op.date || '') + '</td>' +
             '<td style="padding:8px;font-size:12px;color:#fff;">Vers ' + (op.description || '').replace('Vers ','') + '</td>' +
-            '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + (op.montant || '') + ' ' + (op.devise || '') + '</td>' +
+            '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + (op.montant || '') + ' ' + (op.devise || '') + '</td>' +
             '<td style="padding:8px;text-align:center;"><span style="' + badgeStyle + 'padding:2px 6px;border-radius:8px;font-size:10px;">' + statutLabel + '</span></td>';
         tbodyMobile.appendChild(tr);
     });
+    convertirTousMontants(window.DEVISE_ACTUELLE || 'CFA');
 }
 
 function mettreAJourBadge() {
@@ -297,9 +302,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (deviseSelect) {
         deviseSelect.addEventListener('change', function() {
             if (_dashboardData) {
-                _dashboardData.devise_affichage = this.value;
+                var devise = this.value;
+                _dashboardData.devise_affichage = devise;
                 saveDashboardData(_dashboardData);
                 afficherSolde();
+                window.DEVISE_ACTUELLE = devise;
+                window.TAUX_ACTUEL = TAUX_CONVERSION[devise] || 1;
+                window.SYMBOLE_ACTUEL = SYMBOLES_DEVISE[devise] || 'CFA';
+                convertirTousMontants(devise);
             }
         });
     }

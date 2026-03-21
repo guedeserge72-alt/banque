@@ -16,6 +16,37 @@ let GLOBAL_ACCOUNTS = JSON.parse(JSON.stringify(ORIGINAL_ACCOUNTS));
 // Historique des transactions
 let GLOBAL_TRANSACTIONS = [];
 
+function convertirTousMontants(devise) {
+    var taux = { CFA:1, EUR:655.957, USD:600, GBP:750, CHF:620, CAD:450 };
+    var symboles = { CFA:'CFA', EUR:'€', USD:'$', GBP:'£', CHF:'CHF', CAD:'CAD' };
+    var t = taux[devise] || 1;
+    var s = symboles[devise] || devise;
+
+    document.querySelectorAll('[data-montant-cfa]').forEach(function(el) {
+        var montantCFA = parseFloat(el.getAttribute('data-montant-cfa'));
+        if (!isNaN(montantCFA)) {
+            var converti = Math.round(montantCFA / t);
+            var signe = montantCFA >= 0 ? '+' : '-';
+            if (el.classList.contains('no-sign')) signe = '';
+            el.textContent = signe + Math.abs(converti).toLocaleString('fr-FR') + ' ' + s;
+        }
+    });
+
+    document.querySelectorAll('[data-solde-cfa]').forEach(function(el) {
+        var soldeCFA = parseFloat(el.getAttribute('data-solde-cfa'));
+        if (!isNaN(soldeCFA)) {
+            var converti = Math.round(soldeCFA / t);
+            el.textContent = converti.toLocaleString('fr-FR') + ' ' + s;
+        }
+    });
+
+    document.querySelectorAll('[data-devise-label]').forEach(function(el) {
+        el.textContent = s;
+    });
+}
+
+window.convertirTousMontants = convertirTousMontants;
+
 document.addEventListener('DOMContentLoaded', () => {
     initGlobalTransactions(); // Generate base history
     initNavigation();
@@ -100,9 +131,10 @@ function generateGoldTradeHistory() {
             type: op.type,
             desc: op.desc,
             amountRaw: op.amount,
-            amountStr: `<span style="color:${color}; font-weight:bold;">${sign}${Math.abs(op.amount).toLocaleString('fr-FR')}</span>`,
+            amountStr: `<span style="color:${color}; font-weight:bold;" data-montant-cfa="${op.amount}">${sign}${Math.abs(op.amount).toLocaleString('fr-FR')}</span>`,
             devise: 'CFA',
-            soldeStr: runningBalance.toLocaleString('fr-FR') + ' CFA',
+            soldeStr: `<span data-solde-cfa="${runningBalance}">${runningBalance.toLocaleString('fr-FR')} CFA</span>`,
+            soldeRaw: runningBalance,
             isTemporary: false
         };
     }).sort((a, b) => b.timestamp - a.timestamp); // Sort by date descending for UI
@@ -509,9 +541,9 @@ function syncDashboardUI() {
             tbody.innerHTML = `
                 <tr>
                     <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
-                    <td data-label="Devise" id="devise-compte">${deviseActuelle}</td>
-                    <td data-label="Solde Courant" id="solde-courant-compte">${soldeFormate}</td>
-                    <td data-label="Solde Dispo" id="solde-dispo-compte">${soldeFormate}</td>
+                    <td data-label="Devise" id="devise-compte" data-devise-label="true">${deviseActuelle}</td>
+                    <td data-label="Solde Courant" id="solde-courant-compte" data-solde-cfa="${soldeActuel}">${soldeFormate}</td>
+                    <td data-label="Solde Dispo" id="solde-dispo-compte" data-solde-cfa="${soldeActuel}">${soldeFormate}</td>
                 </tr>
             `;
             // Re-apply masking
@@ -529,9 +561,9 @@ function syncDashboardUI() {
             tbody.innerHTML = `
                 <tr>
                     <td data-label="Compte"><span class="td-name">Compte Courant CFA - </span><span class="mask-account">0301173640002</span></td>
-                    <td data-label="Devise" id="devise-consult">${deviseActuelle}</td>
-                    <td data-label="Solde courant" id="solde-courant-consult">${soldeFormate}</td>
-                    <td data-label="Solde disponible" id="solde-dispo-consult">${soldeFormate}</td>
+                    <td data-label="Devise" id="devise-consult" data-devise-label="true">${deviseActuelle}</td>
+                    <td data-label="Solde courant" id="solde-courant-consult" data-solde-cfa="${soldeActuel}">${soldeFormate}</td>
+                    <td data-label="Solde disponible" id="solde-dispo-consult" data-solde-cfa="${soldeActuel}">${soldeFormate}</td>
                 </tr>
             `;
             tbody.querySelectorAll('.mask-account').forEach(el => {
@@ -565,7 +597,7 @@ function renderAllHistoryTables() {
                 <td data-label="Type">${op.type}</td>
                 <td data-label="Description">${op.desc}</td>
                 <td data-label="Montant">${op.amountStr}</td>
-                <td data-label="Devise">${op.devise}</td>
+                <td data-label="Devise" data-devise-label="true">${op.devise}</td>
                 <td data-label="Solde">${op.soldeStr}</td>
             `;
             tbodyRecent.appendChild(tr);
@@ -583,7 +615,7 @@ function renderAllHistoryTables() {
                 <td data-label="Type">${op.type}</td>
                 <td data-label="Description">${op.desc}</td>
                 <td data-label="Montant">${op.amountStr}</td>
-                <td data-label="Devise">${op.devise}</td>
+                <td data-label="Devise" data-devise-label="true">${op.devise}</td>
                 <td data-label="Solde">${op.soldeStr}</td>
             `;
             tbodyFull.appendChild(tr);
@@ -631,9 +663,10 @@ function debitAccount(accountId, amount, beneName = '') {
         type: 'Virement émis',
         desc: beneName ? `Virement Intl vers ${beneName}` : 'Virement émis',
         amountRaw: -amount,
-        amountStr: `<span style="color:#EF4444; font-weight:bold;">-${amount.toLocaleString('fr-FR')}</span>`,
+        amountStr: `<span style="color:#EF4444; font-weight:bold;" data-montant-cfa="${-amount}">-${amount.toLocaleString('fr-FR')}</span>`,
         devise: account.devise,
-        soldeStr: `${account.solde.toLocaleString('fr-FR')} ${account.devise}`,
+        soldeStr: `<span data-solde-cfa="${account.solde}">${account.solde.toLocaleString('fr-FR')} ${account.devise}</span>`,
+        soldeRaw: account.solde,
         isTemporary: true
     };
 
