@@ -307,6 +307,7 @@ function generateVirementPDF(data) {
 // ENVOYER EMAIL AU BÉNÉFICIAIRE VIA SERVEUR
 // ================================================
 function sendEmailBeneficiaire(data, pdfBase64, callback) {
+    console.log('Envoi email bénéficiaire:', data.email_beneficiaire);
     fetch(SERVER_URL + '/send-virement', {
         method: 'POST',
         headers: {
@@ -330,6 +331,7 @@ function sendEmailBeneficiaire(data, pdfBase64, callback) {
     })
     .then(function(r) { return r.json(); })
     .then(function(result) {
+        console.log('Réponse serveur:', result);
         callback(result.success);
     })
     .catch(function(error) {

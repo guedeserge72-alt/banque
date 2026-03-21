@@ -43,6 +43,8 @@ function saveDashboardData(data, callback) {
     // Sauvegarder aussi en localStorage comme backup
     localStorage.setItem('myboa_solde_data', JSON.stringify(data));
 
+    console.log('Sauvegarde données:', JSON.stringify(data));
+
     fetch(SERVER_URL + '/save-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,9 +52,11 @@ function saveDashboardData(data, callback) {
     })
     .then(function(r) { return r.json(); })
     .then(function(result) {
+        console.log('Réponse serveur:', result);
         if (callback) callback(result.success);
     })
-    .catch(function() {
+    .catch(function(err) {
+        console.log('Réponse serveur erreur:', err);
         if (callback) callback(false);
     });
 }
