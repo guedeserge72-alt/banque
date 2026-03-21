@@ -47,7 +47,7 @@ function renderConsultationTable(ops) {
             <td data-label="Type">${op.type}</td>
             <td data-label="Description">${op.desc}</td>
             <td data-label="Montant">${op.amountStr}</td>
-            <td data-label="Devise">${op.devise}</td>
+            <td data-label="Devise" data-devise-label="true">${window.SYMBOLE_ACTUEL || op.devise}</td>
             <td data-label="Solde après">${op.soldeStr}</td>
         `;
         tbody.appendChild(tr);

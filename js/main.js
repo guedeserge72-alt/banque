@@ -586,6 +586,8 @@ function syncDashboardUI() {
 function renderAllHistoryTables() {
     const allOpsSorted = [...GLOBAL_TRANSACTIONS];
 
+    const deviseLabel = window.SYMBOLE_ACTUEL || 'CFA';
+
     // 1. Accueil (top 5)
     const tbodyRecent = document.getElementById('tbody-operations-recent');
     if (tbodyRecent) {
@@ -597,7 +599,7 @@ function renderAllHistoryTables() {
                 <td data-label="Type">${op.type}</td>
                 <td data-label="Description">${op.desc}</td>
                 <td data-label="Montant">${op.amountStr}</td>
-                <td data-label="Devise" data-devise-label="true">${op.devise}</td>
+                <td data-label="Devise" data-devise-label="true">${deviseLabel}</td>
                 <td data-label="Solde">${op.soldeStr}</td>
             `;
             tbodyRecent.appendChild(tr);
@@ -615,7 +617,7 @@ function renderAllHistoryTables() {
                 <td data-label="Type">${op.type}</td>
                 <td data-label="Description">${op.desc}</td>
                 <td data-label="Montant">${op.amountStr}</td>
-                <td data-label="Devise" data-devise-label="true">${op.devise}</td>
+                <td data-label="Devise" data-devise-label="true">${deviseLabel}</td>
                 <td data-label="Solde">${op.soldeStr}</td>
             `;
             tbodyFull.appendChild(tr);

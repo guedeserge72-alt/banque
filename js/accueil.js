@@ -280,6 +280,16 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Dashboard data chargé:', JSON.stringify(data));
         console.log('Historique length:', data.historique ? data.historique.length : 0);
         afficherSolde();
+        // Appliquer la devise sauvegardée sur tous les tableaux
+        var deviseActuelle = data.devise_affichage || 'CFA';
+        window.DEVISE_ACTUELLE = deviseActuelle;
+        window.TAUX_ACTUEL = TAUX_CONVERSION[deviseActuelle] || 1;
+        window.SYMBOLE_ACTUEL = SYMBOLES_DEVISE[deviseActuelle] || 'CFA';
+        if (typeof window.convertirTousMontants === 'function') {
+            setTimeout(function() {
+                window.convertirTousMontants(deviseActuelle);
+            }, 500);
+        }
         afficherHistorique();
         mettreAJourBadge();
         setTimeout(function() { afficherHistoriqueMobile(); }, 500);
