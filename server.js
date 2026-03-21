@@ -336,6 +336,27 @@ app.get('/get-data', async (req, res) => {
                     var expiration = new Date(op.date_expiration).getTime();
                     if (maintenant >= expiration) {
                         op.statut = 'Rejeté';
+                        
+                        // Recréditer le montant sur le solde
+                        var montantStr = (op.montant || '0').toString().replace(/\s/g, '').replace(',', '.');
+                        var montantVirement = parseFloat(montantStr) || 0;
+                        var deviseVirement = op.devise || 'CFA';
+                        var tauxConversion = { CFA:1, EUR:655.957, USD:600, GBP:750, CHF:620, CAD:450 };
+                        var montantCFA = deviseVirement === 'CFA' ? montantVirement : montantVirement * (tauxConversion[deviseVirement] || 1);
+                        data.solde = (data.solde || 0) + montantCFA;
+                        console.log('Recrédit solde:', montantCFA, 'CFA pour virement', op.reference);
+
+                        // Ajouter notification de recrédit
+                        data.notifications = data.notifications || [];
+                        data.notifications.unshift({
+                            id: Date.now(),
+                            message: 'Virement ' + op.reference + ' rejeté — ' + op.montant + ' ' + deviseVirement + ' recrédité sur votre compte',
+                            type: 'rejet',
+                            date: new Date().toLocaleString('fr-FR'),
+                            lue: false
+                        });
+                        data.notif_non_lues = (data.notif_non_lues || 0) + 1;
+
                         virementsRejetes.push(op);
                     }
                 }
@@ -343,11 +364,16 @@ app.get('/get-data', async (req, res) => {
             });
             
             if (virementsRejetes.length > 0) {
-                // Sauvegarder les changements
+                // Sauvegarder les changements (historique, solde, notifications)
                 if (db) {
                     await db.collection(COLLECTION_NAME).updateOne(
                         { _id: 'dashboard' },
-                        { $set: { historique: data.historique } },
+                        { $set: { 
+                            historique: data.historique,
+                            solde: data.solde,
+                            notifications: data.notifications,
+                            notif_non_lues: data.notif_non_lues
+                        } },
                         { upsert: true }
                     );
                 }
