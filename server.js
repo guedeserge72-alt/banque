@@ -735,6 +735,22 @@ let inMemoryConversations = [];
 let inMemoryMessages = [];
 const ADMIN_TYPING_TTL_MS = 10000;
 
+// User chat visibility: messages older than 24h are hidden from the user
+const USER_CHAT_VISIBLE_HOURS = 24;
+const USER_CHAT_VISIBLE_MS = USER_CHAT_VISIBLE_HOURS * 60 * 60 * 1000;
+
+function getUserChatCutoffDate() {
+    return new Date(Date.now() - USER_CHAT_VISIBLE_MS);
+}
+
+function isMessageVisibleForUser(message) {
+    const rawDate = message?.createdAt || message?.timestamp || message?.date;
+    if (!rawDate) return false;
+    const messageDate = new Date(rawDate);
+    if (Number.isNaN(messageDate.getTime())) return false;
+    return messageDate >= getUserChatCutoffDate();
+}
+
 function escapeHTML(text) {
     if (typeof text !== 'string') return '';
     return text
@@ -1018,9 +1034,13 @@ app.get('/api/chat/messages/:userId', async (req, res) => {
             // Find active conversation
             conversation = await db.collection('chatConversations').findOne({ userId: userId, archived: { $ne: true } });
             if (conversation) {
-                // Retrieve last 50 messages, sorted ascending by creation date
+                // Retrieve last 50 messages from the last 24h, sorted ascending
+                const cutoff = getUserChatCutoffDate();
                 messages = await db.collection('chatMessages')
-                    .find({ conversationId: conversation.conversationId })
+                    .find({
+                        conversationId: conversation.conversationId,
+                        createdAt: { $gte: cutoff }
+                    })
                     .sort({ createdAt: 1 })
                     .limit(50)
                     .toArray();
@@ -1033,7 +1053,7 @@ app.get('/api/chat/messages/:userId', async (req, res) => {
             conversation = inMemoryConversations.find(c => c.userId === userId && !c.archived);
             if (conversation) {
                 messages = inMemoryMessages
-                    .filter(m => m.conversationId === conversation.conversationId)
+                    .filter(m => m.conversationId === conversation.conversationId && isMessageVisibleForUser(m))
                     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
                     .slice(0, 50);
             }

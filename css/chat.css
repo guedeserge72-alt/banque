@@ -290,18 +290,308 @@
     padding-right: 5px;
 }
 
-/* Mobile responsive styles */
-@media (max-width: 767px) {
-    .myboa-chat-container {
-        width: 100vw;
-        right: -100vw;
-        height: calc(100vh - 60px - 75px - var(--keyboard-height, 0px));
-        bottom: calc(75px + var(--keyboard-height, 0px));
-        border-left: none;
-        box-shadow: none;
-    }
-    
-    .myboa-chat-container.open {
-        right: 0;
-    }
+/* =========================================================
+   MYBOA — CHAT ASSISTANCE FLOTTANT MOBILE
+   Mobile only — desktop intact
+========================================================= */
+
+@media (max-width: 768px) {
+  :root {
+    --chat-mobile-green: #0f5f43;
+    --chat-mobile-green-2: #1d6f4f;
+    --chat-mobile-gold: #d4af37;
+    --chat-mobile-bg: #ffffff;
+    --chat-mobile-soft: #f5f7f6;
+    --chat-mobile-border: #e6ece8;
+    --chat-mobile-text: #17231f;
+    --chat-mobile-muted: #6b756f;
+    --chat-mobile-shadow: 0 18px 48px rgba(15, 95, 67, 0.24);
+  }
+
+  /* Bouton flottant fermé */
+  #btn-assistance-mobile,
+  .btn-assistance-mobile,
+  .chat-mobile-trigger,
+  .chat-floating-button {
+    position: fixed !important;
+    right: 16px !important;
+    bottom: 92px !important;
+    z-index: 9998 !important;
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    min-height: 58px !important;
+    max-width: 58px !important;
+    max-height: 58px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: linear-gradient(145deg, var(--chat-mobile-green), #0b4f38) !important;
+    color: #ffffff !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: 0 14px 30px rgba(15, 95, 67, 0.35) !important;
+    overflow: hidden !important;
+  }
+
+  #btn-assistance-mobile svg,
+  #btn-assistance-mobile img,
+  .btn-assistance-mobile svg,
+  .btn-assistance-mobile img,
+  .chat-mobile-trigger svg,
+  .chat-mobile-trigger img,
+  .chat-floating-button svg,
+  .chat-floating-button img {
+    width: 25px !important;
+    height: 25px !important;
+    max-width: 25px !important;
+    max-height: 25px !important;
+    object-fit: contain !important;
+  }
+
+  /* Si le bouton contient du texte, on masque le texte sur mobile */
+  #btn-assistance-mobile span:not(.chat-icon):not(#chat-notif-badge),
+  .btn-assistance-mobile span:not(.chat-icon):not(#chat-notif-badge),
+  .chat-floating-button span:not(.chat-icon):not(#chat-notif-badge) {
+    font-size: 0 !important;
+  }
+
+  /* Fenêtre chat flottante */
+  #myboa-chat,
+  .myboa-chat,
+  .chat-panel,
+  .chat-widget,
+  .assistance-chat {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 92px !important;
+    z-index: 9999 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 66vh !important;
+    max-height: 560px !important;
+    min-height: 420px !important;
+    border-radius: 24px !important;
+    background: var(--chat-mobile-bg) !important;
+    border: 1px solid rgba(230, 236, 232, 0.95) !important;
+    box-shadow: var(--chat-mobile-shadow) !important;
+    overflow: hidden !important;
+  }
+
+  /* Quand le chat est fermé, garder la logique existante.
+     Si le projet utilise une classe active/open, ne pas la casser. */
+  #myboa-chat:not(.open),
+  .myboa-chat:not(.open),
+  .chat-panel:not(.open),
+  .chat-widget:not(.open),
+  .assistance-chat:not(.open),
+  #myboa-chat[hidden],
+  .myboa-chat[hidden] {
+    display: none !important;
+  }
+
+  /* Header du chat */
+  #myboa-chat .chat-header,
+  #myboa-chat .myboa-chat-header,
+  #myboa-chat .assistance-header,
+  .myboa-chat .chat-header,
+  .chat-panel .chat-header,
+  .chat-widget .chat-header {
+    min-height: 56px !important;
+    padding: 12px 16px !important;
+    background: linear-gradient(145deg, var(--chat-mobile-green), #0b4f38) !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+
+  #myboa-chat .chat-header h3,
+  #myboa-chat .chat-header-title,
+  #myboa-chat .myboa-chat-title,
+  .chat-panel .chat-header h3,
+  .chat-widget .chat-header h3 {
+    color: #ffffff !important;
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    margin: 0 !important;
+  }
+
+  /* Bouton fermer */
+  #myboa-chat .chat-close,
+  #myboa-chat .close-chat,
+  #myboa-chat .chat-close-btn,
+  .chat-panel .chat-close,
+  .chat-widget .chat-close {
+    width: 34px !important;
+    height: 34px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #ffffff !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+  }
+
+  /* Bannière sécurité */
+  #myboa-chat .chat-security,
+  #myboa-chat .chat-security-banner,
+  #myboa-chat .security-banner,
+  #myboa-chat .chat-warning,
+  .chat-panel .chat-security,
+  .chat-widget .chat-security {
+    margin: 12px 12px 8px !important;
+    padding: 10px 12px !important;
+    border-radius: 14px !important;
+    background: rgba(212, 175, 55, 0.13) !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+    color: #5f4a09 !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    font-weight: 700 !important;
+  }
+
+  /* Zone messages */
+  #myboa-chat .chat-messages,
+  #myboa-chat .chat-messages-container,
+  #myboa-chat .chat-messages-body,
+  #myboa-chat #chat-messages-area,
+  #myboa-chat .messages,
+  #myboa-chat .chat-body,
+  .chat-panel .chat-messages,
+  .chat-widget .chat-messages {
+    height: calc(66vh - 176px) !important;
+    min-height: 220px !important;
+    overflow-y: auto !important;
+    padding: 10px 12px 8px !important;
+    background: #ffffff !important;
+    scroll-behavior: smooth !important;
+  }
+
+  /* Bulles messages */
+  #myboa-chat .message,
+  #myboa-chat .chat-message,
+  .chat-panel .message,
+  .chat-widget .message {
+    max-width: 82% !important;
+    margin: 8px 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 16px !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    word-break: break-word !important;
+  }
+
+  #myboa-chat .message.user,
+  #myboa-chat .chat-message.user,
+  #myboa-chat .message.client,
+  #myboa-chat .message-client,
+  #myboa-chat .from-user,
+  .chat-panel .message.user {
+    margin-left: auto !important;
+    background: var(--chat-mobile-green) !important;
+    color: #ffffff !important;
+    border-bottom-right-radius: 6px !important;
+  }
+
+  #myboa-chat .message.admin,
+  #myboa-chat .message.agent,
+  #myboa-chat .chat-message.agent,
+  #myboa-chat .message-admin,
+  #myboa-chat .from-agent,
+  .chat-panel .message.agent {
+    margin-right: auto !important;
+    background: #f0f3f1 !important;
+    color: var(--chat-mobile-text) !important;
+    border-bottom-left-radius: 6px !important;
+  }
+
+  /* Indicateur agent écrit */
+  #myboa-chat .typing-indicator,
+  #myboa-chat .agent-typing,
+  .chat-panel .typing-indicator,
+  .chat-widget .typing-indicator {
+    padding: 0 14px 8px !important;
+    color: var(--chat-mobile-muted) !important;
+    font-size: 11px !important;
+    font-style: italic !important;
+  }
+
+  /* Zone input */
+  #myboa-chat .chat-input-area,
+  #myboa-chat .chat-input-container,
+  #myboa-chat .chat-form,
+  #myboa-chat .message-form,
+  .chat-panel .chat-input-area,
+  .chat-widget .chat-input-area {
+    min-height: 64px !important;
+    padding: 10px 12px 12px !important;
+    background: #ffffff !important;
+    border-top: 1px solid var(--chat-mobile-border) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  #myboa-chat input,
+  #myboa-chat textarea,
+  .chat-panel input,
+  .chat-panel textarea,
+  .chat-widget input,
+  .chat-widget textarea {
+    flex: 1 !important;
+    min-height: 42px !important;
+    max-height: 84px !important;
+    border: 1px solid var(--chat-mobile-border) !important;
+    border-radius: 14px !important;
+    padding: 10px 12px !important;
+    background: #f9fbfa !important;
+    color: var(--chat-mobile-text) !important;
+    font-size: 13px !important;
+    outline: none !important;
+    resize: none !important;
+  }
+
+  #myboa-chat input:focus,
+  #myboa-chat textarea:focus,
+  .chat-panel input:focus,
+  .chat-panel textarea:focus {
+    border-color: rgba(15, 95, 67, 0.45) !important;
+    box-shadow: 0 0 0 3px rgba(15, 95, 67, 0.08) !important;
+  }
+
+  #myboa-chat .send-btn,
+  #myboa-chat .btn-send,
+  #myboa-chat .chat-send,
+  #myboa-chat button[type="submit"],
+  .chat-panel .send-btn,
+  .chat-widget .send-btn {
+    width: 42px !important;
+    height: 42px !important;
+    flex: 0 0 42px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: var(--chat-mobile-green) !important;
+    color: #ffffff !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+  }
+
+  #myboa-chat .send-btn svg,
+  #myboa-chat .btn-send svg,
+  #myboa-chat .chat-send svg,
+  #myboa-chat button[type="submit"] svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* éviter que le chat soit derrière la barre de navigation */
+  body {
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
 }
