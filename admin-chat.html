@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration Assistance - MyBOA-MALI</title>
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin-chat.css">
+</head>
+<body>
+
+    <!-- SECTION 1 : ECRAN DE CONNEXION ADMIN -->
+    <div id="login-container" class="view-container active">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-circle">BOA</div>
+                <h1>Administration Assistance</h1>
+                <h2>MyBOA-MALI — Espace agent sécurisé</h2>
+            </div>
+            
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label for="admin-password">Mot de passe secret</label>
+                    <input type="password" id="admin-password" placeholder="Saisissez le code d'accès..." required>
+                </div>
+                
+                <div id="login-error" class="error-msg hidden"></div>
+                
+                <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">
+                    <span>Connexion</span>
+                    <div class="btn-spinner hidden"></div>
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                Accès restreint aux agents autorisés de la BANK OF AFRICA. Toutes les connexions sont journalisées.
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 2 : WORKSPACE ADMIN APRES CONNEXION -->
+    <div id="admin-container" class="view-container">
+        
+        <!-- HEADER SUPERIEUR -->
+        <header class="admin-header">
+            <div class="header-left">
+                <div class="header-logo">BOA</div>
+                <div class="header-titles">
+                    <h1>Assistance Clientèle</h1>
+                    <div class="api-status-wrapper">
+                        <span id="api-status-dot" class="status-dot online"></span>
+                        <span id="api-status-text" class="status-text">Connecté à l'API</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="btn-refresh" class="btn btn-secondary btn-icon" title="Actualiser la liste">
+                    <span class="btn-icon-symbol">🔄</span>
+                    <span class="btn-text-desktop">Actualiser</span>
+                </button>
+                <button id="btn-logout" class="btn btn-danger btn-icon" title="Se déconnecter">
+                    <span class="btn-icon-symbol">🚪</span>
+                    <span class="btn-text-desktop">Déconnexion</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- BANDEAU DE SECURITE CRITIQUE -->
+        <div class="security-banner">
+            <strong>⚠️ CONSIGNE DE SÉCURITÉ CRITIQUE :</strong> Cette assistance est une démonstration. Ne demandez jamais de mot de passe, code secret, OTP, CVV, code Certicode ou données bancaires sensibles aux clients.
+        </div>
+
+        <!-- ZONE DE TRAVAIL PRINCIPALE (SIDEBAR + MESSAGES AREA) -->
+        <div class="workspace-body">
+            
+            <!-- COLONNE GAUCHE : LISTE DES CONVERSATIONS -->
+            <aside class="sidebar-conversations" id="sidebar-conversations-pane">
+                
+                <!-- ZONE DE RECHERCHE & FILTRE -->
+                <div class="search-filter-area">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-input" placeholder="Rechercher (Nom, ID, message)...">
+                        <button id="btn-clear-search" class="clear-search-btn hidden">&times;</button>
+                    </div>
+                    
+                    <div class="filter-options">
+                        <label class="filter-toggle">
+                            <input type="checkbox" id="filter-unread">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Non lus uniquement</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- LISTE DYNAMIQUE DES CARTES CONVERSATIONS -->
+                <div class="conversations-list-wrapper">
+                    <!-- Loader list -->
+                    <div id="list-loader" class="pane-loader hidden">
+                        <div class="spinner"></div>
+                        <p>Chargement des conversations...</p>
+                    </div>
+
+                    <!-- List errors -->
+                    <div id="list-error" class="pane-error hidden">
+                        <span class="error-icon">⚠️</span>
+                        <p>Échec du chargement. <a href="#" id="link-retry-list">Réessayer</a></p>
+                    </div>
+
+                    <!-- List empty -->
+                    <div id="list-empty" class="pane-empty hidden">
+                        <span class="empty-icon">💬</span>
+                        <p>Aucune conversation trouvée.</p>
+                    </div>
+
+                    <div id="conversations-list" class="conversations-list">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- COLONNE DROITE : MESSAGE FEED & ACTIONS -->
+            <main class="chat-workspace" id="chat-workspace-pane">
+                
+                <!-- WELCOME STATE (SI AUCUNE CONVERSATION SELECTIONNEE) -->
+                <div id="chat-welcome-state" class="chat-welcome-state">
+                    <div class="welcome-box">
+                        <span class="welcome-icon">💬</span>
+                        <h3>Sélectionnez une conversation</h3>
+                        <p>Choisissez un client dans la liste de gauche pour afficher l'historique et lui répondre.</p>
+                    </div>
+                </div>
+
+                <!-- CONVERSATION ACTIVE STATE -->
+                <div id="chat-active-state" class="chat-active-state hidden">
+                    
+                    <!-- HEADER CONVERSATION CLIENT -->
+                    <div class="chat-active-header">
+                        <button id="btn-back-to-list" class="mobile-back-btn" title="Retour à la liste">
+                            <span>←</span> Retour
+                        </button>
+                        <div class="client-details">
+                            <div class="client-avatar" id="active-client-avatar">BJ</div>
+                            <div class="client-info">
+                                <h3 id="active-client-name">Jean Paul Brunet</h3>
+                                <p id="active-client-id">ID Client: 71360093</p>
+                            </div>
+                        </div>
+                        <div class="chat-header-actions">
+                            <button id="btn-mark-read" class="btn btn-secondary">
+                                ✓ Marquer comme lu
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- COMPOSANT FLUIDE DE MESSAGES (CONTAINER SCROLLABLE) -->
+                    <div class="chat-messages-scroll-area">
+                        <!-- Messages Loader -->
+                        <div id="messages-loader" class="pane-loader hidden">
+                            <div class="spinner"></div>
+                            <p>Chargement des messages...</p>
+                        </div>
+
+                        <!-- Messages Error -->
+                        <div id="messages-error" class="pane-error hidden">
+                            <span class="error-icon">⚠️</span>
+                            <p>Erreur lors du chargement des messages.</p>
+                        </div>
+
+                        <!-- Messages Box Container -->
+                        <div id="chat-messages-container" class="chat-messages-container">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- FOOTER : FORMULAIRE DE REPONSE -->
+                    <div class="chat-active-footer">
+                        <form id="reply-form" class="reply-form">
+                            <div class="reply-textarea-wrapper">
+                                <textarea id="reply-textarea" placeholder="Saisissez votre réponse ici..." rows="2" maxlength="1000"></textarea>
+                                <button type="submit" id="btn-reply-send" class="reply-send-btn" title="Envoyer">
+                                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                                </button>
+                            </div>
+                            
+                            <div class="reply-footer-row">
+                                <div id="reply-error" class="reply-error-msg"></div>
+                                <div class="reply-char-counter">
+                                    <span id="reply-char-count">0</span> / 1000
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </main>
+
+        </div>
+    </div>
+
+    <!-- Global Toast Banner alerts -->
+    <div id="admin-toast-container" class="toast-container"></div>
+
+    <script src="js/admin-chat.js"></script>
+</body>
+</html>

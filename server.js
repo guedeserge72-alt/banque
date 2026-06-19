@@ -1,6 +1,7 @@
 const express = require('express');
 const cors    = require('cors');
 const https   = require('https');
+const crypto  = require('crypto');
 const { MongoClient } = require('mongodb');
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -14,6 +15,22 @@ if (isProduction && (!MONGODB_URI || MONGODB_URI.trim() === '')) {
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 if (!BREVO_API_KEY) {
     console.warn('Warning : BREVO_API_KEY manquante. Les notifications par email seront désactivées.');
+}
+
+const ADMIN_CHAT_PASSWORD = process.env.ADMIN_CHAT_PASSWORD;
+const ADMIN_CHAT_TOKEN_SECRET = process.env.ADMIN_CHAT_TOKEN_SECRET || (
+    isProduction
+        ? (() => { throw new Error('ADMIN_CHAT_TOKEN_SECRET requis en production'); })()
+        : (console.warn('Warning : ADMIN_CHAT_TOKEN_SECRET non défini, fallback local généré.'), crypto.randomBytes(64).toString('hex'))
+    );
+
+if (!ADMIN_CHAT_PASSWORD) {
+    if (isProduction) {
+        console.error('ADMIN_CHAT_PASSWORD manquante en production.');
+        process.exit(1);
+    } else {
+        console.warn('Warning : ADMIN_CHAT_PASSWORD non défini. Login admin indisponible en local tant que la variable n est pas definie.');
+    }
 }
 
 const DB_NAME = 'myboamali';
@@ -33,6 +50,24 @@ async function connectDB() {
         await client.connect();
         db = client.db(DB_NAME);
         console.log('MongoDB connecte avec succes');
+        // Ensure indexes for chat collections
+        try {
+            await db.collection('chatConversations').createIndexes([
+                { key: { conversationId: 1 }, unique: true },
+                { key: { userId: 1 } },
+                { key: { userDisplayName: 1 } },
+                { key: { lastMessageAt: -1 } },
+                { key: { unreadByAdmin: 1 } }
+            ]);
+            await db.collection('chatMessages').createIndexes([
+                { key: { messageId: 1 }, unique: true },
+                { key: { conversationId: 1, createdAt: 1 } },
+                { key: { senderType: 1 } }
+            ]);
+            console.log('Indexes chat verifies avec succes');
+        } catch (idxErr) {
+            console.warn('Avertissement creation indexes:', idxErr.message);
+        }
     } catch(e) {
         console.error('Erreur MongoDB:', e);
         if (isProduction) {
@@ -49,7 +84,7 @@ const app = express();
 app.use(cors({
     origin: ['https://myboamali.onrender.com', 'https://myboamali.net', 'https://www.myboamali.net', 'http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:5500'],
     methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Origin']
+    allowedHeaders: ['Content-Type', 'Origin', 'Authorization']
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -1018,6 +1053,491 @@ app.get('/api/chat/conversation/:userId', async (req, res) => {
 
 app.get('/ping', (req, res) => {
     res.json({ status: 'ok', message: 'Serveur MyBOA-MALI operationnel' });
+});
+
+// =========================================================================
+// ADMIN CHAT V2 — LOGIN, MIDDLEWARE & PROTECTED ROUTES
+// =========================================================================
+
+// Rate limiting for admin login attempts (in-memory)
+const loginAttempts = new Map();
+
+function recordLoginAttempt(ip) {
+    const now = Date.now();
+    const windowMs = 15 * 60 * 1000;
+    const maxAttempts = 5;
+    if (!loginAttempts.has(ip)) {
+        loginAttempts.set(ip, { count: 1, firstAttempt: now });
+    } else {
+        const record = loginAttempts.get(ip);
+        if (now - record.firstAttempt > windowMs) {
+            loginAttempts.set(ip, { count: 1, firstAttempt: now });
+        } else {
+            record.count += 1;
+        }
+    }
+    const record = loginAttempts.get(ip);
+    if (record.count > maxAttempts && (now - record.firstAttempt) <= windowMs) {
+        return { blocked: true, retryAfter: Math.ceil((windowMs - (now - record.firstAttempt)) / 1000) };
+    }
+    return { blocked: false };
+}
+
+function clearLoginAttempts(ip) {
+    loginAttempts.delete(ip);
+}
+
+function ensureAdminConfigAvailable(res) {
+    if (!ADMIN_CHAT_PASSWORD) {
+        return res.status(503).json({ success: false, error: 'Service admin temporairement indisponible' });
+    }
+    return null;
+}
+
+function toBase64Url(value) {
+    return Buffer.from(value)
+        .toString('base64')
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+}
+
+function fromBase64Url(value) {
+    const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+    const padding = '='.repeat((4 - (normalized.length % 4)) % 4);
+    return Buffer.from(normalized + padding, 'base64');
+}
+
+function escapeRegex(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function safeEqualStrings(left, right) {
+    const leftHash = crypto.createHash('sha256').update(String(left)).digest();
+    const rightHash = crypto.createHash('sha256').update(String(right)).digest();
+    return crypto.timingSafeEqual(leftHash, rightHash);
+}
+
+// Token generation
+function generateAdminToken() {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+        sub: 'admin',
+        role: 'admin',
+        iat: now,
+        exp: now + (24 * 60 * 60)
+    };
+    const b64header = toBase64Url(JSON.stringify(header));
+    const b64payload = toBase64Url(JSON.stringify(payload));
+    const signature = crypto
+        .createHmac('sha256', ADMIN_CHAT_TOKEN_SECRET)
+        .update(b64header + '.' + b64payload)
+        .digest();
+    const encodedSignature = toBase64Url(signature);
+    return b64header + '.' + b64payload + '.' + encodedSignature;
+}
+
+function verifyAdminToken(token) {
+    try {
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const [b64header, b64payload, signature] = parts;
+        const expectedSig = crypto
+            .createHmac('sha256', ADMIN_CHAT_TOKEN_SECRET)
+            .update(b64header + '.' + b64payload)
+            .digest();
+        const providedSig = fromBase64Url(signature);
+        if (providedSig.length !== expectedSig.length || !crypto.timingSafeEqual(providedSig, expectedSig)) {
+            return null;
+        }
+        const payload = JSON.parse(fromBase64Url(b64payload).toString('utf-8'));
+        if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
+        return payload;
+    } catch (e) {
+        return null;
+    }
+}
+
+// Middleware to protect admin routes
+function verifyAdminTokenMiddleware(req, res, next) {
+    if (ensureAdminConfigAvailable(res)) {
+        return;
+    }
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+        return res.status(401).json({ success: false, error: 'Token requis' });
+    }
+    const tokenParts = authHeader.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+        return res.status(401).json({ success: false, error: 'Format token invalide' });
+    }
+    const token = tokenParts[1];
+    const payload = verifyAdminToken(token);
+    if (!payload) {
+        return res.status(401).json({ success: false, error: 'Token invalide ou expire' });
+    }
+    req.adminPayload = payload;
+    next();
+}
+
+// 1. POST /api/admin/login
+app.post('/api/admin/login', (req, res) => {
+    try {
+        if (ensureAdminConfigAvailable(res)) {
+            return;
+        }
+        const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+        const { password } = req.body;
+        if (!password) {
+            return res.status(400).json({ success: false, error: 'Mot de passe requis' });
+        }
+
+        // Rate limit check
+        const attemptResult = recordLoginAttempt(clientIp);
+        if (attemptResult.blocked) {
+            return res.status(429).json({
+                success: false,
+                error: 'Trop de tentatives. Reessayez dans ' + attemptResult.retryAfter + ' secondes.'
+            });
+        }
+
+        // Compare passwords securely
+        const passwordMatch = safeEqualStrings(password, ADMIN_CHAT_PASSWORD);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ success: false, error: 'Accès refusé' });
+        }
+
+        clearLoginAttempts(clientIp);
+        const token = generateAdminToken();
+        const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)).toISOString();
+        res.json({ success: true, token: token, expiresAt: expiresAt });
+
+    } catch (error) {
+        console.error('Erreur POST /api/admin/login:', error);
+        res.status(500).json({ success: false, error: 'Erreur interne' });
+    }
+});
+
+// 2. GET /api/admin/chat/conversations
+app.get('/api/admin/chat/conversations', verifyAdminTokenMiddleware, async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+        const unreadFilter = req.query.unread === 'true';
+        const skip = (page - 1) * limit;
+
+        let conversations = [];
+        let total = 0;
+
+        if (db) {
+            const query = { archived: { $ne: true } };
+            if (unreadFilter) {
+                query.unreadByAdmin = { $gt: 0 };
+            }
+            total = await db.collection('chatConversations').countDocuments(query);
+            conversations = await db.collection('chatConversations')
+                .find(query)
+                .sort({ lastMessageAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .toArray();
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+            }
+            let filtered = inMemoryConversations.filter(c => c.archived !== true);
+            if (unreadFilter) {
+                filtered = filtered.filter(c => c.unreadByAdmin > 0);
+            }
+            filtered.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+            total = filtered.length;
+            conversations = filtered.slice(skip, skip + limit);
+        }
+
+        res.json({ success: true, conversations, total, page, limit });
+
+    } catch (error) {
+        console.error('Erreur GET /api/admin/chat/conversations:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: 'Erreur interne' });
+    }
+});
+
+// 3. GET /api/admin/chat/conversations/:conversationId
+app.get('/api/admin/chat/conversations/:conversationId', verifyAdminTokenMiddleware, async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+
+        const { conversationId } = req.params;
+        if (!conversationId) {
+            return res.status(400).json({ success: false, error: 'conversationId requis' });
+        }
+
+        let conversation = null;
+        let messages = [];
+
+        if (db) {
+            conversation = await db.collection('chatConversations').findOne({ conversationId: conversationId });
+            if (conversation) {
+                messages = await db.collection('chatMessages')
+                    .find({ conversationId: conversationId })
+                    .sort({ createdAt: -1 })
+                    .limit(100)
+                    .toArray();
+                messages.reverse();
+            }
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+            }
+            conversation = inMemoryConversations.find(c => c.conversationId === conversationId) || null;
+            if (conversation) {
+                messages = inMemoryMessages
+                    .filter(m => m.conversationId === conversationId)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 100)
+                    .reverse();
+            }
+        }
+
+        if (!conversation) {
+            return res.status(404).json({ success: false, error: 'Conversation introuvable' });
+        }
+
+        res.json({ success: true, conversation, messages });
+
+    } catch (error) {
+        console.error('Erreur GET /api/admin/chat/conversations/:conversationId:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: 'Erreur interne' });
+    }
+});
+
+// 4. POST /api/admin/chat/reply
+app.post('/api/admin/chat/reply', verifyAdminTokenMiddleware, async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+
+        const { conversationId, message } = req.body;
+
+        if (!conversationId) {
+            return res.status(400).json({ success: false, error: 'conversationId requis' });
+        }
+
+        if (!message || typeof message !== 'string') {
+            return res.status(400).json({ success: false, error: 'Message requis' });
+        }
+
+        const trimmedMessage = message.trim();
+        if (trimmedMessage.length === 0) {
+            return res.status(400).json({ success: false, error: 'Message vide refuse' });
+        }
+
+        if (trimmedMessage.length > 1000) {
+            return res.status(400).json({ success: false, error: 'Message trop long (max 1000 caracteres)' });
+        }
+
+        let conversation = null;
+        if (db) {
+            conversation = await db.collection('chatConversations').findOne({ conversationId: conversationId });
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+            }
+            conversation = inMemoryConversations.find(c => c.conversationId === conversationId) || null;
+        }
+
+        if (!conversation) {
+            return res.status(404).json({ success: false, error: 'Conversation introuvable' });
+        }
+
+        if (conversation.archived) {
+            return res.status(400).json({ success: false, error: 'Conversation archivee' });
+        }
+
+        const now = new Date();
+
+        const messageDoc = {
+            messageId: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            conversationId: conversationId,
+            userId: conversation.userId,
+            senderType: 'admin',
+            senderName: 'Agent MyBOA',
+            content: trimmedMessage,
+            contentType: 'text',
+            status: 'sent',
+            readByAdmin: true,
+            readByUser: false,
+            createdAt: now,
+            metadata: { source: 'myboamali-admin' }
+        };
+
+        if (db) {
+            await db.collection('chatMessages').insertOne(messageDoc);
+            await db.collection('chatConversations').updateOne(
+                { conversationId: conversationId },
+                {
+                    $set: {
+                        lastMessageAt: now,
+                        lastMessagePreview: trimmedMessage.substring(0, 60),
+                        updatedAt: now,
+                        unreadByAdmin: 0
+                    },
+                    $inc: { unreadByUser: 1 }
+                }
+            );
+        } else {
+            inMemoryMessages.push(messageDoc);
+            const conv = inMemoryConversations.find(c => c.conversationId === conversationId);
+            if (conv) {
+                conv.lastMessageAt = now;
+                conv.lastMessagePreview = trimmedMessage.substring(0, 60);
+                conv.updatedAt = now;
+                conv.unreadByAdmin = 0;
+                conv.unreadByUser = (conv.unreadByUser || 0) + 1;
+            }
+        }
+
+        res.json({ success: true, message: messageDoc });
+
+    } catch (error) {
+        console.error('Erreur POST /api/admin/chat/reply:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: 'Erreur interne' });
+    }
+});
+
+// 5. POST /api/admin/chat/mark-read
+app.post('/api/admin/chat/mark-read', verifyAdminTokenMiddleware, async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+
+        const { conversationId } = req.body;
+        if (!conversationId) {
+            return res.status(400).json({ success: false, error: 'conversationId requis' });
+        }
+
+        if (db) {
+            const updateConversationResult = await db.collection('chatConversations').updateOne(
+                { conversationId: conversationId },
+                { $set: { unreadByAdmin: 0 } }
+            );
+            if (updateConversationResult.matchedCount === 0) {
+                return res.status(404).json({ success: false, error: 'Conversation introuvable' });
+            }
+            await db.collection('chatMessages').updateMany(
+                { conversationId: conversationId, readByAdmin: false, senderType: 'user' },
+                { $set: { readByAdmin: true } }
+            );
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+            }
+            const conv = inMemoryConversations.find(c => c.conversationId === conversationId);
+            if (!conv) {
+                return res.status(404).json({ success: false, error: 'Conversation introuvable' });
+            }
+            if (conv) {
+                conv.unreadByAdmin = 0;
+            }
+            inMemoryMessages
+                .filter(m => m.conversationId === conversationId && !m.readByAdmin && m.senderType === 'user')
+                .forEach(m => { m.readByAdmin = true; });
+        }
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('Erreur POST /api/admin/chat/mark-read:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: 'Erreur interne' });
+    }
+});
+
+// 6. GET /api/admin/chat/search
+app.get('/api/admin/chat/search', verifyAdminTokenMiddleware, async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+
+        const q = (req.query.q || '').trim();
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+        const skip = (page - 1) * limit;
+
+        if (q.length < 2) {
+            return res.status(400).json({ success: false, error: 'La recherche doit contenir au moins 2 caracteres' });
+        }
+
+        // Escape special regex characters to prevent regex injection
+        const escapedQ = escapeRegex(q);
+        const searchRegex = new RegExp(escapedQ, 'i');
+
+        let conversations = [];
+        let total = 0;
+
+        if (db) {
+            const query = {
+                archived: { $ne: true },
+                $or: [
+                    { userId: searchRegex },
+                    { userDisplayName: searchRegex },
+                    { lastMessagePreview: searchRegex }
+                ]
+            };
+            total = await db.collection('chatConversations').countDocuments(query);
+            conversations = await db.collection('chatConversations')
+                .find(query)
+                .sort({ lastMessageAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .toArray();
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+            }
+            let filtered = inMemoryConversations.filter(c =>
+                c.archived !== true && (
+                    (c.userId && searchRegex.test(c.userId)) ||
+                    (c.userDisplayName && searchRegex.test(c.userDisplayName)) ||
+                    (c.lastMessagePreview && searchRegex.test(c.lastMessagePreview))
+                )
+            );
+            filtered.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+            total = filtered.length;
+            conversations = filtered.slice(skip, skip + limit);
+        }
+
+        res.json({ success: true, conversations, total, page, limit });
+
+    } catch (error) {
+        console.error('Erreur GET /api/admin/chat/search:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: 'Erreur interne' });
+    }
 });
 
 const PORT = process.env.PORT || 3001;
