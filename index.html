@@ -20,6 +20,7 @@
     <link href="css/responsive.css" rel="stylesheet" type="text/css" />
     <link href="css/cartes.css" rel="stylesheet" type="text/css" />
     <link href="css/virements.css" rel="stylesheet" type="text/css" />
+    <link href="css/chat.css" rel="stylesheet" type="text/css" />
 
     <!-- jsPDF pour génération PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -80,10 +81,19 @@
                 <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
                 Services
             </a>
+            <a class="nav-item" id="btn-assistance-desktop" style="cursor:pointer; display:none;">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                Assistance
+            </a>
         </nav>
 
         <!-- Bloc droit -->
         <div class="navbar-right">
+            <!-- Assistance Button (Mobile & Desktop) -->
+            <div class="nav-assistance" id="btn-assistance-mobile" style="cursor:pointer;position:relative;display:none;align-items:center;margin-right:15px;" title="Assistance client">
+                <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:white;"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                <span id="chat-notif-badge" style="position:absolute;top:-4px;right:-4px;background:#e74c3c;color:white;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:bold;display:none;align-items:center;justify-content:center;"></span>
+            </div>
             <!-- Notifications (Mobile & Desktop) -->
             <div class="nav-notifications" style="position:relative;">
                 <div id="btn-notifications" style="cursor:pointer;position:relative;display:inline-flex;align-items:center;">
@@ -941,6 +951,57 @@
 
         <!-- Global Toast Container -->
         <div id="toast-container"></div>
+
+        <!-- Conteneur principal MyBOA Chat -->
+        <div id="myboa-chat" class="myboa-chat-container">
+            <!-- Header du chat -->
+            <div class="chat-header">
+                <div class="chat-header-title">
+                    <span class="chat-header-icon">💬</span>
+                    <span>Assistance MyBOA</span>
+                </div>
+                <button id="btn-close-chat" class="chat-close-btn">&times;</button>
+            </div>
+            
+            <!-- Message de prévention de sécurité -->
+            <div class="chat-security-banner">
+                Pour votre sécurité, ne partagez jamais de mot de passe, code secret, OTP, numéro complet de carte ou CVV dans cette conversation.
+            </div>
+
+            <!-- Loader du chat -->
+            <div id="chat-loader" class="chat-loader hidden">
+                <div class="chat-spinner"></div>
+                <span>Chargement de la conversation...</span>
+            </div>
+
+            <!-- Erreur du chat -->
+            <div id="chat-error-msg" class="chat-error-banner hidden">
+                Assistance temporairement indisponible. Veuillez réessayer dans quelques instants.
+            </div>
+
+            <!-- Historique des messages -->
+            <div id="chat-messages-area" class="chat-messages-body">
+                <div class="chat-welcome-msg">
+                    <div class="chat-avatar-ai">BOA</div>
+                    <div class="chat-welcome-text">
+                        Bonjour ! Comment pouvons-nous vous aider aujourd'hui ?<br>
+                        <small style="color:#777; font-size:10px; display:block; margin-top:4px;">Assistance de démonstration - projet MyBOA-MALI</small>
+                    </div>
+                </div>
+                <!-- Les messages seront injectés ici -->
+            </div>
+
+            <!-- Formulaire d'envoi -->
+            <div class="chat-input-footer">
+                <div class="chat-input-wrapper">
+                    <textarea id="chat-message-input" placeholder="Saisissez votre message..." rows="1" maxlength="1000"></textarea>
+                    <button id="btn-send-chat" class="chat-send-btn">
+                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </button>
+                </div>
+                <div class="chat-char-counter"><span id="chat-char-count">0</span> / 1000</div>
+            </div>
+        </div>
     </main>
 
     <!-- Scroll To Top Button -->
@@ -954,21 +1015,8 @@
     <script src="js/virements.js"></script>
     <script src="js/cartes.js"></script>
     <script src="js/services.js"></script>
-    <!--Start of Tawk.to Script-->
-    <script type="text/javascript">
-    if (sessionStorage.getItem('isLoggedIn') === 'true') {
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/69c2bde81edc2f1c3256777d/1jkgbblbi';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    }
-    </script>
-    <!--End of Tawk.to Script-->
+    <script src="js/chat.js"></script>
+
 
 <div id="modal-profil" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:white;border-radius:12px;overflow:hidden;width:90%;max-width:580px;max-height:90vh;overflow-y:auto;">

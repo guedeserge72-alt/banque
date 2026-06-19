@@ -3,13 +3,31 @@ const cors    = require('cors');
 const https   = require('https');
 const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://myboamali:MyBOA2026!@cluster0.f4iatj8.mongodb.net/?appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI;
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (isProduction && (!MONGODB_URI || MONGODB_URI.trim() === '')) {
+    console.error('MONGODB_URI manquante en production. Démarrage interrompu.');
+    process.exit(1);
+}
+
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+if (!BREVO_API_KEY) {
+    console.warn('Warning : BREVO_API_KEY manquante. Les notifications par email seront désactivées.');
+}
+
 const DB_NAME = 'myboamali';
 const COLLECTION_NAME = 'dashboard';
 
 let db = null;
 
 async function connectDB() {
+    if (!MONGODB_URI || MONGODB_URI.trim() === '') {
+        if (!isProduction) {
+            console.warn("Mode local : fallback mémoire chat actif, données non persistantes.");
+        }
+        return;
+    }
     try {
         const client = new MongoClient(MONGODB_URI);
         await client.connect();
@@ -17,6 +35,11 @@ async function connectDB() {
         console.log('MongoDB connecte avec succes');
     } catch(e) {
         console.error('Erreur MongoDB:', e);
+        if (isProduction) {
+            console.error('Erreur de connexion MongoDB en production.');
+        } else {
+            console.warn("Mode local : fallback mémoire chat actif, données non persistantes.");
+        }
     }
 }
 
@@ -30,8 +53,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
+app.use(express.static(__dirname));
 
 app.post('/send-virement', (req, res) => {
     try {
@@ -630,6 +652,367 @@ app.post('/save-data', async (req, res) => {
     } catch(error) {
         console.error('Erreur save-data:', error);
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// =========================================================================
+// CUSTOM INTEGRATED CHAT V1 API ROUTES & HELPERS
+// =========================================================================
+
+// In-memory fallback database arrays if MongoDB connection is absent
+let inMemoryConversations = [];
+let inMemoryMessages = [];
+
+function escapeHTML(text) {
+    if (typeof text !== 'string') return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function sendAgentEmailNotification(userDisplayName, userInitiales, userId, conversationId, messageContent) {
+    if (!BREVO_API_KEY) {
+        console.warn('BREVO_API_KEY non configurée. Email agent non envoyé.');
+        return;
+    }
+    
+    const escapedMessage = escapeHTML(messageContent);
+    const dateStr = new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Abidjan' });
+    
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;">
+    <div style="max-width:600px;margin:0 auto;background:white;border-radius:8px;overflow:hidden;border:1px solid #ddd;">
+        <div style="background:#0f1923;padding:20px;color:white;">
+            <h2 style="margin:0;font-size:16px;">Nouveau message chat MyBOA-MALI</h2>
+            <div style="font-size:11px;color:#888;margin-top:4px;">source : myboamali-web</div>
+        </div>
+        <div style="padding:24px;color:#333;font-size:14px;line-height:1.6;">
+            <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <tr>
+                    <td style="padding:6px 0;font-weight:bold;width:150px;">Nom Utilisateur :</td>
+                    <td style="padding:6px 0;">${escapeHTML(userDisplayName)}</td>
+                </tr>
+                <tr>
+                    <td style="padding:6px 0;font-weight:bold;">Initiales :</td>
+                    <td style="padding:6px 0;">${escapeHTML(userInitiales)}</td>
+                </tr>
+                <tr>
+                    <td style="padding:6px 0;font-weight:bold;">ID Utilisateur :</td>
+                    <td style="padding:6px 0;"><code>${escapeHTML(userId)}</code></td>
+                </tr>
+                <tr>
+                    <td style="padding:6px 0;font-weight:bold;">ID Conversation :</td>
+                    <td style="padding:6px 0;"><code>${escapeHTML(conversationId)}</code></td>
+                </tr>
+                <tr>
+                    <td style="padding:6px 0;font-weight:bold;">Date :</td>
+                    <td style="padding:6px 0;">${dateStr}</td>
+                </tr>
+            </table>
+            <div style="background:#f9f9f9;border-left:4px solid #1D6F4F;padding:15px;margin-top:10px;border-radius:4px;">
+                <strong style="display:block;margin-bottom:6px;color:#1D6F4F;">Message :</strong>
+                <div style="white-space:pre-wrap;font-family:inherit;">${escapedMessage}</div>
+            </div>
+            <div style="background:#fff8e1;border:1px solid #f39c12;border-radius:6px;padding:12px;margin-top:20px;font-size:12px;">
+                <div style="color:#e67e22;font-weight:bold;">⚠ SÉCURITÉ</div>
+                <div style="color:#666;margin-top:4px;">Cette conversation ne doit contenir aucune donnée bancaire sensible réelle.</div>
+            </div>
+        </div>
+        <div style="background:#0f1923;padding:15px;text-align:center;font-size:10px;color:rgba(180,200,210,0.6);">
+            2026 BANK OF AFRICA - MyBOA-MALI
+        </div>
+    </div>
+    </body>
+    </html>`;
+
+    const emailData = JSON.stringify({
+        sender: { name: 'MyBOA-MALI Chat Alert', email: 'noreply@myboamali.net' },
+        to: [{ email: 'bankof739@gmail.com', name: 'Agent MyBOA-MALI' }],
+        subject: 'Nouveau message chat MyBOA-MALI - ' + (userDisplayName || userId),
+        htmlContent: htmlContent
+    });
+
+    const options = {
+        hostname: 'api.brevo.com',
+        port: 443,
+        path: '/v3/smtp/email',
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'api-key': BREVO_API_KEY
+        }
+    };
+
+    const reqBrevo = https.request(options, (resBrevo) => {
+        let data = '';
+        resBrevo.on('data', (chunk) => { data += chunk; });
+        resBrevo.on('end', () => {
+            console.log('Chat Alert Brevo status:', resBrevo.statusCode, data);
+        });
+    });
+
+    reqBrevo.on('error', (e) => {
+        console.error('Erreur envoi email alert Brevo:', e);
+    });
+
+    reqBrevo.write(emailData);
+    reqBrevo.end();
+}
+
+// 1. POST /api/chat/messages
+app.post('/api/chat/messages', async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+
+        const { userId, userDisplayName, userInitiales, userEmail, message, conversationId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ success: false, error: 'userId requis' });
+        }
+
+        if (!message || typeof message !== 'string') {
+            return res.status(400).json({ success: false, error: 'Message requis' });
+        }
+
+        const trimmedMessage = message.trim();
+        if (trimmedMessage.length === 0) {
+            return res.status(400).json({ success: false, error: 'Message vide refusé' });
+        }
+
+        if (trimmedMessage.length > 1000) {
+            return res.status(400).json({ success: false, error: 'Message trop long (max 1000 caractères)' });
+        }
+
+        // Check if there is an active conversation for this user
+        let conversation = null;
+        if (db) {
+            if (conversationId) {
+                conversation = await db.collection('chatConversations').findOne({ conversationId: conversationId });
+            } else {
+                conversation = await db.collection('chatConversations').findOne({ userId: userId, archived: { $ne: true } });
+            }
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+            }
+            console.warn("Mode local : fallback mémoire chat actif, données non persistantes.");
+            if (conversationId) {
+                conversation = inMemoryConversations.find(c => c.conversationId === conversationId);
+            } else {
+                conversation = inMemoryConversations.find(c => c.userId === userId && !c.archived);
+            }
+        }
+
+        const now = new Date();
+        const activeConvId = conversation ? conversation.conversationId : (conversationId || 'conv_' + userId);
+
+        if (!conversation) {
+            // Create conversation
+            conversation = {
+                conversationId: activeConvId,
+                userId: userId,
+                userDisplayName: userDisplayName || 'Client MyBOA-MALI',
+                userInitiales: userInitiales || 'BJ',
+                userEmail: userEmail || '',
+                status: 'active',
+                lastMessageAt: now,
+                lastMessagePreview: trimmedMessage.substring(0, 60),
+                unreadByAdmin: 1,
+                unreadByUser: 0,
+                source: 'myboamali-web',
+                archived: false,
+                createdAt: now,
+                updatedAt: now
+            };
+            if (db) {
+                await db.collection('chatConversations').insertOne(conversation);
+            } else {
+                if (isProduction) {
+                    return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+                }
+                inMemoryConversations.push(conversation);
+            }
+        } else {
+            // Update conversation
+            if (db) {
+                await db.collection('chatConversations').updateOne(
+                    { conversationId: activeConvId },
+                    {
+                        $set: {
+                            lastMessageAt: now,
+                            lastMessagePreview: trimmedMessage.substring(0, 60),
+                            updatedAt: now,
+                            userDisplayName: userDisplayName || conversation.userDisplayName,
+                            userInitiales: userInitiales || conversation.userInitiales,
+                            userEmail: userEmail || conversation.userEmail
+                        },
+                        $inc: { unreadByAdmin: 1 }
+                    }
+                );
+            } else {
+                if (isProduction) {
+                    return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+                }
+                conversation.lastMessageAt = now;
+                conversation.lastMessagePreview = trimmedMessage.substring(0, 60);
+                conversation.updatedAt = now;
+                conversation.userDisplayName = userDisplayName || conversation.userDisplayName;
+                conversation.userInitiales = userInitiales || conversation.userInitiales;
+                conversation.userEmail = userEmail || conversation.userEmail;
+                conversation.unreadByAdmin += 1;
+            }
+        }
+
+        // Save message in chatMessages
+        const messageDoc = {
+            messageId: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            conversationId: activeConvId,
+            userId: userId,
+            senderType: 'user',
+            senderName: userDisplayName || 'Client MyBOA-MALI',
+            content: trimmedMessage,
+            contentType: 'text',
+            status: 'sent',
+            readByAdmin: false,
+            readByUser: true,
+            createdAt: now,
+            metadata: { source: 'myboamali-web' }
+        };
+
+        if (db) {
+            await db.collection('chatMessages').insertOne(messageDoc);
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+            }
+            inMemoryMessages.push(messageDoc);
+        }
+
+        // Send email alert to agent
+        try {
+            sendAgentEmailNotification(
+                userDisplayName || conversation.userDisplayName || 'Client MyBOA-MALI',
+                userInitiales || conversation.userInitiales || 'BJ',
+                userId,
+                activeConvId,
+                trimmedMessage
+            );
+        } catch (emailErr) {
+            console.error('Échec non bloquant de l\'envoi de l\'email agent:', emailErr);
+        }
+
+        res.json({
+            success: true,
+            conversationId: activeConvId,
+            message: messageDoc
+        });
+
+    } catch (error) {
+        console.error('Erreur POST /api/chat/messages:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 2. GET /api/chat/messages/:userId
+app.get('/api/chat/messages/:userId', async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+
+        const { userId } = req.params;
+        if (!userId) {
+            return res.status(400).json({ success: false, error: 'userId requis' });
+        }
+
+        let conversation = null;
+        let messages = [];
+
+        if (db) {
+            // Find active conversation
+            conversation = await db.collection('chatConversations').findOne({ userId: userId, archived: { $ne: true } });
+            if (conversation) {
+                // Retrieve last 50 messages, sorted ascending by creation date
+                messages = await db.collection('chatMessages')
+                    .find({ conversationId: conversation.conversationId })
+                    .sort({ createdAt: 1 })
+                    .limit(50)
+                    .toArray();
+            }
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+            }
+            console.warn("Mode local : fallback mémoire chat actif, données non persistantes.");
+            conversation = inMemoryConversations.find(c => c.userId === userId && !c.archived);
+            if (conversation) {
+                messages = inMemoryMessages
+                    .filter(m => m.conversationId === conversation.conversationId)
+                    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+                    .slice(0, 50);
+            }
+        }
+
+        res.json({
+            success: true,
+            conversation: conversation,
+            messages: messages
+        });
+
+    } catch (error) {
+        console.error('Erreur GET /api/chat/messages:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 3. GET /api/chat/conversation/:userId
+app.get('/api/chat/conversation/:userId', async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+
+        const { userId } = req.params;
+        if (!userId) {
+            return res.status(400).json({ success: false, error: 'userId requis' });
+        }
+
+        let conversation = null;
+        if (db) {
+            conversation = await db.collection('chatConversations').findOne({ userId: userId, archived: { $ne: true } });
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+            }
+            conversation = inMemoryConversations.find(c => c.userId === userId && !c.archived) || null;
+        }
+
+        res.json({
+            success: true,
+            conversation: conversation
+        });
+
+    } catch (error) {
+        console.error('Erreur GET /api/chat/conversation:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

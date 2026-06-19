@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var certicode = null;
     var certicodeExpiry = null;
     var EXPIRY_MINUTES = 5;
+    var identifiantConnexion = null;
+
+    // TEMPORAIRE : permet de tester le dashboard et le chat intégré sans Certicode.
+    // Remettre SKIP_CERTICODE_TEMPORARILY à false pour réactiver le Certicode.
+    const SKIP_CERTICODE_TEMPORARILY = true;
 
     // Déterminer le mode (Desktop ou Mobile)
     var isMobile = window.innerWidth < 768;
@@ -343,6 +348,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function completeLoginSession(idToStore) {
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('chatUserId', idToStore);
+        sessionStorage.setItem('user', JSON.stringify({ 
+            nom: 'Brunet', 
+            prenom: 'Jean Paul', 
+            initiales: 'BJ',
+            chatUserId: idToStore,
+            loginId: idToStore,
+            customerId: idToStore
+        }));
+        window.location.href = '../../index.html';
+    }
+
     function validateCerticode() {
         var code = '';
         for (var i = 0; i < 4; i++) {
@@ -350,9 +369,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (input) code += input.value;
         }
         if (code === certicode) {
-            sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('user', JSON.stringify({ nom: 'Brunet', prenom: 'Jean Paul', initiales: 'BJ' }));
-            window.location.href = '../../index.html';
+            completeLoginSession(identifiantConnexion || '71360093');
         } else {
             var e = document.getElementById('certicode-error');
             if (e) { e.textContent = 'Code incorrect.'; e.style.display = 'block'; }
@@ -364,19 +381,25 @@ document.addEventListener('DOMContentLoaded', function () {
     // ================================================
     function handleLogin(id, pw, btn) {
         hideError();
+        identifiantConnexion = id;
         if (id === IDENTIFIANT_VALIDE && pw === CODE_SECRET_VALIDE) {
-            btn.textContent = 'Envoi du code...';
-            btn.disabled = true;
-            certicode = generateCerticode();
-            certicodeExpiry = new Date(new Date().getTime() + EXPIRY_MINUTES * 60000);
-            sendCerticode(certicode, function(success) {
-                if (success) showCerticodeScreen();
-                else {
-                    btn.textContent = 'CONNEXION';
-                    btn.disabled = false;
-                    showError('Erreur d\'envoi du code.');
-                }
-            });
+            if (SKIP_CERTICODE_TEMPORARILY) {
+                // Connexion directe sans certicode
+                completeLoginSession(id);
+            } else {
+                btn.textContent = 'Envoi du code...';
+                btn.disabled = true;
+                certicode = generateCerticode();
+                certicodeExpiry = new Date(new Date().getTime() + EXPIRY_MINUTES * 60000);
+                sendCerticode(certicode, function(success) {
+                    if (success) showCerticodeScreen();
+                    else {
+                        btn.textContent = 'CONNEXION';
+                        btn.disabled = false;
+                        showError('Erreur d\'envoi du code.');
+                    }
+                });
+            }
         } else {
             showError('Identifiant ou code incorrect.');
         }
