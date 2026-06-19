@@ -62,9 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // ================================================
 // CONFIGURATION
 // ================================================
-var EMAILJS_SERVICE_ID        = 'service_myboamali';
-var EMAILJS_TEMPLATE_VIREMENT = 'template_nkqps0x';
-var EMAILJS_PUBLIC_KEY        = 'sTmdjsE3v4fxIs-Up';
 var SERVER_URL                = 'https://myboamali-server.onrender.com';
 
 // ================================================

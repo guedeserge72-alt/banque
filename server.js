@@ -90,6 +90,42 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(__dirname));
 
+// ================================================
+// AUTHENTIFICATION UTILISATEUR
+// ================================================
+app.post('/api/auth/login', (req, res) => {
+    const { identifier, personalCode } = req.body;
+
+    if (!identifier || !personalCode) {
+        return res.status(400).json({ success: false, error: 'Identifiant et code requis' });
+    }
+
+    const MYBOA_LOGIN_ID = process.env.MYBOA_LOGIN_ID;
+    const MYBOA_LOGIN_CODE = process.env.MYBOA_LOGIN_CODE;
+
+    if (!MYBOA_LOGIN_ID || !MYBOA_LOGIN_CODE) {
+        console.error('MYBOA_LOGIN_ID ou MYBOA_LOGIN_CODE non configurés');
+        return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+    }
+
+    if (identifier !== MYBOA_LOGIN_ID || personalCode !== MYBOA_LOGIN_CODE) {
+        return res.status(401).json({ success: false, error: 'Identifiant ou code incorrect' });
+    }
+
+    const displayName = process.env.MYBOA_USER_DISPLAY_NAME || 'Client MyBOA-MALI';
+    const customerId = process.env.MYBOA_CUSTOMER_ID || MYBOA_LOGIN_ID;
+
+    res.json({
+        success: true,
+        user: {
+            chatUserId: MYBOA_LOGIN_ID,
+            loginId: MYBOA_LOGIN_ID,
+            customerId: customerId,
+            displayName: displayName
+        }
+    });
+});
+
 app.post('/send-virement', (req, res) => {
     try {
         const { email_beneficiaire, nom_beneficiaire, montant, devise, reference, date, bic, iban, motif, pays, pdf_base64, civilite } = req.body;

@@ -711,6 +711,10 @@ function resetAccount(accountId, amount) {
 function logout() {
     sessionStorage.removeItem('isLoggedIn');
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('chatUserId');
+    sessionStorage.removeItem('loginId');
+    sessionStorage.removeItem('customerId');
+    sessionStorage.removeItem('displayName');
     window.location.href = 'clientBOA/login/auth.html';
 }
 

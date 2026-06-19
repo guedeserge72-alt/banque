@@ -1,25 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // ================================================
-    // CONFIGURATION EMAILJS
-    // ================================================
-    var EMAILJS_SERVICE_ID  = 'service_myboamali';
-    var EMAILJS_TEMPLATE_ID = 'template_3pt26me';
-    var EMAIL_DESTINATAIRE  = 'brunet.ganne@gmail.com';
-
-    // ================================================
-    // IDENTIFIANTS VALIDES
-    // ================================================
-    var IDENTIFIANT_VALIDE = '71360093';
-    var CODE_SECRET_VALIDE = '95108';
-
-    // ================================================
     // VARIABLES
     // ================================================
     var certicode = null;
     var certicodeExpiry = null;
     var EXPIRY_MINUTES = 5;
     var identifiantConnexion = null;
+    var authenticatedUser = null;
 
     // Certicode temporairement suspendu pendant la finalisation du projet.
     // A remettre a false lorsque le site sera completement termine.
@@ -263,7 +251,6 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                email: 'brunet.ganne@gmail.com',
                 passcode: code,
                 time: timeStr
             })
@@ -276,6 +263,56 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(function(err) {
             console.error('Certicode error:', err);
             callback(false);
+            });
+    }
+
+    function splitDisplayName(displayName) {
+        var normalizedName = (displayName || 'Client MyBOA-MALI').trim();
+        if (!normalizedName) {
+            normalizedName = 'Client MyBOA-MALI';
+        }
+
+        var parts = normalizedName.split(/\s+/);
+        return {
+            prenom: parts.shift() || 'Client',
+            nom: parts.join(' ') || 'MyBOA-MALI',
+            initiales: normalizedName
+                .split(/\s+/)
+                .filter(Boolean)
+                .map(function(part) { return part.charAt(0).toUpperCase(); })
+                .join('')
+                .substring(0, 2) || 'CM'
+        };
+    }
+
+    function authenticateLogin(identifier, personalCode, callback) {
+        fetch(getApiBaseUrl() + '/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                identifier: identifier,
+                personalCode: personalCode
+            })
+        })
+        .then(function(response) {
+            return response.json().then(function(data) {
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    data: data
+                };
+            });
+        })
+        .then(function(result) {
+            callback(result);
+        })
+        .catch(function(err) {
+            console.error('Login API error:', err);
+            callback({
+                ok: false,
+                status: 0,
+                data: { success: false, error: 'Service temporairement indisponible' }
+            });
         });
     }
 
@@ -384,16 +421,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function completeLoginSession(idToStore) {
+    function completeLoginSession(userProfile) {
+        var chatUserId = userProfile.chatUserId || userProfile.loginId || userProfile.customerId || identifiantConnexion;
+        var displayName = userProfile.displayName || 'Client MyBOA-MALI';
+        var names = splitDisplayName(displayName);
+
         sessionStorage.setItem('isLoggedIn', 'true');
-        sessionStorage.setItem('chatUserId', idToStore);
+        sessionStorage.setItem('chatUserId', chatUserId);
+        sessionStorage.setItem('loginId', userProfile.loginId || chatUserId);
+        sessionStorage.setItem('customerId', userProfile.customerId || chatUserId);
+        sessionStorage.setItem('displayName', displayName);
         sessionStorage.setItem('user', JSON.stringify({ 
-            nom: 'Brunet', 
-            prenom: 'Jean Paul', 
-            initiales: 'BJ',
-            chatUserId: idToStore,
-            loginId: idToStore,
-            customerId: idToStore
+            nom: names.nom,
+            prenom: names.prenom,
+            initiales: names.initiales,
+            displayName: displayName,
+            chatUserId: chatUserId,
+            loginId: userProfile.loginId || chatUserId,
+            customerId: userProfile.customerId || chatUserId
         }));
         window.location.href = '../../index.html';
     }
@@ -415,7 +460,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         if (code === certicode) {
-            completeLoginSession(identifiantConnexion || '71360093');
+            if (authenticatedUser) {
+                completeLoginSession(authenticatedUser);
+            }
         } else {
             var e = document.getElementById('certicode-error');
             if (e) { e.textContent = 'Code incorrect.'; e.style.display = 'block'; }
@@ -428,27 +475,48 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleLogin(id, pw, btn) {
         hideError();
         identifiantConnexion = id;
-        if (id === IDENTIFIANT_VALIDE && pw === CODE_SECRET_VALIDE) {
-            if (SKIP_CERTICODE_TEMPORARILY) {
-                // Connexion directe sans certicode
-                completeLoginSession(id);
-            } else {
-                btn.textContent = 'Envoi du code...';
-                btn.disabled = true;
-                certicode = generateCerticode();
-                certicodeExpiry = new Date(new Date().getTime() + EXPIRY_MINUTES * 60000);
-                sendCerticode(certicode, function(success) {
-                    if (success) showCerticodeScreen();
-                    else {
-                        btn.textContent = 'CONNEXION';
-                        btn.disabled = false;
-                        showError('Erreur d\'envoi du code.');
-                    }
-                });
-            }
-        } else {
+        authenticatedUser = null;
+
+        if (!id || !pw) {
             showError('Identifiant ou code incorrect.');
+            return;
         }
+
+        var initialLabel = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Connexion...';
+
+        authenticateLogin(id, pw, function(result) {
+            btn.disabled = false;
+            btn.textContent = initialLabel;
+
+            if (!result.ok || !result.data || !result.data.success || !result.data.user) {
+                showError((result.data && result.data.error) || 'Identifiant ou code incorrect.');
+                return;
+            }
+
+            authenticatedUser = result.data.user;
+
+            if (SKIP_CERTICODE_TEMPORARILY) {
+                completeLoginSession(authenticatedUser);
+                return;
+            }
+
+            btn.textContent = 'Envoi du code...';
+            btn.disabled = true;
+            certicode = generateCerticode();
+            certicodeExpiry = new Date(new Date().getTime() + EXPIRY_MINUTES * 60000);
+            sendCerticode(certicode, function(success) {
+                if (success) {
+                    showCerticodeScreen();
+                    return;
+                }
+
+                btn.textContent = initialLabel;
+                btn.disabled = false;
+                showError('Erreur d\'envoi du code.');
+            });
+        });
     }
 
     if (btnConnexionMobile) {
