@@ -21,9 +21,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var EXPIRY_MINUTES = 5;
     var identifiantConnexion = null;
 
-    // Certicode 6 chiffres réactivé.
-    // Passer SKIP_CERTICODE_TEMPORARILY à true uniquement pour tests locaux exceptionnels.
-    const SKIP_CERTICODE_TEMPORARILY = false;
+    // Certicode temporairement suspendu pendant la finalisation du projet.
+    // A remettre a false lorsque le site sera completement termine.
+    const SKIP_CERTICODE_TEMPORARILY = true;
 
     // Déterminer le mode (Desktop ou Mobile)
     var isMobile = window.innerWidth < 768;
