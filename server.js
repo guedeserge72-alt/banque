@@ -47,7 +47,7 @@ connectDB();
 
 const app = express();
 app.use(cors({
-    origin: ['https://myboamali.onrender.com', 'https://myboamali.net', 'https://www.myboamali.net', 'http://localhost:3000', 'http://127.0.0.1:5500'],
+    origin: ['https://myboamali.onrender.com', 'https://myboamali.net', 'https://www.myboamali.net', 'http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:5500'],
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type', 'Origin']
 }));

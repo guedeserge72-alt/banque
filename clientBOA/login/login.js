@@ -246,13 +246,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
     }
 
+    function getApiBaseUrl() {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3001'
+            : 'https://myboamali-server.onrender.com';
+    }
+
     function sendCerticode(code, callback) {
         var now = new Date();
         var expiry = new Date(now.getTime() + EXPIRY_MINUTES * 60000);
         var timeStr = expiry.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-        console.log('Envoi Certicode vers /send-certicode');
-        fetch('/send-certicode', {
+        var url = getApiBaseUrl() + '/send-certicode';
+        console.log('Envoi Certicode vers', url);
+        fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
