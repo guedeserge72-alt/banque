@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(function(err) {
             console.error('Certicode error:', err);
-            callback(true);
+            callback(false);
         });
     }
 
@@ -344,10 +344,36 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         document.getElementById('btn-valider-certicode').addEventListener('click', validateCerticode);
-        document.getElementById('btn-resend').addEventListener('click', function() { 
-            this.textContent = 'Envoi...';
+        document.getElementById('btn-resend').addEventListener('click', function() {
+            var btn = this;
+            btn.textContent = 'Envoi...';
+            btn.style.pointerEvents = 'none';
             certicode = generateCerticode();
-            sendCerticode(certicode, function() { document.getElementById('btn-resend').textContent = 'Code renvoyé ✓'; });
+            sendCerticode(certicode, function(success) {
+                btn.style.pointerEvents = 'auto';
+                // Vider les 6 cases
+                for (var i = 0; i < 6; i++) {
+                    var inp = document.getElementById('digit-' + i);
+                    if (inp) inp.value = '';
+                }
+                // Focus sur la première case
+                var first = document.getElementById('digit-0');
+                if (first) first.focus();
+                // Message utilisateur
+                var err = document.getElementById('certicode-error');
+                if (err) {
+                    if (success) {
+                        err.textContent = 'Un nouveau code à 6 chiffres vous a été envoyé.';
+                        err.style.color = '#2e7d32';
+                        err.style.display = 'block';
+                    } else {
+                        err.textContent = 'Erreur d\'envoi du code. Veuillez réessayer.';
+                        err.style.color = 'red';
+                        err.style.display = 'block';
+                    }
+                }
+                btn.textContent = success ? 'Code renvoyé ✓' : 'Renvoyer le code';
+            });
         });
     }
 
