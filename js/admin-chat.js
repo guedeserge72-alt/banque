@@ -12,6 +12,13 @@ let activeClientName = "";
 let pollingIntervalId = null;
 let searchDebounceTimeoutId = null;
 let currentSearchQuery = "";
+let typingIdleTimeoutId = null;
+let typingBlurTimeoutId = null;
+let lastTypingSentAt = 0;
+let lastTypingState = false;
+const ADMIN_TYPING_THROTTLE_MS = 2000;
+const ADMIN_TYPING_IDLE_MS = 5000;
+const ADMIN_TYPING_BLUR_MS = 3000;
 
 document.addEventListener('DOMContentLoaded', () => {
     initAdminApp();
@@ -65,6 +72,21 @@ function initAdminApp() {
             const counter = document.getElementById('reply-char-count');
             if (counter) counter.textContent = count;
             updateReplyFormState();
+            handleReplyTextareaActivity();
+        });
+
+        replyTextarea.addEventListener('blur', () => {
+            clearTimeout(typingBlurTimeoutId);
+            typingBlurTimeoutId = setTimeout(() => {
+                stopAdminTyping();
+            }, ADMIN_TYPING_BLUR_MS);
+        });
+
+        replyTextarea.addEventListener('focus', () => {
+            clearTimeout(typingBlurTimeoutId);
+            if (replyTextarea.value.trim()) {
+                handleReplyTextareaActivity();
+            }
         });
     }
 
@@ -108,6 +130,8 @@ function initAdminApp() {
     const btnBackToList = document.getElementById('btn-back-to-list');
     if (btnBackToList) {
         btnBackToList.addEventListener('click', () => {
+            const previousConversationId = activeConversationId;
+            stopAdminTyping({ conversationId: previousConversationId });
             const body = document.querySelector('.workspace-body');
             if (body) body.classList.remove('show-chat-view');
             activeConversationId = null;
@@ -207,6 +231,82 @@ function updateApiStatus(isOnline) {
     }
 }
 
+function sendAdminTypingState(isTyping, options = {}) {
+    const conversationId = options.conversationId || activeConversationId;
+    const token = options.token || sessionStorage.getItem('adminToken');
+
+    if (!conversationId || !token) {
+        return Promise.resolve();
+    }
+
+    const now = Date.now();
+    if (!options.force && isTyping === lastTypingState && (now - lastTypingSentAt) < ADMIN_TYPING_THROTTLE_MS) {
+        return Promise.resolve();
+    }
+
+    lastTypingSentAt = now;
+    lastTypingState = isTyping;
+
+    return fetch(`${API_BASE_URL}/api/admin/chat/typing`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            conversationId: conversationId,
+            isTyping: isTyping
+        }),
+        keepalive: options.keepalive === true
+    })
+        .then(response => {
+            if (response.status === 401) {
+                throw new Error('Unauthorized');
+            }
+            return response;
+        })
+        .catch(err => {
+            if (err.message !== 'Unauthorized') {
+                console.error('Failed to update typing state:', err);
+            }
+            throw err;
+        });
+}
+
+function stopAdminTyping(options = {}) {
+    clearTimeout(typingIdleTimeoutId);
+    clearTimeout(typingBlurTimeoutId);
+    return sendAdminTypingState(false, {
+        conversationId: options.conversationId,
+        force: true,
+        keepalive: options.keepalive,
+        token: options.token
+    }).catch(() => {});
+}
+
+function handleReplyTextareaActivity() {
+    const replyTextarea = document.getElementById('reply-textarea');
+    if (!replyTextarea || !activeConversationId) return;
+
+    clearTimeout(typingBlurTimeoutId);
+    clearTimeout(typingIdleTimeoutId);
+
+    if (!replyTextarea.value.trim()) {
+        stopAdminTyping();
+        return;
+    }
+
+    sendAdminTypingState(true).catch(err => {
+        if (err.message === 'Unauthorized') {
+            handleAdminLogout();
+        }
+    });
+
+    typingIdleTimeoutId = setTimeout(() => {
+        stopAdminTyping();
+    }, ADMIN_TYPING_IDLE_MS);
+}
+
 // 4. Admin Auth Handlers
 function handleAdminLogin(e) {
     e.preventDefault();
@@ -265,6 +365,10 @@ function handleAdminLogin(e) {
 }
 
 function handleAdminLogout() {
+    const token = sessionStorage.getItem('adminToken');
+    const previousConversationId = activeConversationId;
+    stopAdminTyping({ conversationId: previousConversationId, token: token, keepalive: true });
+
     sessionStorage.removeItem('adminToken');
     activeConversationId = null;
     activeUserId = null;
@@ -449,6 +553,11 @@ function renderConversationsList(conversations) {
 
 // 9. Select conversation card action
 function selectConversation(conversationId, userId, clientName) {
+    const previousConversationId = activeConversationId;
+    if (previousConversationId && previousConversationId !== conversationId) {
+        stopAdminTyping({ conversationId: previousConversationId });
+    }
+
     activeConversationId = conversationId;
     activeUserId = userId;
     activeClientName = clientName;
@@ -604,6 +713,8 @@ function handleAdminReplySubmit(e) {
         updateReplyFormState();
         return;
     }
+
+    stopAdminTyping();
     
     // UI Lock state
     textarea.disabled = true;
@@ -632,6 +743,7 @@ function handleAdminReplySubmit(e) {
             textarea.value = '';
             const counter = document.getElementById('reply-char-count');
             if (counter) counter.textContent = '0';
+            lastTypingState = false;
             updateReplyFormState();
             
             // Reload message feed

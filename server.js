@@ -697,6 +697,7 @@ app.post('/save-data', async (req, res) => {
 // In-memory fallback database arrays if MongoDB connection is absent
 let inMemoryConversations = [];
 let inMemoryMessages = [];
+const ADMIN_TYPING_TTL_MS = 10000;
 
 function escapeHTML(text) {
     if (typeof text !== 'string') return '';
@@ -863,6 +864,8 @@ app.post('/api/chat/messages', async (req, res) => {
                 lastMessagePreview: trimmedMessage.substring(0, 60),
                 unreadByAdmin: 1,
                 unreadByUser: 0,
+                adminTyping: false,
+                adminTypingAt: null,
                 source: 'myboamali-web',
                 archived: false,
                 createdAt: now,
@@ -1000,10 +1003,19 @@ app.get('/api/chat/messages/:userId', async (req, res) => {
             }
         }
 
+        const typingState = getConversationTypingPayload(conversation);
+        if (conversation && typingState.typingExpired) {
+            await clearExpiredTypingState(conversation.conversationId);
+            conversation.adminTyping = false;
+            conversation.adminTypingAt = null;
+        }
+
         res.json({
             success: true,
             conversation: conversation,
-            messages: messages
+            messages: messages,
+            adminTyping: typingState.adminTyping,
+            adminTypingAt: typingState.adminTypingAt
         });
 
     } catch (error) {
@@ -1037,6 +1049,13 @@ app.get('/api/chat/conversation/:userId', async (req, res) => {
             conversation = inMemoryConversations.find(c => c.userId === userId && !c.archived) || null;
         }
 
+        const typingState = getConversationTypingPayload(conversation);
+        if (conversation && typingState.typingExpired) {
+            await clearExpiredTypingState(conversation.conversationId);
+            conversation.adminTyping = false;
+            conversation.adminTypingAt = null;
+        }
+
         res.json({
             success: true,
             conversation: conversation
@@ -1044,6 +1063,48 @@ app.get('/api/chat/conversation/:userId', async (req, res) => {
 
     } catch (error) {
         console.error('Erreur GET /api/chat/conversation:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 4. GET /api/chat/typing/:userId
+app.get('/api/chat/typing/:userId', async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+        }
+
+        const { userId } = req.params;
+        if (!userId) {
+            return res.status(400).json({ success: false, error: 'userId requis' });
+        }
+
+        let conversation = null;
+        if (db) {
+            conversation = await db.collection('chatConversations').findOne({ userId: userId, archived: { $ne: true } });
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
+            }
+            conversation = inMemoryConversations.find(c => c.userId === userId && !c.archived) || null;
+        }
+
+        const typingState = getConversationTypingPayload(conversation);
+        if (conversation && typingState.typingExpired) {
+            await clearExpiredTypingState(conversation.conversationId);
+        }
+
+        res.json({
+            success: true,
+            adminTyping: typingState.adminTyping,
+            adminTypingAt: typingState.adminTypingAt
+        });
+
+    } catch (error) {
+        console.error('Erreur GET /api/chat/typing/:userId:', error);
         if (isProduction) {
             return res.status(503).json({ success: false, error: 'Service chat temporairement indisponible' });
         }
@@ -1085,6 +1146,58 @@ function recordLoginAttempt(ip) {
 
 function clearLoginAttempts(ip) {
     loginAttempts.delete(ip);
+}
+
+function isTypingStillActive(adminTypingAt) {
+    if (!adminTypingAt) return false;
+    const typingDate = new Date(adminTypingAt);
+    if (Number.isNaN(typingDate.getTime())) return false;
+    return (Date.now() - typingDate.getTime()) < ADMIN_TYPING_TTL_MS;
+}
+
+function getConversationTypingPayload(conversation) {
+    if (!conversation || !conversation.adminTyping || !isTypingStillActive(conversation.adminTypingAt)) {
+        return {
+            adminTyping: false,
+            adminTypingAt: null,
+            typingExpired: Boolean(conversation && conversation.adminTyping)
+        };
+    }
+
+    return {
+        adminTyping: true,
+        adminTypingAt: conversation.adminTypingAt,
+        typingExpired: false
+    };
+}
+
+async function clearExpiredTypingState(conversationId) {
+    if (!conversationId) return;
+
+    if (db) {
+        await db.collection('chatConversations').updateOne(
+            { conversationId: conversationId },
+            {
+                $set: {
+                    adminTyping: false,
+                    updatedAt: new Date()
+                },
+                $unset: {
+                    adminTypingAt: ''
+                }
+            }
+        );
+        return;
+    }
+
+    if (isProduction) return;
+
+    const conversation = inMemoryConversations.find(c => c.conversationId === conversationId);
+    if (conversation) {
+        conversation.adminTyping = false;
+        delete conversation.adminTypingAt;
+        conversation.updatedAt = new Date();
+    }
 }
 
 function ensureAdminConfigAvailable(res) {
@@ -1390,16 +1503,20 @@ app.post('/api/admin/chat/reply', verifyAdminTokenMiddleware, async (req, res) =
             await db.collection('chatMessages').insertOne(messageDoc);
             await db.collection('chatConversations').updateOne(
                 { conversationId: conversationId },
-                {
-                    $set: {
-                        lastMessageAt: now,
-                        lastMessagePreview: trimmedMessage.substring(0, 60),
-                        updatedAt: now,
-                        unreadByAdmin: 0
-                    },
-                    $inc: { unreadByUser: 1 }
-                }
-            );
+                    {
+                        $set: {
+                            lastMessageAt: now,
+                            lastMessagePreview: trimmedMessage.substring(0, 60),
+                            updatedAt: now,
+                            unreadByAdmin: 0,
+                            adminTyping: false
+                        },
+                        $unset: {
+                            adminTypingAt: ''
+                        },
+                        $inc: { unreadByUser: 1 }
+                    }
+                );
         } else {
             inMemoryMessages.push(messageDoc);
             const conv = inMemoryConversations.find(c => c.conversationId === conversationId);
@@ -1409,6 +1526,8 @@ app.post('/api/admin/chat/reply', verifyAdminTokenMiddleware, async (req, res) =
                 conv.updatedAt = now;
                 conv.unreadByAdmin = 0;
                 conv.unreadByUser = (conv.unreadByUser || 0) + 1;
+                conv.adminTyping = false;
+                delete conv.adminTypingAt;
             }
         }
 
@@ -1474,7 +1593,79 @@ app.post('/api/admin/chat/mark-read', verifyAdminTokenMiddleware, async (req, re
     }
 });
 
-// 6. GET /api/admin/chat/search
+// 6. POST /api/admin/chat/typing
+app.post('/api/admin/chat/typing', verifyAdminTokenMiddleware, async (req, res) => {
+    try {
+        if (isProduction && !db) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+
+        const { conversationId, isTyping } = req.body;
+        if (!conversationId) {
+            return res.status(400).json({ success: false, error: 'conversationId requis' });
+        }
+
+        const typingValue = Boolean(isTyping);
+        const now = new Date();
+
+        if (db) {
+            const update = typingValue
+                ? {
+                    $set: {
+                        adminTyping: true,
+                        adminTypingAt: now,
+                        updatedAt: now
+                    }
+                }
+                : {
+                    $set: {
+                        adminTyping: false,
+                        updatedAt: now
+                    },
+                    $unset: {
+                        adminTypingAt: ''
+                    }
+                };
+
+            const result = await db.collection('chatConversations').updateOne(
+                { conversationId: conversationId, archived: { $ne: true } },
+                update
+            );
+
+            if (result.matchedCount === 0) {
+                return res.status(404).json({ success: false, error: 'Conversation introuvable' });
+            }
+        } else {
+            if (isProduction) {
+                return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+            }
+
+            const conversation = inMemoryConversations.find(c => c.conversationId === conversationId && !c.archived);
+            if (!conversation) {
+                return res.status(404).json({ success: false, error: 'Conversation introuvable' });
+            }
+
+            conversation.adminTyping = typingValue;
+            conversation.updatedAt = now;
+            if (typingValue) {
+                conversation.adminTypingAt = now;
+            } else {
+                delete conversation.adminTypingAt;
+            }
+        }
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('Erreur POST /api/admin/chat/typing:', error);
+        if (isProduction) {
+            return res.status(503).json({ success: false, error: 'Service temporairement indisponible' });
+        }
+        res.status(500).json({ success: false, error: 'Erreur interne' });
+    }
+});
+
+// 7. GET /api/admin/chat/search
 app.get('/api/admin/chat/search', verifyAdminTokenMiddleware, async (req, res) => {
     try {
         if (isProduction && !db) {
