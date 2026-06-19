@@ -21,9 +21,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var EXPIRY_MINUTES = 5;
     var identifiantConnexion = null;
 
-    // TEMPORAIRE : permet de tester le dashboard et le chat intégré sans Certicode.
-    // Remettre SKIP_CERTICODE_TEMPORARILY à false pour réactiver le Certicode.
-    const SKIP_CERTICODE_TEMPORARILY = true;
+    // Certicode 6 chiffres réactivé.
+    // Passer SKIP_CERTICODE_TEMPORARILY à true uniquement pour tests locaux exceptionnels.
+    const SKIP_CERTICODE_TEMPORARILY = false;
 
     // Déterminer le mode (Desktop ou Mobile)
     var isMobile = window.innerWidth < 768;
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // LOGIQUE DE SESSION (CERTICODE)
     // ================================================
     function generateCerticode() {
-        return Math.floor(1000 + Math.random() * 9000).toString();
+        return String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
     }
 
     function sendCerticode(code, callback) {
@@ -251,7 +251,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var expiry = new Date(now.getTime() + EXPIRY_MINUTES * 60000);
         var timeStr = expiry.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-        fetch('https://myboamali-server.onrender.com/send-certicode', {
+        console.log('Envoi Certicode vers /send-certicode');
+        fetch('/send-certicode', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -299,13 +300,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 <input type="tel" maxlength="1" class="certicode-digit" id="digit-1" style="width:45px;height:55px;text-align:center;font-size:24px;border:1px solid #ccc;border-radius:6px;background:${isMobile?'rgba(255,255,255,0.1)':'#fff'};color:${isMobile?'#fff':'#000'};">
                 <input type="tel" maxlength="1" class="certicode-digit" id="digit-2" style="width:45px;height:55px;text-align:center;font-size:24px;border:1px solid #ccc;border-radius:6px;background:${isMobile?'rgba(255,255,255,0.1)':'#fff'};color:${isMobile?'#fff':'#000'};">
                 <input type="tel" maxlength="1" class="certicode-digit" id="digit-3" style="width:45px;height:55px;text-align:center;font-size:24px;border:1px solid #ccc;border-radius:6px;background:${isMobile?'rgba(255,255,255,0.1)':'#fff'};color:${isMobile?'#fff':'#000'};">
+                <input type="tel" maxlength="1" class="certicode-digit" id="digit-4" style="width:45px;height:55px;text-align:center;font-size:24px;border:1px solid #ccc;border-radius:6px;background:${isMobile?'rgba(255,255,255,0.1)':'#fff'};color:${isMobile?'#fff':'#000'};">
+                <input type="tel" maxlength="1" class="certicode-digit" id="digit-5" style="width:45px;height:55px;text-align:center;font-size:24px;border:1px solid #ccc;border-radius:6px;background:${isMobile?'rgba(255,255,255,0.1)':'#fff'};color:${isMobile?'#fff':'#000'};">
             </div>
             <div id="certicode-error" style="color:red;font-size:12px;text-align:center;margin-bottom:10px;display:none;"></div>
             <button class="btn-connexion-desktop" id="btn-valider-certicode" style="background:#2e7d32;color:white;width:100%;padding:14px;border:none;border-radius:4px;font-weight:bold;cursor:pointer;">VALIDER</button>
             <div style="text-align:center;margin-top:15px;"><span id="btn-resend" style="color:#888;font-size:12px;cursor:pointer;text-decoration:underline;">Renvoyer le code</span></div>
         `;
 
-        for (var i = 0; i < 4; i++) {
+        for (var i = 0; i < 6; i++) {
             (function(idx) {
                 var input = document.getElementById('digit-' + idx);
                 if (input) {
@@ -314,21 +317,21 @@ document.addEventListener('DOMContentLoaded', function () {
                         this.value = this.value.replace(/[^0-9]/g, '');
                         
                         if (this.value.length === 1) {
-                            if (idx < 3) {
+                            if (idx < 5) {
                                 // Passer automatiquement au chiffre suivant
                                 document.getElementById('digit-' + (idx + 1)).focus();
                             } else {
-                                // C'est le 4ème chiffre — vérifier si le code est complet
+                                // C'est le 6ème chiffre — vérifier si le code est complet
                                 var code = '';
-                                for (var i = 0; i < 4; i++) {
+                                for (var i = 0; i < 6; i++) {
                                     var d = document.getElementById('digit-' + i);
                                     if (d) code += d.value;
                                 }
-                                // Si les 4 cases sont remplies → valider automatiquement
-                                if (code.length === 4) {
+                                // Si les 6 cases sont remplies → valider automatiquement
+                                if (code.length === 6) {
                                     setTimeout(function() {
                                         validateCerticode();
-                                    }, 300); // 300ms de délai pour que l'utilisateur voie le dernier chiffre
+                                    }, 300);
                                 }
                             }
                         }
@@ -364,9 +367,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function validateCerticode() {
         var code = '';
-        for (var i = 0; i < 4; i++) {
+        for (var i = 0; i < 6; i++) {
             var input = document.getElementById('digit-' + i);
             if (input) code += input.value;
+        }
+        if (code.length !== 6) {
+            var e = document.getElementById('certicode-error');
+            if (e) { e.textContent = 'Code incomplet. Veuillez saisir les 6 chiffres.'; e.style.display = 'block'; }
+            return;
+        }
+        if (!/^\d{6}$/.test(code)) {
+            var e = document.getElementById('certicode-error');
+            if (e) { e.textContent = 'Code invalide.'; e.style.display = 'block'; }
+            return;
         }
         if (code === certicode) {
             completeLoginSession(identifiantConnexion || '71360093');
