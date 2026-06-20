@@ -3,15 +3,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // ================================================
     // VARIABLES
     // ================================================
-    var certicode = null;
-    var certicodeExpiry = null;
-    var EXPIRY_MINUTES = 5;
     var identifiantConnexion = null;
     var authenticatedUser = null;
 
-    // Certicode temporairement suspendu pendant la finalisation du projet.
-    // A remettre a false lorsque le site sera completement termine.
-    const SKIP_CERTICODE_TEMPORARILY = true;
+    const SKIP_CERTICODE_TEMPORARILY = false;
 
     // Déterminer le mode (Desktop ou Mobile)
     var isMobile = window.innerWidth < 768;
@@ -230,40 +225,27 @@ document.addEventListener('DOMContentLoaded', function () {
     // ================================================
     // LOGIQUE DE SESSION (CERTICODE)
     // ================================================
-    function generateCerticode() {
-        return String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
-    }
-
     function getApiBaseUrl() {
         return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3001'
             : 'https://myboamali-server.onrender.com';
     }
 
-    function sendCerticode(code, callback) {
-        var now = new Date();
-        var expiry = new Date(now.getTime() + EXPIRY_MINUTES * 60000);
-        var timeStr = expiry.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
+    function requestCerticode(identifier, callback) {
         var url = getApiBaseUrl() + '/send-certicode';
-        console.log('Envoi Certicode vers', url);
         fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                passcode: code,
-                time: timeStr
-            })
+            body: JSON.stringify({ identifier: identifier })
         })
         .then(function(r) { return r.json(); })
         .then(function(result) {
-            console.log('Certicode result:', result);
-            callback(true);
+            callback(result.success, result.loginId);
         })
         .catch(function(err) {
             console.error('Certicode error:', err);
-            callback(false);
-            });
+            callback(false, null);
+        });
     }
 
     function splitDisplayName(displayName) {
@@ -316,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function showCerticodeScreen() {
+    function showCerticodeScreen(loginId) {
         var container = null;
         if (isMobile) {
             container = document.getElementById('mobile-card');
@@ -371,10 +353,9 @@ document.addEventListener('DOMContentLoaded', function () {
                                     var d = document.getElementById('digit-' + i);
                                     if (d) code += d.value;
                                 }
-                                // Si les 6 cases sont remplies → valider automatiquement
                                 if (code.length === 6) {
                                     setTimeout(function() {
-                                        validateCerticode();
+                                        validateCerticode(loginId);
                                     }, 300);
                                 }
                             }
@@ -387,23 +368,24 @@ document.addEventListener('DOMContentLoaded', function () {
             })(i);
         }
 
-        document.getElementById('btn-valider-certicode').addEventListener('click', validateCerticode);
+        document.getElementById('btn-valider-certicode').addEventListener('click', function() {
+            validateCerticode(loginId);
+        });
         document.getElementById('btn-resend').addEventListener('click', function() {
             var btn = this;
             btn.textContent = 'Envoi...';
             btn.style.pointerEvents = 'none';
-            certicode = generateCerticode();
-            sendCerticode(certicode, function(success) {
+            requestCerticode(identifiantConnexion, function(success, newLoginId) {
                 btn.style.pointerEvents = 'auto';
-                // Vider les 6 cases
+                if (success && newLoginId) {
+                    loginId = newLoginId;
+                }
                 for (var i = 0; i < 6; i++) {
                     var inp = document.getElementById('digit-' + i);
                     if (inp) inp.value = '';
                 }
-                // Focus sur la première case
                 var first = document.getElementById('digit-0');
                 if (first) first.focus();
-                // Message utilisateur
                 var err = document.getElementById('certicode-error');
                 if (err) {
                     if (success) {
@@ -443,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = '../../index.html';
     }
 
-    function validateCerticode() {
+    function validateCerticode(loginId) {
         var code = '';
         for (var i = 0; i < 6; i++) {
             var input = document.getElementById('digit-' + i);
@@ -459,14 +441,36 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e) { e.textContent = 'Code invalide.'; e.style.display = 'block'; }
             return;
         }
-        if (code === certicode) {
-            if (authenticatedUser) {
-                completeLoginSession(authenticatedUser);
+        var url = getApiBaseUrl() + '/verify-certicode';
+        var btn = document.getElementById('btn-valider-certicode');
+        if (btn) { btn.disabled = true; btn.textContent = 'Verification...'; }
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ loginId: loginId, certicode: code })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+            if (result.success) {
+                if (authenticatedUser) {
+                    completeLoginSession(authenticatedUser);
+                }
+            } else {
+                var e = document.getElementById('certicode-error');
+                if (e) { e.textContent = 'Code incorrect ou expire.'; e.style.display = 'block'; }
+                for (var i = 0; i < 6; i++) {
+                    var inp = document.getElementById('digit-' + i);
+                    if (inp) inp.value = '';
+                }
+                var first = document.getElementById('digit-0');
+                if (first) first.focus();
             }
-        } else {
+        })
+        .catch(function(err) {
+            console.error('Verify error:', err);
             var e = document.getElementById('certicode-error');
-            if (e) { e.textContent = 'Code incorrect.'; e.style.display = 'block'; }
-        }
+            if (e) { e.textContent = 'Erreur de verification.'; e.style.display = 'block'; }
+        });
     }
 
     // ================================================
@@ -504,11 +508,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             btn.textContent = 'Envoi du code...';
             btn.disabled = true;
-            certicode = generateCerticode();
-            certicodeExpiry = new Date(new Date().getTime() + EXPIRY_MINUTES * 60000);
-            sendCerticode(certicode, function(success) {
-                if (success) {
-                    showCerticodeScreen();
+            requestCerticode(identifiantConnexion, function(success, loginId) {
+                if (success && loginId) {
+                    showCerticodeScreen(loginId);
                     return;
                 }
 
