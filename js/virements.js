@@ -374,7 +374,204 @@ function determinerCivilite(nom) {
 }
 
 // ================================================
-// FONCTION PRINCIPALE
+// VIREMENT — STOCKAGE TEMPORAIRE POUR LE FLOW CERTICODE
+// ================================================
+var _pendingVirementData = null;
+var _pendingTransferAuthId = null;
+
+// ================================================
+// INITIALISATION MODAL CERTICODE VIREMENT
+// ================================================
+function initTransferCerticodeModal() {
+    for (var i = 0; i < 6; i++) {
+        (function(idx) {
+            var input = document.getElementById('transfer-digit-' + idx);
+            if (input) {
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length === 1) {
+                        if (idx < 5) {
+                            document.getElementById('transfer-digit-' + (idx + 1)).focus();
+                        }
+                    }
+                });
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '' && idx > 0) {
+                        document.getElementById('transfer-digit-' + (idx - 1)).focus();
+                    }
+                });
+            }
+        })(i);
+    }
+
+    var btnConfirmer = document.getElementById('btn-confirmer-virement');
+    if (btnConfirmer) {
+        btnConfirmer.addEventListener('click', function() {
+            verifierCerticodeVirement();
+        });
+    }
+
+    var btnAnnuler = document.getElementById('btn-annuler-virement');
+    if (btnAnnuler) {
+        btnAnnuler.addEventListener('click', function() {
+            fermerModalCerticodeVirement();
+            var btnInitier = document.getElementById('btn-initier-virement');
+            if (btnInitier) {
+                btnInitier.textContent = 'INITIER UN VIREMENT';
+                btnInitier.disabled = false;
+            }
+        });
+    }
+}
+
+function ouvrirModalCerticodeVirement() {
+    var modal = document.getElementById('modal-certicode-virement');
+    if (modal) {
+        modal.style.display = 'flex';
+        for (var i = 0; i < 6; i++) {
+            var inp = document.getElementById('transfer-digit-' + i);
+            if (inp) inp.value = '';
+        }
+        var first = document.getElementById('transfer-digit-0');
+        if (first) setTimeout(function() { first.focus(); }, 100);
+        var err = document.getElementById('transfer-certicode-error');
+        if (err) { err.style.display = 'none'; err.textContent = ''; }
+    }
+}
+
+function fermerModalCerticodeVirement() {
+    var modal = document.getElementById('modal-certicode-virement');
+    if (modal) modal.style.display = 'none';
+}
+
+function verifierCerticodeVirement() {
+    var code = '';
+    for (var i = 0; i < 6; i++) {
+        var input = document.getElementById('transfer-digit-' + i);
+        if (input) code += input.value;
+    }
+    if (code.length !== 6) {
+        var err = document.getElementById('transfer-certicode-error');
+        if (err) { err.textContent = 'Veuillez saisir les 6 chiffres du code.'; err.style.display = 'block'; }
+        return;
+    }
+
+    var btn = document.getElementById('btn-confirmer-virement');
+    if (btn) { btn.disabled = true; btn.textContent = 'Vérification...'; }
+
+    fetch(SERVER_URL + '/api/transfers/verify-certicode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            transferAuthId: _pendingTransferAuthId,
+            certicode: code
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Confirmer le virement'; }
+        if (result.success) {
+            finaliserVirement();
+        } else {
+            var err = document.getElementById('transfer-certicode-error');
+            if (err) {
+                err.textContent = result.error || 'Code incorrect.';
+                err.style.display = 'block';
+            }
+            for (var i = 0; i < 6; i++) {
+                var inp = document.getElementById('transfer-digit-' + i);
+                if (inp) inp.value = '';
+            }
+            var first = document.getElementById('transfer-digit-0');
+            if (first) first.focus();
+        }
+    })
+    .catch(function(error) {
+        if (btn) { btn.disabled = false; btn.textContent = 'Confirmer le virement'; }
+        var err = document.getElementById('transfer-certicode-error');
+        if (err) { err.textContent = 'Erreur de vérification. Veuillez réessayer.'; err.style.display = 'block'; }
+        console.error('Erreur verify-certicode:', error);
+    });
+}
+
+function finaliserVirement() {
+    fermerModalCerticodeVirement();
+    var data = _pendingVirementData;
+    if (!data) return;
+
+    var btnInitier = document.getElementById('btn-initier-virement');
+
+    generateVirementPDF(data).then(function(pdfBase64) {
+        function afterEmail() {
+            var montantStr = (data.montant || '0').toString().replace(/\s/g, '').replace(',', '.');
+            var montantNum = parseFloat(montantStr) || 0;
+            var deviseVirement = data.devise || 'CFA';
+
+            if (window.debiterSolde) {
+                window.debiterSolde(montantNum, deviseVirement);
+            }
+
+            if (window.ajouterHistorique) {
+                window.ajouterHistorique({
+                    date: data.date,
+                    type: 'Virement international',
+                    description: 'Vers ' + data.nom_beneficiaire,
+                    montant: data.montant,
+                    devise: deviseVirement,
+                    reference: data.reference,
+                    statut: 'En attente de traitement',
+                    email_beneficiaire: data.email_beneficiaire,
+                    nom_beneficiaire: data.nom_beneficiaire,
+                    civilite: data.civilite || 'Monsieur',
+                    iban: data.iban,
+                    date_expiration: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000).toISOString()
+                });
+            }
+
+            if (window.ajouterNotification) {
+                window.ajouterNotification(
+                    'Virement de ' + data.montant + ' ' + deviseVirement + ' initié — Réf: ' + data.reference,
+                    'virement'
+                );
+            }
+
+            showToastVirement(
+                'VIREMENT INTERNATIONAL — INITIÉ\n' +
+                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+                'Référence    : ' + data.reference + '\n' +
+                'Montant      : ' + data.montant + ' ' + (data.devise || 'CFA') + '\n' +
+                'Bénéficiaire : ' + data.nom_beneficiaire + '\n' +
+                'Statut       : En attente de traitement\n' +
+                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+                'Avis de virement envoyé par email ✓',
+                'success'
+            );
+            console.log('VIREMENT OK - Référence:', data.reference);
+
+            setTimeout(function() {
+                resetVirementForm();
+                _pendingVirementData = null;
+                _pendingTransferAuthId = null;
+                if (btnInitier) {
+                    btnInitier.textContent = 'INITIER UN VIREMENT';
+                    btnInitier.disabled = false;
+                }
+            }, 2000);
+        }
+
+        if (data.email_beneficiaire) {
+            sendEmailBeneficiaire(data, pdfBase64, function(success) {
+                if (!success) console.warn('Email non envoyé mais virement effectué');
+                afterEmail();
+            });
+        } else {
+            afterEmail();
+        }
+    });
+}
+
+// ================================================
+// FONCTION PRINCIPALE — ÉTAPE 1 : DEMANDE CERTICODE
 // ================================================
 function initierVirement() {
     var nom        = document.getElementById('vir-nom')      ? document.getElementById('vir-nom').value.trim()      : '';
@@ -426,7 +623,7 @@ function initierVirement() {
     }
 
     var btnInitier = document.getElementById('btn-initier-virement');
-    if (btnInitier) { btnInitier.textContent = 'Traitement en cours...'; btnInitier.disabled = true; }
+    if (btnInitier) { btnInitier.textContent = 'Demande de confirmation...'; btnInitier.disabled = true; }
 
     var now = new Date();
     var dateFormatted = now.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' à ' + now.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
@@ -448,71 +645,46 @@ function initierVirement() {
         reference:          generateReference()
     };
 
-    generateVirementPDF(virementData).then(function(pdfBase64) {
-
-        function afterEmail() {
-            // Débiter le solde via accueil.js
-            var montantNum = parseFloat(virementData.montant.replace(/\s/g, '').replace(',', '.'));
-            var deviseVirement = virementData.devise || 'CFA';
-            if (window.debiterSolde) {
-                window.debiterSolde(montantNum, deviseVirement);
+    // Étape 1 : Demander le Certicode au serveur
+    fetch(SERVER_URL + '/api/transfers/request-certicode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId: sessionStorage.getItem('loginId') || 'unknown',
+            beneficiaryName: virementData.nom_beneficiaire,
+            beneficiaryAccount: virementData.iban,
+            amount: montant,
+            currency: devise,
+            fromAccount: '0301173640002',
+            reason: motif,
+            bic: virementData.bic,
+            pays: virementData.pays
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (result.success && result.transferAuthId) {
+            _pendingVirementData = virementData;
+            _pendingTransferAuthId = result.transferAuthId;
+            if (btnInitier) {
+                btnInitier.textContent = 'INITIER UN VIREMENT';
+                btnInitier.disabled = false;
             }
-
-            // Ajouter à l'historique
-            if (window.ajouterHistorique) {
-                window.ajouterHistorique({
-                    date: virementData.date,
-                    type: 'Virement international',
-                    description: 'Vers ' + virementData.nom_beneficiaire,
-                    montant: virementData.montant,
-                    devise: deviseVirement,
-                    reference: virementData.reference,
-                    statut: 'En attente de traitement',
-                    email_beneficiaire: virementData.email_beneficiaire,
-                    nom_beneficiaire: virementData.nom_beneficiaire,
-                    civilite: virementData.civilite || 'Monsieur',
-                    iban: virementData.iban,
-                    date_expiration: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000).toISOString()
-                });
-            }
-
-            // Ajouter notification avec devise
-            if (window.ajouterNotification) {
-                window.ajouterNotification(
-                    'Virement de ' + virementData.montant + ' ' + deviseVirement + ' initié — Réf: ' + virementData.reference,
-                    'virement'
-                );
-            }
-
-            showToastVirement(
-                'VIREMENT INTERNATIONAL — INITIÉ\n' +
-                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-                'Référence    : ' + virementData.reference + '\n' +
-                'Montant      : ' + virementData.montant + ' ' + (virementData.devise || 'CFA') + '\n' +
-                'Bénéficiaire : ' + virementData.nom_beneficiaire + '\n' +
-                'Statut       : En attente de traitement\n' +
-                '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
-                'Avis de virement envoyé par email ✓',
-                'success'
-            );
-            console.log('VIREMENT OK - Référence:', virementData.reference);
-
-            setTimeout(function() {
-                resetVirementForm();
-                if (btnInitier) {
-                    btnInitier.textContent = 'INITIER UN VIREMENT';
-                    btnInitier.disabled = false;
-                }
-            }, 2000);
-        }
-
-        if (emailBenef) {
-            sendEmailBeneficiaire(virementData, pdfBase64, function(success) {
-                if (!success) console.warn('Email non envoyé mais virement effectué');
-                afterEmail();
-            });
+            ouvrirModalCerticodeVirement();
         } else {
-            afterEmail();
+            showToastVirement('Erreur lors de la demande de confirmation.', 'error');
+            if (btnInitier) {
+                btnInitier.textContent = 'INITIER UN VIREMENT';
+                btnInitier.disabled = false;
+            }
+        }
+    })
+    .catch(function(error) {
+        console.error('Erreur request-certicode:', error);
+        showToastVirement('Erreur de connexion au serveur.', 'error');
+        if (btnInitier) {
+            btnInitier.textContent = 'INITIER UN VIREMENT';
+            btnInitier.disabled = false;
         }
     });
 }
@@ -628,6 +800,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial call
     setTimeout(afficherHistoriqueVirements, 1000);
+
+    // Initialiser le modal Certicode virement
+    initTransferCerticodeModal();
 });
 
 

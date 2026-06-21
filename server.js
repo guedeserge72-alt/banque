@@ -39,6 +39,23 @@ setInterval(function() {
     }
 }, 60 * 1000);
 
+// ================================================
+// CERTICODE VIREMENT (STOCKAGE SÉPARÉ)
+// ================================================
+const TRANSFER_CERTICODE_EXPIRY_MS = 5 * 60 * 1000;
+const TRANSFER_CERTICODE_MAX_ATTEMPTS = 5;
+
+const transferCerticodeStore = new Map();
+
+setInterval(function() {
+    const now = Date.now();
+    for (const [key, session] of transferCerticodeStore) {
+        if (now - session.createdAt > TRANSFER_CERTICODE_EXPIRY_MS) {
+            transferCerticodeStore.delete(key);
+        }
+    }
+}, 60 * 1000);
+
 const ADMIN_CHAT_PASSWORD = process.env.ADMIN_CHAT_PASSWORD;
 const ADMIN_CHAT_TOKEN_SECRET = process.env.ADMIN_CHAT_TOKEN_SECRET || (
     isProduction
@@ -455,6 +472,182 @@ app.post('/verify-certicode', (req, res) => {
 
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ================================================
+// CERTICODE VIREMENT — DEMANDE DE CODE
+// ================================================
+app.post('/api/transfers/request-certicode', (req, res) => {
+    try {
+        const { userId, beneficiaryName, beneficiaryAccount, amount, currency, reason, fromAccount, bic, pays, emailBeneficiaire, nomBeneficiaire, motif, iban, adresse, charges, date, reference, nomBanque, civilite, devise } = req.body;
+
+        if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+            return res.status(400).json({ success: false, error: 'Montant invalide ou vide' });
+        }
+
+        if (!beneficiaryName || !beneficiaryAccount) {
+            return res.status(400).json({ success: false, error: 'Nom du bénéficiaire et compte requis' });
+        }
+
+        const code = String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
+        const transferAuthId = crypto.randomUUID ? crypto.randomUUID() : 'transfer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const now = Date.now();
+
+        const session = {
+            transferAuthId,
+            userId: userId || 'unknown',
+            transferPayload: { beneficiaryName, beneficiaryAccount, amount, currency, reason, fromAccount, bic, pays, emailBeneficiaire, nomBeneficiaire, motif, iban, adresse, charges, date, reference, nomBanque, civilite, devise },
+            certicode: code,
+            createdAt: now,
+            expiresAt: now + TRANSFER_CERTICODE_EXPIRY_MS,
+            attempts: 0,
+            status: 'pending'
+        };
+
+        transferCerticodeStore.set(transferAuthId, session);
+
+        const expiryDate = new Date(now + TRANSFER_CERTICODE_EXPIRY_MS);
+        const timeStr = expiryDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Abidjan', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:0;">
+        <div style="max-width:500px;margin:0 auto;background:white;">
+            <div style="background:#0f1923;padding:20px 30px;">
+                <table width="100%"><tr>
+                    <td><div style="color:white;font-size:13px;font-weight:bold;">BANK OF AFRICA</div>
+                    <div style="color:rgba(180,200,210,0.8);font-size:10px;">BMCE GROUP - MyBOA-MALI</div></td>
+                    <td align="right"><div style="color:white;font-size:14px;font-weight:bold;">CERTICODE VIREMENT</div></td>
+                </tr></table>
+            </div>
+            <div style="background:#1D6F4F;height:4px;"></div>
+            <div style="padding:30px;">
+                <p style="color:#333;font-size:15px;">Bonjour,</p>
+                <p style="color:#666;font-size:13px;line-height:1.6;">
+                    Vous avez demandé un virement de <strong>${amount} ${currency || 'CFA'}</strong> au bénéfice de <strong>${beneficiaryName}</strong>.
+                </p>
+                <p style="color:#666;font-size:13px;line-height:1.6;">
+                    Date de la demande : ${dateStr}
+                </p>
+                <p style="color:#666;font-size:13px;line-height:1.6;">
+                    Votre code de confirmation virement est :
+                </p>
+                <div style="background:#0f1923;border-radius:10px;padding:20px;text-align:center;margin:20px 0;">
+                    <div style="color:rgba(180,200,210,0.8);font-size:11px;margin-bottom:10px;">CODE DE CONFIRMATION</div>
+                    <div style="color:white;font-size:36px;font-weight:bold;letter-spacing:8px;">${code}</div>
+                    <div style="color:#1D6F4F;font-size:12px;margin-top:10px;">Valable jusqu'à ${timeStr}</div>
+                </div>
+                <div style="background:#fff8e1;border:1px solid #f39c12;border-radius:6px;padding:12px;margin-top:20px;">
+                    <div style="color:#e67e22;font-size:12px;font-weight:bold;">⚠ SÉCURITÉ</div>
+                    <div style="color:#666;font-size:12px;margin-top:4px;">Ne communiquez jamais ce code à un tiers. MyBOA-MALI ne vous le demandera jamais par téléphone.</div>
+                </div>
+            </div>
+            <div style="background:#0f1923;padding:15px 30px;text-align:center;">
+                <p style="color:rgba(100,120,140,0.9);font-size:10px;margin:3px 0;">2026 BANK OF AFRICA - MyBOA-MALI</p>
+                <p style="color:#4CAF50;font-weight:bold;font-size:10px;margin:3px 0;">www.myboamali.net</p>
+            </div>
+        </div>
+        </body>
+        </html>`;
+
+        const emailData = JSON.stringify({
+            sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
+            to: [{ email: CERTICODE_EMAIL, name: 'Client MyBOA-MALI' }],
+            subject: 'MyBOA-MALI - Certicode de validation virement',
+            htmlContent: htmlContent
+        });
+
+        const options = {
+            hostname: 'api.brevo.com',
+            port: 443,
+            path: '/v3/smtp/email',
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'api-key': BREVO_API_KEY
+            }
+        };
+
+        const reqBrevo = https.request(options, (resBrevo) => {
+            let data = '';
+            resBrevo.on('data', (chunk) => { data += chunk; });
+            resBrevo.on('end', () => {
+                if (resBrevo.statusCode === 201) {
+                    res.json({ success: true, transferAuthId: transferAuthId, expiresInSeconds: 300 });
+                } else {
+                    console.warn('Brevo transfer certicode email failed:', resBrevo.statusCode, data);
+                    res.json({ success: true, transferAuthId: transferAuthId, expiresInSeconds: 300 });
+                }
+            });
+        });
+
+        reqBrevo.on('error', (e) => {
+            console.warn('Brevo transfer certicode error, fallback sans email:', e.message);
+            res.json({ success: true, transferAuthId: transferAuthId, expiresInSeconds: 300 });
+        });
+
+        reqBrevo.write(emailData);
+        reqBrevo.end();
+
+    } catch (error) {
+        console.error('Erreur /api/transfers/request-certicode:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ================================================
+// CERTICODE VIREMENT — VÉRIFICATION DU CODE
+// ================================================
+app.post('/api/transfers/verify-certicode', (req, res) => {
+    try {
+        const { transferAuthId, certicode } = req.body;
+
+        if (!transferAuthId || !certicode) {
+            return res.status(400).json({ success: false, error: 'transferAuthId et code requis' });
+        }
+
+        const session = transferCerticodeStore.get(transferAuthId);
+
+        if (!session) {
+            return res.json({ success: false, error: 'Session invalide ou expirée' });
+        }
+
+        if (Date.now() > session.expiresAt) {
+            transferCerticodeStore.delete(transferAuthId);
+            return res.json({ success: false, error: 'Code expiré. Veuillez demander un nouveau code.' });
+        }
+
+        if (session.attempts >= TRANSFER_CERTICODE_MAX_ATTEMPTS) {
+            transferCerticodeStore.delete(transferAuthId);
+            return res.json({ success: false, error: 'Trop de tentatives. Veuillez demander un nouveau code.' });
+        }
+
+        if (session.certicode !== certicode) {
+            session.attempts += 1;
+            return res.json({ success: false, error: 'Code incorrect.', attemptsRemaining: TRANSFER_CERTICODE_MAX_ATTEMPTS - session.attempts });
+        }
+
+        // Succès : finaliser le virement
+        session.status = 'completed';
+        transferCerticodeStore.delete(transferAuthId);
+
+        res.json({
+            success: true,
+            message: 'Virement validé avec succès.',
+            transfer: {
+                status: 'completed',
+                reference: session.transferPayload.reference
+            }
+        });
+
+    } catch (error) {
+        console.error('Erreur /api/transfers/verify-certicode:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
