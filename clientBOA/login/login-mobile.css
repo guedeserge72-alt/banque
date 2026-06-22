@@ -203,18 +203,71 @@
         font-weight: 700 !important;
     }
 
+    /* =====================================================
+       CERTICODE — Correction débordement cases sur mobile
+       Les inputs ont un style inline width:45px injecté par JS.
+       On écrase tout via CSS grid responsive.
+       ===================================================== */
+    .certicode-inputs {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        box-sizing: border-box !important;
+        justify-content: unset !important;
+        margin-bottom: 20px !important;
+    }
+
     .certicode-digit {
-        width: 62px !important;
-        height: 70px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: 56px !important;
         background: rgba(255,255,255,0.06) !important;
         border: 2px solid rgba(255,255,255,0.15) !important;
-        border-radius: 14px !important;
+        border-radius: 12px !important;
         color: white !important;
-        font-size: 30px !important;
+        font-size: 22px !important;
+        font-weight: 700 !important;
         text-align: center !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
     }
 
     .login-error { color: #e74c3c !important; font-size: 12px !important; margin-bottom: 10px !important; display: none; }
     .login-error.visible { display: block !important; }
 
+}
+
+/* === Responsive Certicode : 380px === */
+@media (max-width: 380px) {
+    .login-card {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+    .certicode-inputs {
+        gap: 6px !important;
+    }
+    .certicode-digit {
+        height: 50px !important;
+        font-size: 20px !important;
+        border-radius: 10px !important;
+    }
+}
+
+/* === Responsive Certicode : 340px === */
+@media (max-width: 340px) {
+    .login-card {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    .certicode-inputs {
+        gap: 5px !important;
+    }
+    .certicode-digit {
+        height: 44px !important;
+        font-size: 18px !important;
+        border-radius: 8px !important;
+    }
 }
