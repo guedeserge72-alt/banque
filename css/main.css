@@ -758,18 +758,6 @@ td:last-child { text-align: right; }
     background: #E0E0E0;
 }
 
-/* Disclaimer */
-.rib-disclaimer {
-    font-size: 11px;
-    color: #B06000;
-    background: #FEF7E0;
-    border: 1px solid #F9C74F;
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin: 0;
-    line-height: 1.5;
-}
-
 /* ============================================
    MODALE RIB
    ============================================ */

@@ -436,7 +436,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <p class="rib-disclaimer">&#9888; Ces informations sont issues d&rsquo;une consultation. Elles ne constituent pas un document officiel émis par la banque.</p>
                         </div>
                     </div>
                     <div id="consult_historique" class="pane hidden">
@@ -1182,7 +1181,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="rib-row"><span class="rib-label">Devise</span><span class="rib-value">CFA</span></div>
                 <div class="rib-row"><span class="rib-label">Pays</span><span class="rib-value">Mali</span></div>
             </div>
-            <p class="rib-disclaimer" style="margin-top:16px;">&#9888; Ces informations sont issues d&rsquo;une consultation. Elles ne constituent pas un document officiel émis par la banque.</p>
         </div>
         <div class="rib-modal-footer">
             <button class="btn-rib btn-rib-dl" type="button" onclick="telechargerRib()">
@@ -1205,10 +1203,47 @@ function fermerModaleRib() {
     if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
 }
 function telechargerRib() {
-    if (typeof showToast === 'function') {
-        showToast('Coordonnées bancaires / RIB', 'Téléchargement du RIB bientôt disponible.', 'info');
+    var rows = [
+        ['Titulaire', 'BRUNET Anne Gaelle'],
+        ['Banque', 'BANK OF AFRICA MALI'],
+        ['Agence / Domiciliation', 'Bamako Centre \u2014 Bamako, Mali'],
+        ['Type de compte', 'Compte Courant'],
+        ['Num\u00e9ro de compte', '787000361'],
+        ['Code banque', '10278'],
+        ['Code agence', '45192'],
+        ['Cl\u00e9 RIB', '36'],
+        ['IBAN', 'ML43 10278 45192 787000361 36'],
+        ['BIC / SWIFT', 'AFRIMLBA'],
+        ['Devise', 'CFA'],
+        ['Pays', 'Mali']
+    ];
+    if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
+        var doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('Relev\u00e9 d\u2019identit\u00e9 bancaire', 20, 25);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        doc.text('Coordonn\u00e9es du compte principal', 20, 34);
+        var y = 50;
+        rows.forEach(function(r) {
+            doc.setFont('helvetica', 'bold');
+            doc.text(r[0] + ' :', 20, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(r[1], 75, y);
+            y += 9;
+        });
+        var date = new Date().toLocaleDateString('fr-FR');
+        doc.setFontSize(9);
+        doc.text('Document g\u00e9n\u00e9r\u00e9 depuis l\u2019espace client le ' + date, 20, 285);
+        doc.save('RIB_BRUNET_ANNE_GAELLE_787000361.pdf');
+        if (typeof showToast === 'function') {
+            showToast('RIB', 'RIB t\u00e9l\u00e9charg\u00e9 avec succ\u00e8s.', 'success');
+        }
     } else {
-        alert('Téléchargement du RIB bientôt disponible.');
+        if (typeof showToast === 'function') {
+            showToast('RIB', 'G\u00e9n\u00e9ration PDF indisponible. R\u00e9essayez.', 'info');
+        }
     }
 }
 document.addEventListener('keydown', function(e) {
