@@ -657,6 +657,7 @@ function initierVirement() {
             currency: devise,
             fromAccount: '0301173640002',
             reason: motif,
+            reference: virementData.reference,
             bic: virementData.bic,
             pays: virementData.pays
         })

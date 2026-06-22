@@ -117,13 +117,17 @@ function afficherHistorique() {
         } else {
             tbody.innerHTML = '';
             historique.slice(0, 5).forEach(function(op) {
+                var deviseOp = (op.devise || 'CFA').toUpperCase();
                 var montantNum = parseFloat((op.montant + '').replace(/\s/g, '').replace(',', '.')) || 0;
+                var montantCell = deviseOp === 'CFA'
+                    ? '<td style="color:#e74c3c;font-weight:600;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + op.montant + ' ' + deviseOp + '</td>'
+                    : '<td style="color:#e74c3c;font-weight:600;">-' + op.montant + ' ' + (SYMBOLES_DEVISE[deviseOp] || deviseOp) + '</td>';
                 var tr = document.createElement('tr');
                 tr.innerHTML =
                     '<td>' + op.date + '</td>' +
                     '<td>' + op.type + '</td>' +
                     '<td>' + op.description + '</td>' +
-                    '<td style="color:#e74c3c;font-weight:600;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + op.montant + ' ' + op.devise + '</td>' +
+                    montantCell +
                     '<td><span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:11px;">' + op.statut + '</span></td>';
                 tbody.appendChild(tr);
             });
@@ -137,13 +141,17 @@ function afficherHistorique() {
         } else {
             tbodyMobile.innerHTML = '';
             historique.slice(0, 5).forEach(function(op) {
+                var deviseOp = (op.devise || 'CFA').toUpperCase();
                 var montantNum = parseFloat((op.montant + '').replace(/\s/g, '').replace(',', '.')) || 0;
+                var montantCell = deviseOp === 'CFA'
+                    ? '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + op.montant + ' ' + deviseOp + '</td>'
+                    : '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + op.montant + ' ' + (SYMBOLES_DEVISE[deviseOp] || deviseOp) + '</td>';
                 var tr = document.createElement('tr');
                 tr.style.borderBottom = '1px solid #f0f0f0';
                 tr.innerHTML =
                     '<td style="padding:8px;font-size:11px;color:#666;">' + op.date + '</td>' +
                     '<td style="padding:8px;font-size:12px;">Vers ' + op.description.replace('Vers ','') + '</td>' +
-                    '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + op.montant + ' ' + op.devise + '</td>' +
+                    montantCell +
                     '<td style="padding:8px;text-align:center;"><span style="background:#fff3cd;color:#856404;padding:2px 6px;border-radius:8px;font-size:10px;">En attente</span></td>';
                 tbodyMobile.appendChild(tr);
             });
@@ -184,11 +192,15 @@ function afficherHistoriqueMobile() {
             badgeStyle = 'background:#fde8e8;color:#c0392b;';
         }
 
+        var deviseOp = ((op.devise || 'CFA') + '').toUpperCase();
         var montantNum = parseFloat(((op.montant || '') + '').replace(/\s/g, '').replace(',', '.')) || 0;
+        var montantCell = deviseOp === 'CFA'
+            ? '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + (op.montant || '') + ' ' + deviseOp + '</td>'
+            : '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;">-' + (op.montant || '') + ' ' + (SYMBOLES_DEVISE[deviseOp] || deviseOp) + '</td>';
         tr.innerHTML =
             '<td style="padding:8px;font-size:11px;color:#aaa;">' + (op.date || '') + '</td>' +
             '<td style="padding:8px;font-size:12px;color:#fff;">Vers ' + (op.description || '').replace('Vers ','') + '</td>' +
-            '<td style="padding:8px;text-align:right;color:#e74c3c;font-weight:600;font-size:12px;" data-montant-cfa="' + montantNum + '" class="no-sign">-' + (op.montant || '') + ' ' + (op.devise || '') + '</td>' +
+            montantCell +
             '<td style="padding:8px;text-align:center;"><span style="' + badgeStyle + 'padding:2px 6px;border-radius:8px;font-size:10px;">' + statutLabel + '</span></td>';
         tbodyMobile.appendChild(tr);
     });

@@ -46,6 +46,26 @@
 }
 
 /* Styles pour le modal Certicode Virement */
+#modal-certicode-virement .transfer-certicode-inputs {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+#modal-certicode-virement .certicode-transfer-digit {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 52px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
 .certicode-transfer-digit:focus {
     border-color: #1D6F4F !important;
     box-shadow: 0 0 0 3px rgba(29, 111, 79, 0.2) !important;
@@ -68,10 +88,25 @@
     background: #f5f5f5;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 380px) {
+    #modal-certicode-virement .transfer-certicode-inputs {
+        gap: 5px;
+    }
+
     #modal-certicode-virement .certicode-transfer-digit {
-        width: 38px !important;
-        height: 46px !important;
-        font-size: 20px !important;
+        height: 46px;
+        font-size: 19px;
+        border-radius: 9px;
+    }
+}
+
+@media (max-width: 340px) {
+    #modal-certicode-virement .transfer-certicode-inputs {
+        gap: 4px;
+    }
+
+    #modal-certicode-virement .certicode-transfer-digit {
+        height: 42px;
+        font-size: 17px;
     }
 }
