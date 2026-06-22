@@ -633,6 +633,12 @@ td:last-child { text-align: right; }
     margin-bottom: 20px;
 }
 
+.rib-card-footer {
+    padding: 18px;
+    background: #FFFFFF;
+    border-top: 1px solid #E9ECEF;
+}
+
 .rib-row {
     display: flex;
     align-items: flex-start;
@@ -681,14 +687,18 @@ td:last-child { text-align: right; }
 
 /* Boutons d'action RIB */
 .rib-actions {
-    display: flex;
+    display: flex !important;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 18px;
+    margin: 0;
+    width: 100%;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
 }
 
 .btn-rib {
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
@@ -698,6 +708,11 @@ td:last-child { text-align: right; }
     font-size: 13px;
     font-weight: 600;
     transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.2s ease;
+    min-height: 44px;
+    white-space: nowrap;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 0 0 auto;
 }
 
 .btn-rib svg {
