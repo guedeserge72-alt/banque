@@ -280,10 +280,9 @@ function initMobileMenu() {
  * INITIALIZE GLOBAL FEATURES (Search, Back to top, global data injection)
  */
 function initGlobalFeatures() {
-    // Inject centralized User Name from Session if available
-    const sessionUser = JSON.parse(sessionStorage.getItem('user') || '{}');
-    const displayName = sessionUser.nom ? `${sessionUser.prenom} ${sessionUser.nom}`.toUpperCase() : CURRENT_USER_NAME;
-    const initiales = sessionUser.initiales || 'BJ';
+    // Inject centralized User Name from global constant
+    const displayName = CURRENT_USER_NAME;
+    const initiales = 'BJ';
 
     const headerName = document.getElementById('header-user-name');
     if (headerName) headerName.textContent = displayName;
