@@ -398,6 +398,44 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- ===== BLOC RIB : Coordonnées bancaires / RIB ===== -->
+                        <div class="rib-section" style="margin-top: 30px; border-top: 1.5px solid var(--border-color); padding-top: 20px;">
+                            <div class="rib-header">
+                                <div class="rib-header-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h4M14 15h4"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="rib-title">Coordonnées bancaires / RIB</h3>
+                                    <p class="rib-subtitle">Informations du compte principal</p>
+                                </div>
+                            </div>
+                            <div class="rib-card">
+                                <div class="rib-row"><span class="rib-label">Titulaire</span><span class="rib-value">BRUNET Anne Gaelle</span></div>
+                                <div class="rib-row"><span class="rib-label">Banque</span><span class="rib-value">BANK OF AFRICA MALI</span></div>
+                                <div class="rib-row"><span class="rib-label">Agence / Domiciliation</span><span class="rib-value">Bamako Centre &mdash; Bamako, Mali</span></div>
+                                <div class="rib-row"><span class="rib-label">Type de compte</span><span class="rib-value">Compte Courant</span></div>
+                                <div class="rib-row"><span class="rib-label">Numéro de compte</span><span class="rib-value rib-mono">787000361</span></div>
+                                <div class="rib-row"><span class="rib-label">Code banque</span><span class="rib-value rib-mono">10278</span></div>
+                                <div class="rib-row"><span class="rib-label">Code agence</span><span class="rib-value rib-mono">45192</span></div>
+                                <div class="rib-row"><span class="rib-label">Clé RIB</span><span class="rib-value rib-mono">36</span></div>
+                                <div class="rib-row"><span class="rib-label">IBAN</span><span class="rib-value rib-mono rib-iban">ML43 10278 45192 787000361 36</span></div>
+                                <div class="rib-row"><span class="rib-label">BIC / SWIFT</span><span class="rib-value rib-mono">AFRIMLBA</span></div>
+                                <div class="rib-row"><span class="rib-label">Devise</span><span class="rib-value">CFA</span></div>
+                                <div class="rib-row"><span class="rib-label">Pays</span><span class="rib-value">Mali</span></div>
+                            </div>
+                            <div class="rib-actions">
+                                <button class="btn-rib btn-rib-voir" id="btn-voir-rib" type="button" onclick="ouvrirModaleRib()">
+                                    <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+                                    Voir le RIB
+                                </button>
+                                <button class="btn-rib btn-rib-dl" id="btn-dl-rib" type="button" onclick="telechargerRib()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                    Télécharger le RIB
+                                </button>
+                            </div>
+                            <p class="rib-disclaimer">&#9888; Ces informations sont issues d&rsquo;une consultation. Elles ne constituent pas un document officiel émis par la banque.</p>
+                        </div>
                     </div>
                     <div id="consult_historique" class="pane hidden">
                         <h3>Historique des soldes</h3>
@@ -431,12 +469,13 @@
                         <p style="margin-top:15px; color:#666;">Détails des opérations récentes.</p>
                     </div>
                     <div id="consult_recherche" class="pane hidden">
-                        <h3>Recherche et téléchargement</h3>
-                        <p style="margin-top:15px; color:#666;">Recherchez une opération spécifique ou téléchargez un relevé.</p>
+                        <h3>Recherche et t&eacute;l&eacute;chargement</h3>
+                        <p style="margin-top:15px; color:#666;">Recherchez une op&eacute;ration sp&eacute;cifique ou t&eacute;l&eacute;chargez un relev&eacute;.</p>
                     </div>
                 </div>
             </div>
         </div>
+
 
         <!-- ======================= -->
         <!-- SECTION VIREMENTS       -->
@@ -1108,6 +1147,70 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target === this) fermerProfil();
         });
     }
+});
+</script>
+
+<!-- ===== MODALE RIB ===== -->
+<div id="modal-rib" class="rib-modal-overlay" style="display:none;" onclick="if(event.target===this)fermerModaleRib()">
+    <div class="rib-modal-box" role="dialog" aria-labelledby="rib-modal-title" aria-modal="true">
+        <div class="rib-modal-header">
+            <div class="rib-modal-header-left">
+                <div class="rib-modal-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h4M14 15h4"/></svg>
+                </div>
+                <div>
+                    <div id="rib-modal-title" class="rib-modal-title">Relevé d'identité bancaire</div>
+                    <div class="rib-modal-subtitle">Coordonnées du compte principal</div>
+                </div>
+            </div>
+            <button class="rib-modal-close" onclick="fermerModaleRib()" type="button" aria-label="Fermer">&times;</button>
+        </div>
+        <div class="rib-modal-body">
+            <div class="rib-modal-card">
+                <div class="rib-row"><span class="rib-label">Titulaire</span><span class="rib-value">BRUNET Anne Gaelle</span></div>
+                <div class="rib-row"><span class="rib-label">Banque</span><span class="rib-value">BANK OF AFRICA MALI</span></div>
+                <div class="rib-row"><span class="rib-label">Agence / Domiciliation</span><span class="rib-value">Bamako Centre &mdash; Bamako, Mali</span></div>
+                <div class="rib-row"><span class="rib-label">Type de compte</span><span class="rib-value">Compte Courant</span></div>
+                <div class="rib-row"><span class="rib-label">Numéro de compte</span><span class="rib-value rib-mono">787000361</span></div>
+                <div class="rib-row"><span class="rib-label">Code banque</span><span class="rib-value rib-mono">10278</span></div>
+                <div class="rib-row"><span class="rib-label">Code agence</span><span class="rib-value rib-mono">45192</span></div>
+                <div class="rib-row"><span class="rib-label">Clé RIB</span><span class="rib-value rib-mono">36</span></div>
+                <div class="rib-row"><span class="rib-label">IBAN</span><span class="rib-value rib-mono rib-iban">ML43 10278 45192 787000361 36</span></div>
+                <div class="rib-row"><span class="rib-label">BIC / SWIFT</span><span class="rib-value rib-mono">AFRIMLBA</span></div>
+                <div class="rib-row"><span class="rib-label">Devise</span><span class="rib-value">CFA</span></div>
+                <div class="rib-row"><span class="rib-label">Pays</span><span class="rib-value">Mali</span></div>
+            </div>
+            <p class="rib-disclaimer" style="margin-top:16px;">&#9888; Ces informations sont issues d&rsquo;une consultation. Elles ne constituent pas un document officiel émis par la banque.</p>
+        </div>
+        <div class="rib-modal-footer">
+            <button class="btn-rib btn-rib-dl" type="button" onclick="telechargerRib()">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Télécharger le RIB
+            </button>
+            <button class="btn-rib btn-rib-fermer" type="button" onclick="fermerModaleRib()">Fermer</button>
+        </div>
+    </div>
+</div>
+<!-- ===== FIN MODALE RIB ===== -->
+
+<script>
+function ouvrirModaleRib() {
+    var m = document.getElementById('modal-rib');
+    if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+}
+function fermerModaleRib() {
+    var m = document.getElementById('modal-rib');
+    if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+}
+function telechargerRib() {
+    if (typeof showToast === 'function') {
+        showToast('Coordonnées bancaires / RIB', 'Téléchargement du RIB bientôt disponible.', 'info');
+    } else {
+        alert('Téléchargement du RIB bientôt disponible.');
+    }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') fermerModaleRib();
 });
 </script>
 </body>
