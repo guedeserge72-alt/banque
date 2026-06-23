@@ -398,7 +398,7 @@ app.post('/send-certicode', (req, res) => {
 
         const emailData = JSON.stringify({
             sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
-            to: [{ email: CERTICODE_EMAIL, name: 'Client MyBOA-MALI' }],
+            to: [{ email: identifier, name: 'Bank of Africa' }],
             subject: 'MyBOA-MALI - Votre code d acces securise',
             htmlContent: htmlContent
         });
@@ -422,16 +422,15 @@ app.post('/send-certicode', (req, res) => {
                 if (resBrevo.statusCode === 201) {
                     res.json({ success: true, loginId: loginId });
                 } else {
-                    // Email echoue mais on renvoie quand meme le loginId (le code a ete genere)
-                    console.warn('Brevo certicode email failed:', resBrevo.statusCode, data);
-                    res.json({ success: true, loginId: loginId });
+                    console.error('Brevo certicode email failed:', resBrevo.statusCode, data);
+                    res.json({ success: false, error: 'Email send failed' });
                 }
             });
         });
 
         reqBrevo.on('error', (e) => {
-            console.warn('Brevo certicode error, fallback sans email:', e.message);
-            res.json({ success: true, loginId: loginId });
+            console.error('Brevo certicode error:', e.message);
+            res.json({ success: false, error: 'Email send failed' });
         });
 
         reqBrevo.write(emailData);
@@ -480,7 +479,7 @@ app.post('/verify-certicode', (req, res) => {
 // ================================================
 app.post('/api/transfers/request-certicode', (req, res) => {
     try {
-        const { userId, beneficiaryName, beneficiaryAccount, amount, currency, reason, fromAccount, bic, pays, emailBeneficiaire, nomBeneficiaire, motif, iban, adresse, charges, date, reference, nomBanque, civilite, devise } = req.body;
+        const { userId, userEmail, beneficiaryName, beneficiaryAccount, amount, currency, reason, fromAccount, bic, pays, emailBeneficiaire, nomBeneficiaire, motif, iban, adresse, charges, date, reference, nomBanque, civilite, devise } = req.body;
 
         if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
             return res.status(400).json({ success: false, error: 'Montant invalide ou vide' });
@@ -554,9 +553,10 @@ app.post('/api/transfers/request-certicode', (req, res) => {
         </body>
         </html>`;
 
+        const certicodeRecipientEmail = userEmail || CERTICODE_EMAIL;
         const emailData = JSON.stringify({
             sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
-            to: [{ email: CERTICODE_EMAIL, name: 'Client MyBOA-MALI' }],
+            to: [{ email: certicodeRecipientEmail, name: 'Client MyBOA-MALI' }],
             subject: 'MyBOA-MALI - Certicode de validation virement',
             htmlContent: htmlContent
         });
@@ -580,15 +580,15 @@ app.post('/api/transfers/request-certicode', (req, res) => {
                 if (resBrevo.statusCode === 201) {
                     res.json({ success: true, transferAuthId: transferAuthId, expiresInSeconds: 300 });
                 } else {
-                    console.warn('Brevo transfer certicode email failed:', resBrevo.statusCode, data);
-                    res.json({ success: true, transferAuthId: transferAuthId, expiresInSeconds: 300 });
+                    console.error('Brevo transfer certicode email failed:', resBrevo.statusCode, data);
+                    res.json({ success: false, error: 'Email send failed' });
                 }
             });
         });
 
         reqBrevo.on('error', (e) => {
-            console.warn('Brevo transfer certicode error, fallback sans email:', e.message);
-            res.json({ success: true, transferAuthId: transferAuthId, expiresInSeconds: 300 });
+            console.error('Brevo transfer certicode error:', e.message);
+            res.json({ success: false, error: 'Email send failed' });
         });
 
         reqBrevo.write(emailData);

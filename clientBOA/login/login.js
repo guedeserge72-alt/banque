@@ -248,6 +248,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function maskEmail(email) {
+        if (!email) return 'c****@myboamali.net';
+        var atIndex = email.indexOf('@');
+        if (atIndex === -1) return email;
+        var name = email.substring(0, atIndex);
+        var domain = email.substring(atIndex);
+        return name.charAt(0) + '****' + domain;
+    }
+
     function splitDisplayName(displayName) {
         var normalizedName = (displayName || 'Client MyBOA-MALI').trim();
         if (!normalizedName) {
@@ -298,8 +307,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function showCerticodeScreen(loginId) {
+    function showCerticodeScreen(loginId, userEmail) {
         var container = null;
+        var maskedEmail = maskEmail(userEmail);
         if (isMobile) {
             container = document.getElementById('mobile-card');
         } else {
@@ -318,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div style="text-align:center;margin-bottom:22px;">
                 <div style="color:#7a9bb5;font-size:13px;margin-bottom:5px;">Un code a été envoyé à</div>
-                <div style="color:${isMobile?'white':'#1a3a6b'};font-size:14px;font-weight:600;margin-bottom:8px;">b****@gmail.com</div>
+                <div style="color:${isMobile?'white':'#1a3a6b'};font-size:14px;font-weight:600;margin-bottom:8px;">${maskedEmail}</div>
                 <div style="color:#2e7d32;font-size:12px;">Valable 5 minutes</div>
             </div>
             <div class="certicode-inputs" style="display:flex;justify-content:center;gap:10px;margin-bottom:20px;">
@@ -409,6 +419,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var names = splitDisplayName(displayName);
 
         sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('userEmail', identifiantConnexion);
         sessionStorage.setItem('chatUserId', chatUserId);
         sessionStorage.setItem('loginId', userProfile.loginId || chatUserId);
         sessionStorage.setItem('customerId', userProfile.customerId || chatUserId);
@@ -510,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.disabled = true;
             requestCerticode(identifiantConnexion, function(success, loginId) {
                 if (success && loginId) {
-                    showCerticodeScreen(loginId);
+                    showCerticodeScreen(loginId, identifiantConnexion);
                     return;
                 }
 

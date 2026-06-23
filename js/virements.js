@@ -651,6 +651,7 @@ function initierVirement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             userId: sessionStorage.getItem('loginId') || 'unknown',
+            userEmail: sessionStorage.getItem('userEmail') || '',
             beneficiaryName: virementData.nom_beneficiaire,
             beneficiaryAccount: virementData.iban,
             amount: montant,
