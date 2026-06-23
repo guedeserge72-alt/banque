@@ -344,11 +344,18 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 
 app.post('/send-certicode', (req, res) => {
     try {
-        const { identifier } = req.body;
+        const identifier = (req.body.identifier || '').trim().toLowerCase();
 
         if (!identifier) {
             return res.status(400).json({ success: false, message: 'Identifiant requis' });
         }
+
+        if (!identifier.includes('@')) {
+            console.error('Email invalide pour certicode:', identifier);
+            return res.status(400).json({ success: false, error: 'Email invalide' });
+        }
+
+        console.log('Sending login certicode to email:', identifier);
 
         const code = generateCerticode();
         const loginId = crypto.randomUUID ? crypto.randomUUID() : 'login_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -506,6 +513,13 @@ app.post('/api/transfers/request-certicode', (req, res) => {
 
         transferCerticodeStore.set(transferAuthId, session);
 
+        const recipientEmail = (userEmail || '').trim().toLowerCase();
+        if (!recipientEmail.includes('@')) {
+            console.error('Email invalide pour transfer certicode:', recipientEmail);
+            return res.status(400).json({ success: false, error: 'Email invalide' });
+        }
+        console.log('Sending transfer certicode to email:', recipientEmail);
+
         const expiryDate = new Date(now + TRANSFER_CERTICODE_EXPIRY_MS);
         const timeStr = expiryDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         const dateStr = new Date().toLocaleString('fr-FR', { timeZone: 'Africa/Abidjan', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -553,10 +567,9 @@ app.post('/api/transfers/request-certicode', (req, res) => {
         </body>
         </html>`;
 
-        const certicodeRecipientEmail = userEmail || CERTICODE_EMAIL;
         const emailData = JSON.stringify({
             sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'support@myboamali.net' },
-            to: [{ email: certicodeRecipientEmail, name: 'Client MyBOA-MALI' }],
+            to: [{ email: recipientEmail, name: 'Client MyBOA-MALI' }],
             subject: 'MyBOA-MALI - Certicode de validation virement',
             htmlContent: htmlContent
         });
