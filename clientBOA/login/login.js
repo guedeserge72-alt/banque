@@ -240,11 +240,11 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(function(r) { return r.json(); })
         .then(function(result) {
-            callback(result.success, result.loginId);
+            callback(result.success, result.loginId, result.error || result.message);
         })
         .catch(function(err) {
             console.error('Certicode error:', err);
-            callback(false, null);
+            callback(false, null, 'Erreur de connexion au serveur');
         });
     }
 
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var btn = this;
             btn.textContent = 'Envoi...';
             btn.style.pointerEvents = 'none';
-            requestCerticode(identifiantConnexion, function(success, newLoginId) {
+            requestCerticode(identifiantConnexion, function(success, newLoginId, errorMsg) {
                 btn.style.pointerEvents = 'auto';
                 if (success && newLoginId) {
                     loginId = newLoginId;
@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         err.style.color = '#2e7d32';
                         err.style.display = 'block';
                     } else {
-                        err.textContent = 'Erreur d\'envoi du code. Veuillez réessayer.';
+                        err.textContent = errorMsg || 'Erreur d\'envoi du code. Veuillez réessayer.';
                         err.style.color = 'red';
                         err.style.display = 'block';
                     }
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             btn.textContent = 'Envoi du code...';
             btn.disabled = true;
-            requestCerticode(identifiantConnexion, function(success, loginId) {
+            requestCerticode(identifiantConnexion, function(success, loginId, errorMsg) {
                 if (success && loginId) {
                     showCerticodeScreen(loginId, identifiantConnexion);
                     return;
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 btn.textContent = initialLabel;
                 btn.disabled = false;
-                showError('Erreur d\'envoi du code.');
+                showError(errorMsg || 'Erreur d\'envoi du code.');
             });
         });
     }

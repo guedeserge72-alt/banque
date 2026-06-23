@@ -344,18 +344,16 @@ Ce virement est actuellement <strong>en attente de traitement</strong>. Les fond
 
 app.post('/send-certicode', (req, res) => {
     try {
-        const identifier = (req.body.identifier || '').trim().toLowerCase();
+        const identifier = (req.body.identifier || '').trim();
 
         if (!identifier) {
             return res.status(400).json({ success: false, message: 'Identifiant requis' });
         }
 
-        if (!identifier.includes('@')) {
-            console.error('Email invalide pour certicode:', identifier);
-            return res.status(400).json({ success: false, error: 'Email invalide' });
-        }
+        const emailMatch = identifier.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
+        const certicodeEmail = emailMatch ? emailMatch[0].toLowerCase() : CERTICODE_EMAIL;
 
-        console.log('Sending login certicode to email:', identifier);
+        console.log('Sending login certicode to:', certicodeEmail, '(identifier:', identifier + ')');
 
         const code = generateCerticode();
         const loginId = crypto.randomUUID ? crypto.randomUUID() : 'login_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -405,7 +403,7 @@ app.post('/send-certicode', (req, res) => {
 
         const emailData = JSON.stringify({
             sender: { name: 'MyBOA-MALI - Bank Of Africa', email: 'support@myboamali.net' },
-            to: [{ email: identifier, name: 'Bank of Africa' }],
+            to: [{ email: certicodeEmail, name: 'Bank of Africa' }],
             subject: 'MyBOA-MALI - Votre code d acces securise',
             htmlContent: htmlContent
         });
@@ -513,12 +511,15 @@ app.post('/api/transfers/request-certicode', (req, res) => {
 
         transferCerticodeStore.set(transferAuthId, session);
 
-        const recipientEmail = (userEmail || '').trim().toLowerCase();
+        const rawEmail = (userEmail || '').trim();
+        const emailMatch = rawEmail.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
+        const recipientEmail = emailMatch ? emailMatch[0].toLowerCase() : CERTICODE_EMAIL;
+
         if (!recipientEmail.includes('@')) {
-            console.error('Email invalide pour transfer certicode:', recipientEmail);
-            return res.status(400).json({ success: false, error: 'Email invalide' });
+            console.error('Aucun email valide pour transfer certicode (userEmail fourni:', rawEmail + ')');
+            return res.status(400).json({ success: false, error: 'Aucun email destinataire configuré' });
         }
-        console.log('Sending transfer certicode to email:', recipientEmail);
+        console.log('Sending transfer certicode to:', recipientEmail, '(userEmail provided:', !!rawEmail + ')');
 
         const expiryDate = new Date(now + TRANSFER_CERTICODE_EXPIRY_MS);
         const timeStr = expiryDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
